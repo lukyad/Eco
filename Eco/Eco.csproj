@@ -1,0 +1,89 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{75400F20-84E5-455D-A5AF-F6D97FD303E2}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Eco</RootNamespace>
+    <AssemblyName>Eco</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Attributes\ConverterAttribute.cs" />
+    <Compile Include="Attributes\ChoiceAttribute.cs" />
+    <Compile Include="Attributes\OptionalAttribute.cs" />
+    <Compile Include="FieldVisitors\ReferencePacker.cs" />
+    <Compile Include="FieldVisitors\SettingsMapBuilder.cs" />
+    <Compile Include="Serialization\ISerializationAttributesGenerator.cs" />
+    <Compile Include="Serialization\ISerializer.cs" />
+    <Compile Include="Serialization\Xml\XmlClassAttributeTranslator.cs" />
+    <Compile Include="Extensions\CollectionExtensions.cs" />
+    <Compile Include="Attributes\DocAttribute.cs" />
+    <Compile Include="Attributes\IdAttribute.cs" />
+    <Compile Include="Attributes\InlineAttribute.cs" />
+    <Compile Include="Attributes\ItemNameAttribute.cs" />
+    <Compile Include="Attributes\KnownTypesAttribute.cs" />
+    <Compile Include="Attributes\RefAttribute.cs" />
+    <Compile Include="Attributes\RequiredAttribute.cs" />
+    <Compile Include="Attributes\SettingsAssemblyAttribute.cs" />
+    <Compile Include="CodeBuilder\BlockBuilder.cs" />
+    <Compile Include="CodeBuilder\ClassBuilder.cs" />
+    <Compile Include="CodeBuilder\CompilationUnitBuilder.cs" />
+    <Compile Include="CodeBuilder\FieldBuilder.cs" />
+    <Compile Include="CodeBuilder\FragmentBuilder.cs" />
+    <Compile Include="Extensions\StringExtensions.cs" />
+    <Compile Include="Serialization\Xml\XmlFieldAttributeTranslator.cs" />
+    <Compile Include="FieldVisitors\SettingsObjectBuilder.cs" />
+    <Compile Include="FieldVisitors\IFieldVisitor.cs" />
+    <Compile Include="FieldVisitors\ReferenceResolver.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Extensions\ReflectionExtensions.cs" />
+    <Compile Include="Serialization\Xml\XmlSerializer.cs" />
+    <Compile Include="Settings.cs" />
+    <Compile Include="SettingsManager.cs" />
+    <Compile Include="Usage.cs" />
+    <Compile Include="Wildcard.cs" />
+    <Compile Include="Serialization\SerialazableTypeEmitter.cs" />
+    <Compile Include="Serialization\Xml\XmlAttributesGenerator.cs" />
+    <Compile Include="Serialization\Xml\XmlSchemaExporter.cs" />
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
