@@ -58,7 +58,7 @@ namespace Eco
 
 		public T Read<T>(Stream stream) where T : new()
         {
-			Type rawSettingsType = SerializableTypeEmitter.EmitSerializableTypeFor<T>(this.SerializationAttributesGenerator, this.DefaultUsage);
+			Type rawSettingsType = SerializableTypeEmitter.GetSerializableTypeFor<T>(this.SerializationAttributesGenerator, this.DefaultUsage);
 			object rawSettings = this.Serializer.Deserialize(rawSettingsType, stream);
             T refinedSettings = new T();
 			VisitAllFieldsRecursive(sourceSettings: rawSettings, targetSettings: refinedSettings, visitor: new SettingsObjectBuilder());
@@ -70,7 +70,7 @@ namespace Eco
 
         public void Write<T>(T settings, Stream stream)
         {
-			Type rawSettingsType = SerializableTypeEmitter.EmitSerializableTypeFor<T>(this.SerializationAttributesGenerator, this.DefaultUsage);
+			Type rawSettingsType = SerializableTypeEmitter.GetSerializableTypeFor<T>(this.SerializationAttributesGenerator, this.DefaultUsage);
 			object rawSettings = Activator.CreateInstance(rawSettingsType);
 			VisitAllFieldsRecursive(sourceSettings: settings, targetSettings: rawSettings, visitor: new SettingsObjectBuilder());
 			VisitAllFieldsRecursive(sourceSettings: settings, targetSettings: rawSettings, visitor: new ReferencePacker());
