@@ -6,7 +6,19 @@ using System.Threading.Tasks;
 
 namespace Eco
 {
-    [AttributeUsage(AttributeTargets.Field)]
+	/// <summary>
+	/// Indicates that field is optinal.
+	/// Allows field value to be missing (ie null) during serialization/desiarelization.
+	/// 
+	/// Usage:
+	/// Can not be applied to fields of a value type and Nullable'1 type as during serialization/deserialization
+	/// all fields of a value type are automaticvally marked with Required attribute and
+	/// all fields of Nullable'1 type are automatically marked with Optional attribue.
+	/// 
+	/// Compatibility:
+	/// Incompatible with Required attribute and compatible with all others.
+	/// </summary>
+	[AttributeUsage(AttributeTargets.Field)]
     public class OptionalAttribute : Attribute
     {
     }

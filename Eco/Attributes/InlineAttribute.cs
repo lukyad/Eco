@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace Eco
 {
+	/// <summary>
+	/// 
+	/// </summary>
     [AttributeUsage(AttributeTargets.Field)]
     public class InlineAttribute : Attribute
     {
