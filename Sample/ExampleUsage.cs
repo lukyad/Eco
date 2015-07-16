@@ -74,18 +74,13 @@ namespace Sample
 
 	public class driveChoice
 	{
-		[Choice]
-		public drive choice;
+		[Required, Choice]
+		public drive instance;
 	}
 
-	public abstract class drive
-	{
+	public abstract class drive	{ }
 
-	}
-
-    public abstract class weapon
-    {
-    }
+    public abstract class weapon { }
 
 	[Doc("Deals 3 - 8 damage to the target.")]
 	public class ionCannon : weapon
