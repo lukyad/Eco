@@ -20,6 +20,7 @@ namespace Eco
 		{
 			_serializer = serializer;
 			_serializationAttributesGenerator = serializationAttributesGenerator;
+			this.DefaultUsage = Usage.Optional;
         }
 
 		public ISerializaer Serializer { get { return _serializer; } }
@@ -28,25 +29,31 @@ namespace Eco
 
 		public Usage DefaultUsage { get; set; }
 
-		public static SettingsManager Default = new SettingsManager(new XmlSerializer(), new XmlAttributesGenerator());
-
-		public T Load<T>()
+		public static string GetDefaultSettingsFileName<T>()
 		{
-			return default(T);
+			return typeof(T).Name + ".config";
 		}
 
-		public T Load<T>(string fileName)
+		public T Load<T>() where T : new()
 		{
-			return default(T);
+			return this.Load<T>(GetDefaultSettingsFileName<T>());
+		}
+
+		public T Load<T>(string fileName) where T : new()
+		{
+			using (var fileStream = File.OpenRead(fileName))
+				return this.Read<T>(fileStream);
 		}
 
 		public void Save<T>(T settings)
 		{
-
+			this.Save(GetDefaultSettingsFileName<T>());
 		}
 
-		public void Save<T>(T settings, string fileName)
+		public void Save<T>(T settings, string fileName) 
 		{
+			using (var fileStream = File.OpenWrite(fileName))
+				this.Write(settings, fileStream);
 		}
 
 		public T Read<T>(Stream stream) where T : new()
@@ -61,12 +68,12 @@ namespace Eco
             return refinedSettings;
         }
 
-        public void Write<T>(T refinedSettings, Stream stream)
+        public void Write<T>(T settings, Stream stream)
         {
 			Type rawSettingsType = SerializableTypeEmitter.EmitSerializableTypeFor<T>(this.SerializationAttributesGenerator, this.DefaultUsage);
 			object rawSettings = Activator.CreateInstance(rawSettingsType);
-			VisitAllFieldsRecursive(sourceSettings: refinedSettings, targetSettings: rawSettings, visitor: new SettingsObjectBuilder());
-			VisitAllFieldsRecursive(sourceSettings: refinedSettings, targetSettings: rawSettings, visitor: new ReferencePacker());
+			VisitAllFieldsRecursive(sourceSettings: settings, targetSettings: rawSettings, visitor: new SettingsObjectBuilder());
+			VisitAllFieldsRecursive(sourceSettings: settings, targetSettings: rawSettings, visitor: new ReferencePacker());
 			this.Serializer.Serialize(rawSettings, stream);
 		}
 
