@@ -9,7 +9,7 @@ namespace Sample
 	public static class TimeSpanConverter
 	{
 		private static readonly Dictionary<string, Func<double, TimeSpan>> _fromDoubleMethods = new Dictionary<string, Func<double, TimeSpan>> {
-			{  "ms", TimeSpan.FromMilliseconds },
+			{ "ms", TimeSpan.FromMilliseconds },
 			{ "s", TimeSpan.FromSeconds },
 			{ "m", TimeSpan.FromMinutes },
 			{ "h", TimeSpan.FromHours },
