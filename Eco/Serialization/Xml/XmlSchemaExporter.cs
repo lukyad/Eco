@@ -22,7 +22,7 @@ namespace Eco.Serialization.Xml
 
 		public static string GetSchemaFor<T>(Usage defaultUsage)
 		{
-			var xmlSettingsType = SerializableTypeEmitter.EmitSchemaTypeFor<T>(new XmlAttributesGenerator(), defaultUsage);
+			var xmlSettingsType = SerializableTypeEmitter.GetSchemaTypeFor<T>(new XmlAttributesGenerator(), defaultUsage);
 			var importer = new XmlReflectionImporter();
 			var schemas = new XmlSchemas();
 			var exporter = new System.Xml.Serialization.XmlSchemaExporter(schemas);

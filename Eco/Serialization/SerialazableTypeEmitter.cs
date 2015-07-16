@@ -14,7 +14,7 @@ namespace Eco.Serialization
 {
 	static class SerializableTypeEmitter
 	{
-		public static Type EmitSerializableTypeFor<T>(ISerializationAttributesGenerator attributesGenerator, Usage defaultUsage)
+		public static Type GetSerializableTypeFor<T>(ISerializationAttributesGenerator attributesGenerator, Usage defaultUsage)
 		{
 			Func<FieldInfo, Type> MapFieldType = field =>
 			{
@@ -33,7 +33,7 @@ namespace Eco.Serialization
 			return Emit(typeof(T), attributesGenerator, MapFieldType, defaultUsage);
 		}
 
-		public static Type EmitSchemaTypeFor<T>(ISerializationAttributesGenerator attributesGenerator, Usage defaultUsage)
+		public static Type GetSchemaTypeFor<T>(ISerializationAttributesGenerator attributesGenerator, Usage defaultUsage)
 		{
 			Func<FieldInfo, Type> MapFieldType = field =>
 			{
