@@ -31,17 +31,17 @@ namespace Sample
 		public TimeSpan duration;
 	}
 
-    [Doc("Model of a space ship")]
+    [Doc("Definition of a fleet that can participate in a space battle.")]
     public class fleet
     {
 		[Id, Doc("Name of the fleet.")]
 		public string name;
 
-		[Doc("Spaceships color for this fleet.")]
+		[Doc("Spaceship's color for this fleet.")]
 		public FleetColor color;
 
-		[Inline, Doc("Spacesheeps of your fleet.")]
-        public spaceSheep[] sheeps;
+		[Inline, Doc("Spaceships of the fleet.")]
+        public spaceShip[] ships;
     }
 
 	public enum FleetColor
@@ -53,9 +53,9 @@ namespace Sample
 	}
 
     [Doc("Model of a space ship")]
-    public class spaceSheep
+    public class spaceShip
     {
-        [Id, Doc("Unique identifier of the space sheep that can be used to reference it later on.")]
+        [Id, Doc("Unique identifier of the space ship that can be used to reference it later on.")]
         public string name;
 
         [Doc("Armor protects ship from all types of weapon. Bigger is better, but more costly.")]
@@ -64,11 +64,11 @@ namespace Sample
         [Doc("Shield is twice as effective protecting ship from energy weapons comparing to armor, but doesn't protect ship from missels attacts at all.")]
         public int? shield;
 
-        [Doc("References to weapons to be used by the sheep in a combat.")]
+        [Doc("References to weapons to be used by the ship in a combat.")]
         public weapon[] weapons;
 
 		// Explicitly specify known types through a wildcard.
-		[Required, Doc("Drive affects mobility of the sheep during a combat.")]
+		[Required, Doc("Drive affects mobility of the ship during a combat.")]
         public driveChoice drive;
 	} 
 
