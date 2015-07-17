@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Eco.Attributes
+namespace Eco
 {
 	/// <summary>
 	/// Indicates that all types from the SettingsTypesNamesapace of the given assembly are settings types.
