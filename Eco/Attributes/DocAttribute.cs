@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Reflection;
 
 namespace Eco
 {
@@ -15,7 +16,7 @@ namespace Eco
 	/// Can be applied to a class or to a field of any type.
 	/// 
 	/// Comatibility: 
-	/// Compatible with all other attributes.
+	/// Compatible with all attributes.
 	/// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Field)]
     public class DocAttribute : Attribute
@@ -26,5 +27,10 @@ namespace Eco
         }
 
         public string Annotation { get; }
-    }
+
+		public void ValidateContext(FieldInfo context)
+		{
+			// do nothing
+		}
+	}
 }

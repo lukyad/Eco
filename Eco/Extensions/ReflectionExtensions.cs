@@ -5,7 +5,6 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Reflection;
 using System.Xml.Serialization;
-using Eco.Attributes;
 
 namespace Eco.Extensions
 {
@@ -37,6 +36,11 @@ namespace Eco.Extensions
 			if (!t.IsArray) return false;
 			return t.GetElementType().IsSettingsType();
         }
+
+		public static bool IsEcoAttribute(this Attribute a)
+		{
+			return a.GetType().Namespace == typeof(Eco.SettingsAssemblyAttribute).Namespace;
+		}
 
         public static IEnumerable<Type> GetDerivedTypes(this Type type)
         {

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Reflection;
 
 namespace Eco
 {
@@ -21,5 +22,23 @@ namespace Eco
     [AttributeUsage(AttributeTargets.Field)]
     public class RequiredAttribute : Attribute
     {
-    }
+		static readonly HashSet<Type> _incompatibleAttributeTypes = new HashSet<Type>
+		{
+			typeof(OptionalAttribute),
+		};
+
+		public static void ValidateContext(FieldInfo context)
+		{
+			if (context.FieldType.IsValueType || Nullable.GetUnderlyingType(context.FieldType) != null)
+			{
+				throw new ConfigurationException(
+					"{0} cannot be applied to {1}.{2}. Expected a field of a reference non-Nullable type",
+					typeof(OptionalAttribute).Name,
+					context.DeclaringType.Name,
+					context.Name
+				);
+			}
+			AttributeValidator.CheckAttributesCompatibility(context, _incompatibleAttributeTypes);
+		}
+	}
 }

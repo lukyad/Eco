@@ -20,8 +20,27 @@ namespace Eco
 	[AttributeUsage(AttributeTargets.Field)]
     public class IdAttribute : Attribute
     {
-        public static void ValidateContext(MemberInfo context)
+		static readonly HashSet<Type> _incompatibleAttributeTypes = new HashSet<Type>
+		{
+			typeof(ChoiceAttribute),
+			typeof(InlineAttribute),
+			typeof(ItemNameAttribute),
+			typeof(KnownTypesAttribute),
+			typeof(RefAttribute)
+		};
+
+		public static void ValidateContext(FieldInfo context)
         {
-        }
+			if (context.FieldType != typeof(string))
+			{
+				throw new ConfigurationException(
+					"{0} cannot be applied to {1}.{2}. Expected field of type String",
+					typeof(IdAttribute).Name,
+					context.DeclaringType.Name,
+					context.Name
+				);
+			}
+			AttributeValidator.CheckAttributesCompatibility(context, _incompatibleAttributeTypes);
+		}
     }
 }

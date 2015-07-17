@@ -20,17 +20,17 @@ namespace Eco
 	/// Can be applied to a field of any type including string.
 	/// 
 	/// Compatibility: 
-	/// Compatible with all other attributes.
+	/// Incompatible with the Id, Inline, ItemName, KnownTypes and Ref attributes and compatible with all others.
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Field)]
 	public class ConverterAttribute : Attribute
 	{
-		public ConverterAttribute(Type converterType) 
+		public ConverterAttribute(Type converterType)
 			: this(converterType, null)
 		{
 		}
 
-        public ConverterAttribute(Type converterType, string format)
+		public ConverterAttribute(Type converterType, string format)
 		{
 			this.Type = converterType;
 			this.Format = format;
@@ -45,6 +45,11 @@ namespace Eco
 		public new Func<object, string> ToString { get; private set; }
 
 		public Func<string, object> FromString { get; private set; }
+
+		public void ValidateContext(FieldInfo context)
+		{
+			// do nothing
+		}
 
 		static Func<object, string> GetToStringMethod(Type converterType, string format)
 		{
