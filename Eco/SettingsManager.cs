@@ -41,7 +41,7 @@ namespace Eco
 
 		public T Load<T>(string fileName) where T : new()
 		{
-			using (var fileStream = File.OpenRead(fileName))
+			using (var fileStream = File.Open(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
 				return this.Read<T>(fileStream);
 		}
 
@@ -52,7 +52,7 @@ namespace Eco
 
 		public void Save<T>(T settings, string fileName) 
 		{
-			using (var fileStream = File.OpenWrite(fileName))
+			using (var fileStream = File.Open(fileName, FileMode.Open, FileAccess.Write, FileShare.ReadWrite))
 				this.Write(settings, fileStream);
 		}
 

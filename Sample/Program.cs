@@ -14,16 +14,13 @@ namespace Sample
     {
         static void Main(string[] args)
         {
-			string schema = XmlSchemaExporter.GetSchemaFor<spaceBattle>(Usage.Optional);
-			using (var sw = new StreamWriter(@"d:\fleet.xsd"))
+			string schema = XmlSchemaExporter.GetSchemaFor<spaceBattle>(defaultUsage: Usage.Optional);
+			using (var sw = new StreamWriter(@"d:\spaceBattle.xsd"))
 				sw.Write(schema);
 
-			using (var inputStream = File.OpenRead("exampleUsage.config"))
-			{
-				var settingsFileName = @"d:\exampleUsage.config";
-                var spaceBattle = Settings.Load<spaceBattle>(settingsFileName);
-				Settings.Save(spaceBattle, settingsFileName);
-			}
+			string settingsFileName = "exampleUsage.config";
+			spaceBattle settings = Settings.Load<spaceBattle>(settingsFileName);
+			Settings.Save(settings, settingsFileName);
 		}
     }
 }
