@@ -14,17 +14,17 @@ namespace Sample
 		[Doc("Battles specification.")]
 		public gameRound[] gameRounds;
 
-		[Optional, Doc("Fleets that can participate in the battle.")]
+		[Required, Doc("Fleets that can participate in the battle.")]
 		public fleet[] fleets;
     }
 
 	[Doc("One round of a space battle.")]
 	public class gameRound
 	{
-		[Optional, Ref, Doc("Fleet that will be fighting on the human's side.")]
+		[Required, Ref, Doc("Fleet that will be fighting on the human's side.")]
 		public fleet humanFleet;
 
-		[Optional, Ref, Doc("Fleet that will be fighting on the alians's side.")]
+		[Required, Ref, Doc("Fleet that will be fighting on the alians's side.")]
 		public fleet aliensFleet;
 
 		[Converter(typeof(TimeSpanConverter), "s")]
@@ -55,7 +55,7 @@ namespace Sample
     [Doc("Model of a space ship")]
     public class spaceShip
     {
-        [Id, Doc("Unique identifier of the space ship that can be used to reference it later on.")]
+        [Required, Id, Doc("Unique identifier of the space ship that can be used to reference it later on.")]
         public string name;
 
         [Doc("Armor protects ship from all types of weapon. Bigger is better, but more costly.")]
