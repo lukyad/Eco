@@ -34,7 +34,7 @@ namespace Eco
 			if (context.FieldType != typeof(string))
 			{
 				throw new ConfigurationException(
-					"{0} cannot be applied to {1}.{2}. Expected field of type String",
+					"{0} cannot be applied to {1}.{2}. Expected field of the String type",
 					typeof(IdAttribute).Name,
 					context.DeclaringType.Name,
 					context.Name
