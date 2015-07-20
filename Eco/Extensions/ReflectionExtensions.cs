@@ -10,11 +10,6 @@ namespace Eco.Extensions
 {
     public static class ReflectionExtensions
     {
-        //public static bool HasAttribute<T>(this Assembly a)
-        //{
-        //	return Attribute.IsDefined(a, typeof(T));
-        //}
-
         public static bool IsDefined<T>(this MemberInfo m, bool inherit = false)
         {
             return m.IsDefined(typeof(T), inherit);
