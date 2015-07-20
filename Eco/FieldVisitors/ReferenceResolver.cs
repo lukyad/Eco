@@ -23,7 +23,7 @@ namespace Eco
             {
                 if (refinedSettingsField.FieldType.IsSettingsType()) ResolveReference(rawSettingsField, rawSettings, refinedSettingsField, refinedSettings);
                 else if (refinedSettingsField.FieldType.IsSettingsArrayType()) ResolveReferenceArray(rawSettingsField, rawSettings, refinedSettingsField, refinedSettings);
-                else throw new ApplicationException("Did not expect to get here");
+                else throw new ConfigurationException("Did not expect to get here");
             }
         }
 
@@ -35,8 +35,8 @@ namespace Eco
                 object settings = GetSettings(id);
                 if (!refinedSettingsField.FieldType.IsAssignableFrom(settings.GetType()))
                 {
-                    throw new ApplicationException(String.Format("Could not assign object with ID='{0}' of type '{1}' to the '{2}' field of type '{3}'",
-                        id, settings.GetType().Name, refinedSettingsField.Name, refinedSettingsField.FieldType.Name));
+                    throw new ConfigurationException("Could not assign object with ID='{0}' of type '{1}' to the '{2}' field of type '{3}'",
+                        id, settings.GetType().Name, refinedSettingsField.Name, refinedSettingsField.FieldType.Name);
                 }
                 refinedSettingsField.SetValue(refinedSettings, settings);
             }
@@ -56,8 +56,8 @@ namespace Eco
                     object settings = GetSettings(ids[i]);
                     if (!elementType.IsAssignableFrom(settings.GetType()))
                     {
-                        throw new ApplicationException(String.Format("Could not assign object with ID='{0}' of type '{1}' to an element of the array '{2}' of type '{3}'",
-                            ids[i], settings.GetType().Name, refinedSettingsField.Name, elementType.Name));
+                        throw new ConfigurationException("Could not assign object with ID='{0}' of type '{1}' to an element of the array '{2}' of type '{3}'",
+                            ids[i], settings.GetType().Name, refinedSettingsField.Name, elementType.Name);
                     }
                     settingsArray.SetValue(settings, i);
                 }
@@ -68,7 +68,7 @@ namespace Eco
         object GetSettings(string id)
         {
             object settings;
-            if (!_settingsById.TryGetValue(id, out settings)) throw new ApplicationException(String.Format("Missing configuration ID: {0}", id));
+            if (!_settingsById.TryGetValue(id, out settings)) throw new ConfigurationException("Missing configuration ID: {0}", id);
             return settings;
         }
 

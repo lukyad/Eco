@@ -71,7 +71,7 @@ namespace Eco
 
 		static void ThrowMissingMethodException(Type methodContainer, string methodSignature)
 		{
-			throw new ApplicationException(String.Format("{0} type doesn't have required method: {1}", methodContainer.Name, methodSignature));
+			throw new ConfigurationException("{0} type doesn't have required method: {1}", methodContainer.Name, methodSignature);
 		}
 	}
 }

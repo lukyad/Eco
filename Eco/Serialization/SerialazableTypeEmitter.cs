@@ -62,7 +62,7 @@ namespace Eco.Serialization
 				.ToArray();
 			CompilerParameters p = new CompilerParameters(referencedAssemblies);
 			CompilerResults results = new CSharpCodeProvider().CompileAssemblyFromSource(p, compilationUnit);
-			if (results.Errors.Count > 0) throw new ApplicationException(String.Format("Could not emit xml serialization classes for the '{0}' settings type", rootSettingsType.Name));
+			if (results.Errors.Count > 0) throw new ConfigurationException("Could not emit xml serialization classes for the '{0}' settings type", rootSettingsType.Name);
 			return results.CompiledAssembly.GetTypes().First(t => t.Name == rootSettingsType.Name);
 		}
 

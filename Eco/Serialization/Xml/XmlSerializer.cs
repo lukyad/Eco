@@ -50,24 +50,24 @@ namespace Eco.Serialization.Xml
 
 		static void serializer_UnknownAttribute(object sender, XmlAttributeEventArgs e)
 		{
-			throw new SerializationException(String.Format(
+			throw new ConfigurationException(
 				"Unknown xml attribute :'{0}' line '{1}', position '{2}'. Expected elements - '{3}'.",
 				e.Attr.Name,
 				e.LineNumber,
 				e.LinePosition,
 				e.ExpectedAttributes
-			));
+			);
 		}
 
 		static void serializer_UnknownElement(object sender, XmlElementEventArgs e)
 		{
-			throw new SerializationException(String.Format(
+			throw new ConfigurationException(
 				"Unknown xml element :'{0}' line '{1}', position '{2}'. Expected elements - '{3}'.",
 				e.Element.Name,
 				e.LineNumber,
 				e.LinePosition,
 				e.ExpectedElements
-			));
+			);
 		}
 	}
 }

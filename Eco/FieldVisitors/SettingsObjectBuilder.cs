@@ -84,7 +84,7 @@ namespace Eco
 				MethodInfo tryParseMethod = GetTryParseMethod(targetType);
 				var args = new object[] { sourceStr, Activator.CreateInstance(targetType) };
 				bool parsed = (bool)tryParseMethod.Invoke(null, args);
-				if (!parsed) throw new ApplicationException(String.Format("Failed to parse '{0}' from '{1}'", targetType.Name, sourceStr));
+				if (!parsed) throw new ConfigurationException("Failed to parse '{0}' from '{1}'", targetType.Name, sourceStr);
 				return args[1];
 			}
 		}
@@ -103,10 +103,10 @@ namespace Eco
 			if (!_typeMappings.TryGetValue(sourceType, out targetType))
 			{
 				targetType = targetAssembly.GetTypes().FirstOrDefault(t => t.Name == sourceType.Name);
-				if (targetType == null) throw new ApplicationException(String.Format("Could not find corresponding target type for '{0}'", sourceType.Name));
+				if (targetType == null) throw new ConfigurationException("Could not find corresponding target type for '{0}'", sourceType.Name);
 				_typeMappings.Add(sourceType, targetType);
-            }
+			}
 			return targetType;
 		}
-    }
+	}
 }
