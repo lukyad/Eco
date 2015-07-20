@@ -8,8 +8,8 @@ using Eco.Extensions;
 
 namespace Eco
 {
-    class SettingsObjectBuilder : IFieldVisitor
-    {
+	class SettingsObjectBuilder : IFieldVisitor
+	{
 		readonly Dictionary<Type, Type> _typeMappings = new Dictionary<Type, Type>();
 
 		public void Visit(string fieldPath, FieldInfo sourceField, object sourceSettings, FieldInfo targetField, object targetSettings)
@@ -19,29 +19,11 @@ namespace Eco
 			object targetValue;
 			if (sourceField.FieldType.IsSettingsType())
 			{
-				object sourceObject = sourceField.GetValue(sourceSettings);
-				if (sourceObject != null)
-				{
-					Type sourceObjectType = sourceObject.GetType();
-					Type targetObjectType = GetTargetType(sourceObjectType, targetField.FieldType.Assembly);
-					targetValue = Activator.CreateInstance(targetObjectType);
-				}
-				else
-					targetValue = null;
-            }
+				targetValue = this.CreateSettingsObject(sourceField, sourceSettings, targetField);
+			}
 			else if (sourceField.FieldType.IsSettingsArrayType())
 			{
-				Array sourceArray = (Array)sourceField.GetValue(sourceSettings);
-				int sourceArrayLength = sourceArray.Length;
-				Array targetArray = Array.CreateInstance(targetField.FieldType.GetElementType(), sourceArrayLength);
-				for (int i = 0; i < targetArray.Length; i++)
-				{
-					Type sourceElementType = sourceArray.GetValue(i).GetType();
-					Type targetElementType = GetTargetType(sourceElementType, targetField.FieldType.Assembly);
-					targetArray.SetValue(Activator.CreateInstance(targetElementType), i);
-				}
-				targetValue = targetArray;
-
+				targetValue = this.CreateSettingsArray(sourceField, sourceSettings, targetField);
 			}
 			else if (sourceField.FieldType != typeof(string) && targetField.FieldType == typeof(string))
 			{
@@ -57,11 +39,41 @@ namespace Eco
 			}
 
 			targetField.SetValue(targetSettings, targetValue);
-        }
+		}
+
+		object CreateSettingsObject(FieldInfo sourceField, object sourceSettings, FieldInfo targetField)
+		{
+			object sourceObject = sourceField.GetValue(sourceSettings);
+			if (sourceObject == null) return null;
+
+			Type sourceObjectType = sourceObject.GetType();
+			Type targetObjectType = GetTargetType(sourceObjectType, targetField.FieldType.Assembly);
+			return Activator.CreateInstance(targetObjectType);
+		}
+
+		object CreateSettingsArray(FieldInfo sourceField, object sourceSettings, FieldInfo targetField)
+		{
+			Array sourceArray = (Array)sourceField.GetValue(sourceSettings);
+			if (sourceArray == null) return null;
+
+			int sourceArrayLength = sourceArray.Length;
+			Array targetArray = Array.CreateInstance(targetField.FieldType.GetElementType(), sourceArrayLength);
+			for (int i = 0; i < targetArray.Length; i++)
+			{
+				Type sourceElementType = sourceArray.GetValue(i).GetType();
+				Type targetElementType = GetTargetType(sourceElementType, targetField.FieldType.Assembly);
+				targetArray.SetValue(Activator.CreateInstance(targetElementType), i);
+			}
+			return targetArray;
+		}
+
 
 		static string ToString(FieldInfo sourceField, object container)
 		{
 			object value = sourceField.GetValue(container);
+			if (value != null && Nullable.GetUnderlyingType(sourceField.FieldType) != null)
+				value = sourceField.FieldType.GetProperty("Value").GetValue(value);
+
 			ConverterAttribute converter = sourceField.GetCustomAttribute<ConverterAttribute>();
 			if (converter != null)
 				return converter.ToString(value);
