@@ -11,11 +11,6 @@ using Eco.Extensions;
 
 namespace Eco.Serialization.Xml
 {
-	public class simple
-	{
-		[XmlAttribute]
-		public int age;
-	}
 	public static class XmlSchemaExporter
 	{
 		const decimal MaxOccursUnbounded = 79228162514264337593543950335M;
