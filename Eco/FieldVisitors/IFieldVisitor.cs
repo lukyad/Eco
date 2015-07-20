@@ -7,8 +7,8 @@ using System.Reflection;
 
 namespace Eco
 {
-    interface IFieldVisitor
+    public interface IFieldVisitor
     {
-        void Visit(FieldInfo sourceField, object sourceSettings, FieldInfo targetField, object targetSettings);
+        void Visit(string fieldPath, FieldInfo sourceField, object sourceSettings, FieldInfo targetField, object targetSettings);
     }
 }

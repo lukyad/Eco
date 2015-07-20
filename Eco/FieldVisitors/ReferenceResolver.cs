@@ -17,7 +17,7 @@ namespace Eco
             _settingsById = settingsById;
         }
 
-        public void Visit(FieldInfo rawSettingsField, object rawSettings, FieldInfo refinedSettingsField, object refinedSettings)
+        public void Visit(string fieldPath, FieldInfo rawSettingsField, object rawSettings, FieldInfo refinedSettingsField, object refinedSettings)
         {
             if (refinedSettingsField.IsDefined<RefAttribute>())
             {

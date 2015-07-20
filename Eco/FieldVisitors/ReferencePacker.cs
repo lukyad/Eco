@@ -10,24 +10,24 @@ namespace Eco
 {
 	class ReferencePacker : IFieldVisitor
 	{
-		public void Visit(FieldInfo refinedSettingsField, object refinedSettings, FieldInfo rawSettingsField, object rawSettings)
+		public void Visit(string fieldPath, FieldInfo refinedSettingsField, object refinedSettings, FieldInfo rawSettingsField, object rawSettings)
 		{
 			if (refinedSettingsField.IsDefined<RefAttribute>())
 			{
-				if (refinedSettingsField.FieldType.IsSettingsType()) PackReference(refinedSettingsField, refinedSettings, rawSettingsField, rawSettings);
-				else if (refinedSettingsField.FieldType.IsSettingsArrayType()) PackReferenceArray(refinedSettingsField, refinedSettings, rawSettingsField, rawSettings);
-				else throw new ApplicationException("Did not expect to get here");
+				if (refinedSettingsField.FieldType.IsSettingsType()) PackReference(fieldPath, refinedSettingsField, refinedSettings, rawSettingsField, rawSettings);
+				else if (refinedSettingsField.FieldType.IsSettingsArrayType()) PackReferenceArray(fieldPath, refinedSettingsField, refinedSettings, rawSettingsField, rawSettings);
+				else throw new ConfigurationException("Did not expect to get here");
 			}
 		}
 
-		static void PackReference(FieldInfo refinedSettingsField, object refinedSettings, FieldInfo rawSettingsField, object rawSettings)
+		static void PackReference(string settingsPath, FieldInfo refinedSettingsField, object refinedSettings, FieldInfo rawSettingsField, object rawSettings)
 		{
 			object settings = refinedSettingsField.GetValue(refinedSettings);
 			if (settings == null) return;
-			rawSettingsField.SetValue(rawSettings, GetSettingsId(settings));
+			rawSettingsField.SetValue(rawSettings, GetSettingsId(settingsPath, settings));
 		}
 
-		static void PackReferenceArray(FieldInfo refinedSettingsField, object refinedSettings, FieldInfo rawSettingsField, object rawSettings)
+		static void PackReferenceArray(string settingsPath, FieldInfo refinedSettingsField, object refinedSettings, FieldInfo rawSettingsField, object rawSettings)
 		{
 			Array settingsArray = (Array)refinedSettingsField.GetValue(refinedSettings);
             if (settingsArray == null) return;
@@ -37,7 +37,7 @@ namespace Eco
 				var settings = settingsArray.GetValue(i);
 				if (settings != null)
 				{
-					string id = GetSettingsId(settings);
+					string id = GetSettingsId(settingsPath, settings);
 					referenceListBuilder.Append(id + Settings.IdSeparator);
                 }
             }
@@ -45,14 +45,14 @@ namespace Eco
 			rawSettingsField.SetValue(rawSettings, String.IsNullOrEmpty(referenceList) ? null : referenceList);
         }
 
-		static string GetSettingsId(object settings)
+		static string GetSettingsId(string settingsPath, object settings)
 		{
 			FieldInfo idField = settings.GetType().GetFields().SingleOrDefault(f => f.IsDefined<IdAttribute>());
 			if (idField == null)
-				throw new ApplicationException(String.Format("Expected an object with one of the fields marked with {0}, but got an instance of type {1}", typeof(IdAttribute).Name, settings.GetType().Name));
+				throw new ConfigurationException("Expected an object with one of the fields marked with {0}, but got an instance of type {1}", typeof(IdAttribute).Name, settings.GetType().Name);
 
 			string id = (string)idField.GetValue(settings);
-			if (id == null) throw new ApplicationException(String.Format("Detected null object ID"));
+			if (id == null) throw new ConfigurationException("Detected null object ID: path={0}", settingsPath);
 
 			return id;
         }

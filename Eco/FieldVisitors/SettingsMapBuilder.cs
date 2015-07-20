@@ -14,7 +14,7 @@ namespace Eco.FieldVisitors
 
 		public Dictionary<string, object> SettingsByIdMap { get { return _settingsById; } }
 
-		public void Visit(FieldInfo rawSettingsField, object rawSettings, FieldInfo refinedSettingsField, object refinedSettings)
+		public void Visit(string fieldPath, FieldInfo rawSettingsField, object rawSettings, FieldInfo refinedSettingsField, object refinedSettings)
 		{
 			if (rawSettingsField.IsDefined<IdAttribute>())
 			{

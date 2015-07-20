@@ -12,8 +12,8 @@ namespace Eco
     {
 		readonly Dictionary<Type, Type> _typeMappings = new Dictionary<Type, Type>();
 
-		public void Visit(FieldInfo sourceField, object sourceSettings, FieldInfo targetField, object targetSettings)
-        {
+		public void Visit(string fieldPath, FieldInfo sourceField, object sourceSettings, FieldInfo targetField, object targetSettings)
+		{
 			if (sourceField.IsDefined<RefAttribute>()) return;
 
 			object targetValue;
