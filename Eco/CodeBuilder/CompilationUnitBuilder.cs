@@ -11,10 +11,10 @@ namespace Eco
 		readonly FragmentBuilder _assemblyAttributesBuilder = new FragmentBuilder();
 		readonly BlockBuilder _compilationUnit = new BlockBuilder();
 
-		public CompilationUnitBuilder(string nameSpace)
+		public CompilationUnitBuilder(string unitNamespace)
         {
 			base.AddPart(_assemblyAttributesBuilder);
-			base.AddPart("namespace " + nameSpace);
+			base.AddPart("namespace " + unitNamespace);
 			base.AddPart(_compilationUnit);
         }
 
