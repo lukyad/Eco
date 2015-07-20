@@ -43,8 +43,13 @@
     <Compile Include="Attributes\ConverterAttribute.cs" />
     <Compile Include="Attributes\ChoiceAttribute.cs" />
     <Compile Include="Attributes\OptionalAttribute.cs" />
+    <Compile Include="Attributes\SealedAttribute.cs" />
     <Compile Include="ConfigurationException.cs" />
+    <Compile Include="Extensions\StringEnumerableExtensions.cs" />
+    <Compile Include="FieldVisitors\ConfigurationVariableExpander.cs" />
+    <Compile Include="FieldVisitors\EnvironmentVariableExpander.cs" />
     <Compile Include="FieldVisitors\ReferencePacker.cs" />
+    <Compile Include="FieldVisitors\RequiredFieldChecker.cs" />
     <Compile Include="FieldVisitors\SettingsMapBuilder.cs" />
     <Compile Include="Serialization\ISerializationAttributesGenerator.cs" />
     <Compile Include="Serialization\ISerializer.cs" />
@@ -73,6 +78,7 @@
     <Compile Include="Serialization\Xml\XmlSerializer.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="SettingsManager.cs" />
+    <Compile Include="SettingsPath.cs" />
     <Compile Include="Usage.cs" />
     <Compile Include="Wildcard.cs" />
     <Compile Include="Serialization\SerialazableTypeEmitter.cs" />
