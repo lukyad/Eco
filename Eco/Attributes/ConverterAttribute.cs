@@ -17,7 +17,7 @@ namespace Eco
 	///		public static object FromString(string format, string source);
 	/// 
 	/// Usage: 
-	/// Can be applied to a field of any type including string.
+	/// Can be applied to a field of any type apart from String.
 	/// 
 	/// Compatibility: 
 	/// Incompatible with the Id, Inline, ItemName, KnownTypes and Ref attributes and compatible with all others.
@@ -25,6 +25,15 @@ namespace Eco
 	[AttributeUsage(AttributeTargets.Field)]
 	public class ConverterAttribute : Attribute
 	{
+		static readonly HashSet<Type> _incompatibleAttributeTypes = new HashSet<Type>
+		{
+			typeof(IdAttribute),
+			typeof(InlineAttribute),
+			typeof(ItemNameAttribute),
+			typeof(KnownTypesAttribute),
+			typeof(RefAttribute)
+		};
+
 		public ConverterAttribute(Type converterType)
 			: this(converterType, null)
 		{
@@ -48,7 +57,16 @@ namespace Eco
 
 		public void ValidateContext(FieldInfo context)
 		{
-			// do nothing
+			if (context.FieldType == typeof(string))
+			{
+				throw new ConfigurationException(
+					"{0} cannot be applied to {1}.{2}. Expected field of a non-String type",
+					typeof(ChoiceAttribute).Name,
+					context.DeclaringType.Name,
+					context.Name
+				);
+			}
+			AttributeValidator.CheckAttributesCompatibility(context, _incompatibleAttributeTypes);
 		}
 
 		static Func<object, string> GetToStringMethod(Type converterType, string format)
