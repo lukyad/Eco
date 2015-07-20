@@ -12,7 +12,7 @@ using SystemXmlSerializer = System.Xml.Serialization.XmlSerializer;
 
 namespace Eco.Serialization.Xml
 {
-	public class XmlSerializer : ISerializaer
+	public class XmlSerializer : ISerializer
 	{
 		public object Deserialize(Type rawSettingsType, Stream stream)
 		{
