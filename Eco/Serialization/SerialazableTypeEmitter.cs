@@ -11,117 +11,117 @@ using Eco.Extensions;
 
 namespace Eco.Serialization
 {
-	static class SerializableTypeEmitter
-	{
-		static Dictionary<Type, Type> _serializableTypeCache = new Dictionary<Type, Type>();
-		static Dictionary<Type, Type> _schemaTypeCache = new Dictionary<Type, Type>();
+    static class SerializableTypeEmitter
+    {
+        static Dictionary<Type, Type> _serializableTypeCache = new Dictionary<Type, Type>();
+        static Dictionary<Type, Type> _schemaTypeCache = new Dictionary<Type, Type>();
 
-		public static Type GetSerializableTypeFor<T>(ISerializationAttributesGenerator attributesGenerator, Usage defaultUsage)
-		{
-			lock (_serializableTypeCache)
-			{
-				Type serializableType;
-				if (!_serializableTypeCache.TryGetValue(typeof(T), out serializableType))
+        public static Type GetSerializableTypeFor<T>(ISerializationAttributesGenerator attributesGenerator, Usage defaultUsage)
+        {
+            lock (_serializableTypeCache)
+            {
+                Type serializableType;
+                if (!_serializableTypeCache.TryGetValue(typeof(T), out serializableType))
                 {
-					Func<FieldInfo, Type> GetSerializableFieldType = field =>
-					{
-						var sourceType = field.FieldType;
-						if (field.IsDefined(typeof(RefAttribute)) ||
-							field.IsDefined(typeof(ConverterAttribute)) ||
-							Nullable.GetUnderlyingType(sourceType).IsSimple())
-						{
-							return typeof(string);
-						}
-						else
-						{
-							return sourceType;
-						}
-					};
-					serializableType = Emit(typeof(T), attributesGenerator, GetSerializableFieldType, defaultUsage);
-					_serializableTypeCache.Add(typeof(T), serializableType);
+                    Func<FieldInfo, Type> GetSerializableFieldType = field =>
+                    {
+                        var sourceType = field.FieldType;
+                        if (field.IsDefined(typeof(RefAttribute)) ||
+                            field.IsDefined(typeof(ConverterAttribute)) ||
+                            Nullable.GetUnderlyingType(sourceType).IsSimple())
+                        {
+                            return typeof(string);
+                        }
+                        else
+                        {
+                            return sourceType;
+                        }
+                    };
+                    serializableType = Emit(typeof(T), attributesGenerator, GetSerializableFieldType, defaultUsage);
+                    _serializableTypeCache.Add(typeof(T), serializableType);
                 }
-				return serializableType;
-			}
-		}
+                return serializableType;
+            }
+        }
 
-		public static Type GetSchemaTypeFor<T>(ISerializationAttributesGenerator attributesGenerator, Usage defaultUsage)
-		{
-			lock (_serializableTypeCache)
-			{
-				Type schemaType;
-				if (!_schemaTypeCache.TryGetValue(typeof(T), out schemaType))
-				{
-					Func<FieldInfo, Type> GetSerializableFieldType = field =>
-					{
-						var sourceType = field.FieldType;
-						if (field.IsDefined(typeof(RefAttribute)) || field.IsDefined(typeof(ConverterAttribute)))
-						{
-							return typeof(string);
-						}
-						else if (Nullable.GetUnderlyingType(sourceType).IsSimple())
-						{
-							return Nullable.GetUnderlyingType(sourceType);
-						}
-						else
-						{
-							return sourceType;
-						}
-					};
-					schemaType = Emit(typeof(T), attributesGenerator, GetSerializableFieldType, defaultUsage);
-					_schemaTypeCache.Add(typeof(T), schemaType);
-				}
-				return schemaType;
-			}
-		}
+        public static Type GetSchemaTypeFor<T>(ISerializationAttributesGenerator attributesGenerator, Usage defaultUsage)
+        {
+            lock (_serializableTypeCache)
+            {
+                Type schemaType;
+                if (!_schemaTypeCache.TryGetValue(typeof(T), out schemaType))
+                {
+                    Func<FieldInfo, Type> GetSerializableFieldType = field =>
+                    {
+                        var sourceType = field.FieldType;
+                        if (field.IsDefined(typeof(RefAttribute)) || field.IsDefined(typeof(ConverterAttribute)))
+                        {
+                            return typeof(string);
+                        }
+                        else if (Nullable.GetUnderlyingType(sourceType).IsSimple())
+                        {
+                            return Nullable.GetUnderlyingType(sourceType);
+                        }
+                        else
+                        {
+                            return sourceType;
+                        }
+                    };
+                    schemaType = Emit(typeof(T), attributesGenerator, GetSerializableFieldType, defaultUsage);
+                    _schemaTypeCache.Add(typeof(T), schemaType);
+                }
+                return schemaType;
+            }
+        }
 
-		static Type Emit(Type rootSettingsType, ISerializationAttributesGenerator attributesGenerator, Func<FieldInfo, Type> GetSerializableFieldType, Usage defaultUsage)
-		{
-			string compilationUnit = GenerateClassDefinitionRecursevely(rootSettingsType, attributesGenerator, GetSerializableFieldType, defaultUsage);
-			string[] referencedAssemblies = AppDomain.CurrentDomain.GetAssemblies()
-				.Where(a => !a.IsDynamic)
-				.Select(a => a.Location)
-				.ToArray();
-			CompilerParameters p = new CompilerParameters(referencedAssemblies);
-			CompilerResults results = new CSharpCodeProvider().CompileAssemblyFromSource(p, compilationUnit);
-			if (results.Errors.Count > 0) throw new ConfigurationException("Could not emit xml serialization classes for the '{0}' settings type", rootSettingsType.Name);
-			return results.CompiledAssembly.GetTypes().First(t => t.Name == rootSettingsType.Name);
-		}
+        static Type Emit(Type rootSettingsType, ISerializationAttributesGenerator attributesGenerator, Func<FieldInfo, Type> GetSerializableFieldType, Usage defaultUsage)
+        {
+            string compilationUnit = GenerateClassDefinitionRecursevely(rootSettingsType, attributesGenerator, GetSerializableFieldType, defaultUsage);
+            string[] referencedAssemblies = AppDomain.CurrentDomain.GetAssemblies()
+                .Where(a => !a.IsDynamic)
+                .Select(a => a.Location)
+                .ToArray();
+            CompilerParameters p = new CompilerParameters(referencedAssemblies);
+            CompilerResults results = new CSharpCodeProvider().CompileAssemblyFromSource(p, compilationUnit);
+            if (results.Errors.Count > 0) throw new ConfigurationException("Could not emit xml serialization classes for the '{0}' settings type", rootSettingsType.Name);
+            return results.CompiledAssembly.GetTypes().First(t => t.Name == rootSettingsType.Name);
+        }
 
-		static string GenerateClassDefinitionRecursevely(Type root, ISerializationAttributesGenerator attributesGenerator, Func<FieldInfo, Type> GetSerializableFieldType, Usage defaultUsage)
-		{
-			var autogenNamespace = root.Namespace + ".AutoGenerated";
-			var codeBuilder = new CompilationUnitBuilder(autogenNamespace);
-			codeBuilder.AddAssemblyAttribute(typeof(SettingsAssemblyAttribute).FullName);
-			foreach (var type in root.GetReferencedSettingsTypesRecursive())
-			{
-				string baseTypeName = type.BaseType.IsSettingsType() ? type.BaseType.GetFriendlyName(autogenNamespace) : null;
-				var classBuilder = codeBuilder.AddClass(type.Name, baseTypeName);
-				classBuilder.AddAttributes(attributesGenerator.GetAttributesTextFor(type, isRoot: type == root));
-				foreach (var field in type.GetFields())
-				{
-					ValidateFieldAttributes(field);
-					var serializableFieldType = GetSerializableFieldType(field);
-					var fieldBuilder = classBuilder.AddField(GetFullTypeName(autogenNamespace, serializableFieldType), field.Name);
-					fieldBuilder.AddAttributes(attributesGenerator.GetAttributesTextFor(autogenNamespace, field, defaultUsage));
-				}
-			}
-			return codeBuilder.ToString();
-		}
+        static string GenerateClassDefinitionRecursevely(Type root, ISerializationAttributesGenerator attributesGenerator, Func<FieldInfo, Type> GetSerializableFieldType, Usage defaultUsage)
+        {
+            var autogenNamespace = root.Namespace + ".AutoGenerated";
+            var codeBuilder = new CompilationUnitBuilder(autogenNamespace);
+            codeBuilder.AddAssemblyAttribute(typeof(SettingsAssemblyAttribute).FullName);
+            foreach (var type in root.GetReferencedSettingsTypesRecursive())
+            {
+                string baseTypeName = type.BaseType.IsSettingsType() ? type.BaseType.GetFriendlyName(autogenNamespace) : null;
+                var classBuilder = codeBuilder.AddClass(type.Name, baseTypeName);
+                classBuilder.AddAttributes(attributesGenerator.GetAttributesTextFor(type, isRoot: type == root));
+                foreach (var field in type.GetFields())
+                {
+                    ValidateFieldAttributes(field);
+                    var serializableFieldType = GetSerializableFieldType(field);
+                    var fieldBuilder = classBuilder.AddField(GetFullTypeName(autogenNamespace, serializableFieldType), field.Name);
+                    fieldBuilder.AddAttributes(attributesGenerator.GetAttributesTextFor(autogenNamespace, field, defaultUsage));
+                }
+            }
+            return codeBuilder.ToString();
+        }
 
-		static string GetFullTypeName(string autogenNamespace, Type type)
-		{
-			if (type.IsSettingsType() || type.IsSettingsArrayType()) return type.GetFriendlyName(autogenNamespace);
-			else return type.GetFriendlyName(type.Namespace);
-		}
+        static string GetFullTypeName(string autogenNamespace, Type type)
+        {
+            if (type.IsSettingsType() || type.IsSettingsArrayType()) return type.GetFriendlyName(autogenNamespace);
+            else return type.GetFriendlyName(type.Namespace);
+        }
 
-		static void ValidateFieldAttributes(FieldInfo field)
-		{
-			var ecoAttributes = field.GetCustomAttributes().Where(a => a.IsEcoAttribute());
+        static void ValidateFieldAttributes(FieldInfo field)
+        {
+            var ecoAttributes = field.GetCustomAttributes().Where(a => a.IsEcoAttribute());
             foreach (var a in ecoAttributes)
-			{
-				var validationMethod = a.GetType().GetMethod("ValidateContext");
-				validationMethod.Invoke(a, new [] { field });
-			}
-		}
-	}
+            {
+                var validationMethod = a.GetType().GetMethod("ValidateContext");
+                validationMethod.Invoke(a, new [] { field });
+            }
+        }
+    }
 }

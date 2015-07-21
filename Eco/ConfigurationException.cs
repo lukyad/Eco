@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 
 namespace Eco
 {
-	public class ConfigurationException : ApplicationException
-	{
-		public ConfigurationException(string format, params object[] args) 
-			: base(String.Format(format, args))
-		{
-		}
-	}
+    public class ConfigurationException : ApplicationException
+    {
+        public ConfigurationException(string format, params object[] args) 
+            : base(String.Format(format, args))
+        {
+        }
+    }
 }

@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace Eco
 {
-	public enum Usage
-	{
-		Required,
-		Optional
-	}
+    public enum Usage
+    {
+        Required,
+        Optional
+    }
 }

@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 
 namespace Eco.FieldVisitors
 {
-	class ConfigurationVariableExpander : IFieldVisitor
-	{
-		public void Visit(string fieldPath, FieldInfo sourceField, object sourceSettings, FieldInfo targetField, object targetSettings)
-		{
-			throw new NotImplementedException();
-		}
-	}
+    class ConfigurationVariableExpander : IFieldVisitor
+    {
+        public void Visit(string fieldPath, FieldInfo sourceField, object sourceSettings, FieldInfo targetField, object targetSettings)
+        {
+            throw new NotImplementedException();
+        }
+    }
 }

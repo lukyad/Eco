@@ -8,12 +8,12 @@ namespace Eco
 {
     class FragmentBuilder
     {
-		readonly List<string> _attributes = new List<string>();
+        readonly List<string> _attributes = new List<string>();
         readonly List<object> _parts = new List<object>();
 
         public void AddAttributes(IEnumerable<string> attributes)
         {
-			_attributes.AddRange(attributes);
+            _attributes.AddRange(attributes);
         }
 
         public void AddPart(object part)
@@ -29,13 +29,13 @@ namespace Eco
 
         public override string ToString()
         {
-			var fragment = new StringBuilder();
+            var fragment = new StringBuilder();
 
-			foreach (var attribute in _attributes)
-				fragment.AppendLine(attribute);
+            foreach (var attribute in _attributes)
+                fragment.AppendLine(attribute);
 
-			foreach (var part in _parts)
-				fragment.AppendLine(part.ToString());
+            foreach (var part in _parts)
+                fragment.AppendLine(part.ToString());
 
             return fragment.ToString();
         }
