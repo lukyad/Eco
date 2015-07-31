@@ -189,7 +189,7 @@ namespace Eco.Serialization.Xml
 
         static void AddFieldAttributes(FieldInfo field, Dictionary<string, SchemaNodeAttributes> map)
         {
-            var key = GetFieldKey(field.ReflectedType.Name, field.GetOverridenName());
+            var key = GetFieldKey(field.ReflectedType.Name, field.Name);
             map.Add(key, GetNodeAttributes(field));
         }
 

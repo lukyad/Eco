@@ -15,34 +15,34 @@ namespace Eco
         public static SettingsManager DefaultManager = new SettingsManager(new XmlSerializer(), new XmlAttributesGenerator());
 
 
-        public static T Load<T>() where T : new()
+        public static T Load<T>()
         {
             return DefaultManager.Load<T>();
         }
 
-        public static T Load<T>(string fileName) where T : new()
+        public static T Load<T>(string fileName)
         {
             return DefaultManager.Load<T>(fileName);
         }
 
-        public static void Save<T>(T settings)
+        public static void Save(object settings)
         {
             DefaultManager.Save(settings);
         }
 
-        public static void Save<T>(T settings, string fileName)
+        public static void Save(object settings, string fileName)
         {
             DefaultManager.Save(settings, fileName);
         }
 
-        public static T Read<T>(Stream stream) where T : new()
+        public static T Read<T>(Stream stream)
         {
             return DefaultManager.Read<T>(stream);
         }
 
-        public static void Write<T>(T settings, Stream stream)
+        public static void Write(object settings, Stream stream)
         {
-            DefaultManager.Write<T>(settings, stream);
+            DefaultManager.Write(settings, stream);
         }
     }
 }

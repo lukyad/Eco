@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
+using System.Reflection;
 using Eco.Extensions;
 using Eco.Serialization;
 using Eco.Serialization.Xml;
@@ -37,96 +38,120 @@ namespace Eco
 
         public static string GetDefaultSettingsFileName<T>()
         {
-            return typeof(T).Name + ".config";
+            return GetDefaultSettingsFileName(typeof(T));
         }
 
-        public T Load<T>(bool skipPostProcessing = false) where T : new()
+        public static string GetDefaultSettingsFileName(Type settingsType)
         {
-            return this.Load<T>(GetDefaultSettingsFileName<T>(), skipPostProcessing);
+            return settingsType.Name + ".config";
         }
 
-        public T Load<T>(string fileName, bool skipPostProcessing = false) where T : new()
+        public T Load<T>()
+        {
+            return this.Load<T>(GetDefaultSettingsFileName<T>());
+        }
+
+        public T Load<T>(string fileName)
         {
             using (var fileStream = File.Open(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-                return this.Read<T>(fileStream, skipPostProcessing);
+                return this.Read<T>(fileStream);
         }
 
-        public void Save<T>(T settings)
+        public void Save(object settings)
         {
-            this.Save(GetDefaultSettingsFileName<T>());
+            if (settings == null) throw new ArgumentNullException(nameof(settings));
+            this.Save(GetDefaultSettingsFileName(settings.GetType()));
         }
 
-        public void Save<T>(T settings, string fileName) 
+        public void Save(object settings, string fileName) 
         {
             using (var fileStream = File.Open(fileName, FileMode.Open, FileAccess.Write, FileShare.ReadWrite))
                 this.Write(settings, fileStream);
         }
 
-        public T Read<T>(Stream stream, bool skipPostProcessing = false) where T : new()
+        public T Read<T>(Stream stream, bool skipPostProcessing = false)
         {
-            Type rawSettingsType = SerializableTypeEmitter.GetSerializableTypeFor<T>(this.SerializationAttributesGenerator, this.DefaultUsage);
-            object rawSettings = this.Serializer.Deserialize(rawSettingsType, stream);
-            T refinedSettings = new T();
-            VisitAllFieldsRecursive(sourceSettings: rawSettings, targetSettings: refinedSettings, visitor: new SettingsObjectBuilder());
-            var settingsMapBuilder = new SettingsMapBuilder();
-            VisitAllFieldsRecursive(sourceSettings: rawSettings, targetSettings: refinedSettings, visitor: settingsMapBuilder);
-            VisitAllFieldsRecursive(sourceSettings: rawSettings, targetSettings: refinedSettings, visitor: new ReferenceResolver(settingsMapBuilder.SettingsByIdMap));
-            VisitAllFieldsRecursive(sourceSettings: rawSettings, targetSettings: refinedSettings, visitor: new RequiredFieldChecker());
-            if (!skipPostProcessing)
-            {
-                VisitAllFieldsRecursive(sourceSettings: rawSettings, targetSettings: refinedSettings, visitor: new EnvironmentVariableExpander());
-                foreach (var customVisitor in _customLoadVisitors)
-                    VisitAllFieldsRecursive(sourceSettings: rawSettings, targetSettings: refinedSettings, visitor: customVisitor);
-            }
-
-            return refinedSettings;
+            return (T)Read(typeof(T), stream, skipPostProcessing);
         }
 
-        public void Write<T>(T settings, Stream stream)
+        public object Read(Type settingsType, Stream stream, bool skipPostProcessing = false)
         {
-            Type rawSettingsType = SerializableTypeEmitter.GetSerializableTypeFor<T>(this.SerializationAttributesGenerator, this.DefaultUsage);
-            object rawSettings = Activator.CreateInstance(rawSettingsType);
-            VisitAllFieldsRecursive(sourceSettings: settings, targetSettings: rawSettings, visitor: new SettingsObjectBuilder());
-            VisitAllFieldsRecursive(sourceSettings: settings, targetSettings: rawSettings, visitor: new ReferencePacker());
-            VisitAllFieldsRecursive(sourceSettings: settings, targetSettings: rawSettings, visitor: new RequiredFieldChecker());
-            foreach (var customVisitor in _customSaveVisitors)
-                VisitAllFieldsRecursive(sourceSettings: settings, targetSettings: rawSettings, visitor: new RequiredFieldChecker());
+            Type rawSettingsType = SerializableTypeEmitter.GetRawTypeFor(settingsType, this.SerializationAttributesGenerator, this.DefaultUsage);
+            object rawSettings = this.Serializer.Deserialize(rawSettingsType, stream);
+            return CreateRefinedSettings(settingsType, rawSettings, skipPostProcessing, _customLoadVisitors);
+        }
 
+        public void Write(object settings, Stream stream)
+        {
+            if (settings == null) throw new ArgumentNullException(nameof(settings));
+            Type rawSettingsType = SerializableTypeEmitter.GetRawTypeFor(settings.GetType(), this.SerializationAttributesGenerator, this.DefaultUsage);
+            object rawSettings = CreateRawSettings(rawSettingsType, settings, _customSaveVisitors);
             this.Serializer.Serialize(rawSettings, stream);
         }
 
-        static void VisitAllFieldsRecursive(object sourceSettings, object targetSettings, IFieldVisitor visitor)
+        static object CreateRefinedSettings(Type refinedSettingsType, object rawSettings, bool skipPostProcessing, List<IFieldVisitor> customVisitors)
         {
-            VisitAllFieldsRecursive(sourceSettings.GetType().Name, sourceSettings, targetSettings, visitor, new HashSet<object>());
+            object refinedSettings = Activator.CreateInstance(refinedSettingsType);
+            VisitAllFieldsRecursive(refinedSettings, rawSettings, new RefinedSettingsBuilder());
+           if (!skipPostProcessing)
+            {
+                var settingsMapBuilder = new SettingsMapBuilder();
+                VisitAllFieldsRecursive(refinedSettings, rawSettings, settingsMapBuilder);
+                VisitAllFieldsRecursive(refinedSettings, rawSettings, new ReferenceResolver(settingsMapBuilder.SettingsById));
+                VisitAllFieldsRecursive(refinedSettings, rawSettings, new RequiredFieldChecker());
+                VisitAllFieldsRecursive(refinedSettings, rawSettings, new EnvironmentVariableExpander());
+                foreach (var customVisitor in customVisitors)
+                    VisitAllFieldsRecursive(refinedSettings, rawSettings, customVisitor);
+            }
+            return refinedSettings;
         }
 
-        static void VisitAllFieldsRecursive(string settingsPath, object sourceSettings, object targetSettings, IFieldVisitor visitor, HashSet<object> visitedSettings)
+        static object CreateRawSettings(Type rawSettingsType, object refinedSettings, List<IFieldVisitor> customVisitors)
         {
-            if (visitedSettings.Contains(sourceSettings)) return;
-            visitedSettings.Add(sourceSettings);
+            object rawSettings = Activator.CreateInstance(rawSettingsType);
+            VisitAllFieldsRecursive(refinedSettings, rawSettings, new RawSettingsBuilder());
+            VisitAllFieldsRecursive(refinedSettings, rawSettings, new ReferencePacker());
+            VisitAllFieldsRecursive(refinedSettings, rawSettings, new RequiredFieldChecker());
+            foreach (var customVisitor in customVisitors)
+                VisitAllFieldsRecursive(refinedSettings, rawSettings, customVisitor);
+            return rawSettings;
+        }
 
-            foreach (var sourceSettingsField in sourceSettings.GetType().GetFields())
+        static void VisitAllFieldsRecursive(object refinedSettings, object rawSettings, IFieldVisitor visitor)
+        {
+            VisitAllFieldsRecursive(refinedSettings.GetType().Name, refinedSettings, rawSettings, visitor, new HashSet<object>());
+        }
+
+        static void VisitAllFieldsRecursive(string settingsPath, object refinedSettings, object rawSettings, IFieldVisitor visitor, HashSet<object> visitedSettings)
+        {
+            if (visitedSettings.Contains(refinedSettings)) return;
+            visitedSettings.Add(refinedSettings);
+
+            foreach (var refinedSettingsField in refinedSettings.GetType().GetFields())
             {
-                var targetSettingsField = targetSettings.GetType().GetField(sourceSettingsField.Name);
-                string currentPath = SettingsPath.Combine(settingsPath, sourceSettingsField.Name);
-                visitor.Visit(currentPath, sourceSettingsField, sourceSettings, targetSettingsField, targetSettings);
+                var rawSettingsField = rawSettings.GetType().GetField(refinedSettingsField.Name);
+                string currentPath = SettingsPath.Combine(settingsPath, refinedSettingsField.Name);
+                visitor.Visit(currentPath, refinedSettingsField, refinedSettings, rawSettingsField, rawSettings);
 
-                object sourceSettingsValue = sourceSettingsField.GetValue(sourceSettings);
-                object targetSettingsValue = targetSettingsField.GetValue(targetSettings);
-                if (sourceSettingsValue != null && targetSettingsValue != null && 
-                    !sourceSettingsField.IsDefined<RefAttribute>() && !targetSettingsField.IsDefined<RefAttribute>())
+                object refinedSettingsValue = refinedSettingsField.GetValue(refinedSettings);
+                object rawSettingsValue = refinedSettingsField.IsDefined<FieldMutatorAttribute>() ?
+                    refinedSettingsField.GetCustomAttribute<FieldMutatorAttribute>().GetRawSettingsFieldValue(rawSettingsField, rawSettings) :
+                    rawSettingsField.GetValue(rawSettings);
+
+                if (refinedSettingsValue != null && rawSettingsValue != null &&
+                    !refinedSettingsField.IsDefined<RefAttribute>() && !rawSettingsField.IsDefined<RefAttribute>())
                 {
-                    if (sourceSettingsValue.GetType().IsSettingsType())
+                    if (refinedSettingsValue.GetType().IsSettingsType())
                     {
-                        VisitAllFieldsRecursive(currentPath, sourceSettingsValue, targetSettingsValue, visitor, visitedSettings);
+                        VisitAllFieldsRecursive(currentPath, refinedSettingsValue, rawSettingsValue, visitor, visitedSettings);
                     }
-                    else if (sourceSettingsValue.GetType().IsSettingsArrayType())
+                    else if (refinedSettingsValue.GetType().IsSettingsArrayType())
                     {
-                        var sourceSettingsArray = (Array)sourceSettingsValue;
-                        var targetSettingsArray = (Array)targetSettingsValue;
+                        var sourceSettingsArray = (Array)refinedSettingsValue;
+                        var targetSettingsArray = (Array)rawSettingsValue;
                         for (int i = 0; i < sourceSettingsArray.Length; i++)
                         {
-                            currentPath = SettingsPath.Combine(settingsPath, sourceSettingsField.Name, i);
+                            currentPath = SettingsPath.Combine(settingsPath, refinedSettingsField.Name, i);
                             VisitAllFieldsRecursive(currentPath, sourceSettingsArray.GetValue(i), targetSettingsArray.GetValue(i), visitor, visitedSettings);
                         }
                     }

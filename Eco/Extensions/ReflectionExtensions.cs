@@ -32,6 +32,14 @@ namespace Eco.Extensions
             return t.GetElementType().IsSettingsType();
         }
 
+        public static bool IsPolimorphic(this FieldInfo field)
+        {
+            var fieldType = field.FieldType;
+            return
+                fieldType.IsSettingsType() && (fieldType.IsAbstract || field.IsDefined<PolimorphicAttribute>()) ||
+                fieldType.IsSettingsArrayType() && (fieldType.GetElementType().IsAbstract || field.IsDefined<PolimorphicAttribute>());
+        }
+
         public static bool IsEcoAttribute(this Attribute a)
         {
             return a.GetType().Namespace == typeof(Eco.SettingsAssemblyAttribute).Namespace;
@@ -53,40 +61,29 @@ namespace Eco.Extensions
             return ownFields;
         }
 
-        public static string GetOverridenName(this FieldInfo field)
+        public static string GetNonGenericName(this Type type)
         {
-            //var atributeAttr = field.GetCustomAttribute<XmlAttributeAttribute>(false);
-            //var elementAttr = field.GetCustomAttribute<XmlElementAttribute>(false);
-            //var arrayAttr = field.GetCustomAttribute<XmlArrayAttribute>(false);
-            //if (atributeAttr != null && !String.IsNullOrEmpty(atributeAttr.AttributeName)) return atributeAttr.AttributeName;
-            //else if (elementAttr != null && !String.IsNullOrEmpty(elementAttr.ElementName)) return elementAttr.ElementName;
-            //else if (arrayAttr != null && !String.IsNullOrEmpty(arrayAttr.ElementName)) return arrayAttr.ElementName;
-            //else return field.Name;
-            return field.Name;
-        }
-
-        // Returns a friendly type name that can be understood by C# compiler
-        public static string GetFriendlyName(this Type type, string typeNamesapce)
-        {
-            string friendlyName = type.Name;
+            string nonGenericName = type.Name;
             if (type.IsGenericType)
             {
-                int iBacktick = friendlyName.IndexOf('`');
+                int iBacktick = nonGenericName.IndexOf('`');
                 if (iBacktick > 0)
                 {
-                    friendlyName = friendlyName.Remove(iBacktick);
+                    nonGenericName = nonGenericName.Remove(iBacktick);
                 }
-                friendlyName += "<";
+                nonGenericName += "__";
                 Type[] typeParameters = type.GetGenericArguments();
                 for (int i = 0; i < typeParameters.Length; ++i)
                 {
-                    string typeParamName = GetFriendlyName(typeParameters[i], typeNamesapce);
-                    friendlyName += (i == 0 ? typeParamName : "," + typeParamName);
+                    Type typeParam = typeParameters[i];
+                    string typeParamName = typeParam.IsSettingsType() || typeParam.IsSettingsArrayType() ?
+                        GetNonGenericName(typeParameters[i]) :
+                        typeParam.FullName;
+                    nonGenericName += i == 0 ? typeParamName : "__" + typeParamName.Replace('.', '_');
                 }
-                friendlyName += ">";
             }
 
-            return typeNamesapce + "." + friendlyName.Replace('+', '.');
+            return nonGenericName;
         }
 
         public static IEnumerable<Type> GetReferencedSettingsTypesRecursive(this Type root)
@@ -94,60 +91,55 @@ namespace Eco.Extensions
             return GetReferencedSettingsTypesRecursive(root, new HashSet<Type>());
         }
 
-        static IEnumerable<Type> GetReferencedSettingsTypesRecursive(Type root, HashSet<Type> visitedTypes)
+        static IEnumerable<Type> GetReferencedSettingsTypesRecursive(Type rootType, HashSet<Type> visitedTypes)
         {
-            if (root.IsSettingsType())
+            if (rootType != null && rootType.IsSettingsType() && !visitedTypes.Contains(rootType))
             {
-                yield return root;
-                visitedTypes.Add(root);
+                yield return rootType;
+                visitedTypes.Add(rootType);
 
-                foreach (var type in GetReferencedSettingsTypes(root))
+                foreach (var type in GetReferencedTypes(rootType))
                 {
-                    if (!visitedTypes.Contains(type))
-                    {
-                        foreach (var t in GetReferencedSettingsTypesRecursive(type, visitedTypes))
-                            yield return t;
-                    }
+                    Type settingsType = null;
+                    if (type.IsSettingsType())
+                        settingsType = type;
+                    else if (type.IsSettingsArrayType())
+                        settingsType = type.GetElementType();
+
+                    foreach (var t in GetReferencedSettingsTypesRecursive(settingsType, visitedTypes))
+                        yield return t;
+                }
+
+                foreach (var derivedType in rootType.GetDerivedTypes())
+                {
+                    foreach (var t in GetReferencedSettingsTypesRecursive(derivedType, visitedTypes))
+                        yield return t;
                 }
             }
         }
 
-        static IEnumerable<Type> GetReferencedSettingsTypes(Type type)
+        static IEnumerable<Type> GetReferencedTypes(Type type)
         {
-            if (type.BaseType.IsSettingsType())
-                yield return type.BaseType;
+            yield return type.BaseType;
 
             foreach (var field in type.GetOwnFields())
             {
-                Type settingsType = null;
-                if (field.FieldType.IsSettingsType())
-                    settingsType = field.FieldType;
-                else if (field.FieldType.IsSettingsArrayType())
-                    settingsType = field.FieldType.GetElementType();
-
-                if (settingsType != null)
-                {
-                    yield return settingsType;
-                    foreach (var t in settingsType.GetDerivedTypes())
-                        yield return t;
-                }
-
-                foreach (var t in GetSerializableTypes(field).Where(t => t.IsSettingsType()))
+                foreach (var t in GetKnownSerializableTypes(field))
                     yield return t;
+
+                if (field.IsDefined<FieldMutatorAttribute>())
+                    yield return field.GetCustomAttribute<FieldMutatorAttribute>().GetRawSettingsFieldType(field);
             }
         }
 
-        public static IEnumerable<Type> GetSerializableTypes(this FieldInfo field)
+        public static IEnumerable<Type> GetKnownSerializableTypes(this FieldInfo field)
         {
             var knownTypesAttributes = field.GetCustomAttributes<KnownTypesAttribute>().ToArray();
+            IEnumerable<Type> knownTypes = Enumerable.Empty<Type>();
             if (knownTypesAttributes.Length > 0)
             {
                 foreach (var a in knownTypesAttributes)
-                {
-                    var knownTypes = a.GetAllKnownTypes(field).Where(t => !t.IsAbstract);
-                    foreach (var t in knownTypes)
-                        yield return t;
-                }
+                    knownTypes = knownTypes.Concat(a.GetKnownTypes(field));
             }
             else
             {
@@ -155,14 +147,12 @@ namespace Eco.Extensions
                 if (field.FieldType.IsArray) baseType = field.FieldType.GetElementType();
                 else baseType = field.FieldType;
 
-                var knownTypes =
-                    baseType.GetDerivedTypes()
-                    .Append(baseType)
-                    .Where(t => !t.IsAbstract);
-
-                foreach (var t in knownTypes)
-                    yield return t;
+                knownTypes = baseType.GetDerivedTypes().Append(baseType);
             }
+
+            var serializableKnownTypes = knownTypes.Where(t => !t.IsAbstract && !t.IsGenericTypeDefinition);
+            foreach (var t in serializableKnownTypes)
+                yield return t;
         }
 
         static readonly Type[] _simpleXmlTypes = new[] {
@@ -172,6 +162,11 @@ namespace Eco.Extensions
         public static bool IsSimple(this Type type)
         {
             return _simpleXmlTypes.Contains(type) || type != null && type.IsEnum;
+        }
+
+        public static object GetFieldValue(this object container, string fieldName)
+        {
+            return container.GetType().GetField(fieldName).GetValue(container);
         }
     }
 }

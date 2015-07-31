@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Eco.Extensions
 {
-    static class StringEnumerableExtensions
+    public static class StringEnumerableExtensions
     {
         public static string WhiteSpaceSeparated(this IEnumerable<string> strs, int spacesCount = 1)
         {

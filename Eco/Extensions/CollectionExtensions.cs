@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Eco.Extensions
 {
-    static class CollectionExtensions
+    public static class CollectionExtensions
     {
         public static T[] Union<T>(this T[] first, T[] second)
         {
