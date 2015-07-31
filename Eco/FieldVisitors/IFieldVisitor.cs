@@ -9,6 +9,6 @@ namespace Eco
 {
     public interface IFieldVisitor
     {
-        void Visit(string fieldPath, FieldInfo sourceField, object sourceSettings, FieldInfo targetField, object targetSettings);
+        void Visit(string fieldPath, FieldInfo refinedSettingsField, object refinedSettings, FieldInfo rawSettingsField, object rawSettings);
     }
 }

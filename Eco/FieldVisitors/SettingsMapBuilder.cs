@@ -12,11 +12,11 @@ namespace Eco.FieldVisitors
     {
         readonly Dictionary<string, object> _settingsById = new Dictionary<string, object>();
 
-        public Dictionary<string, object> SettingsByIdMap { get { return _settingsById; } }
+        public Dictionary<string, object> SettingsById{ get { return _settingsById; } }
 
-        public void Visit(string fieldPath, FieldInfo rawSettingsField, object rawSettings, FieldInfo refinedSettingsField, object refinedSettings)
+        public void Visit(string fieldPath, FieldInfo refinedSettingsField, object refinedSettings, FieldInfo rawSettingsField, object rawSettings)
         {
-            if (rawSettingsField.IsDefined<IdAttribute>())
+            if (refinedSettingsField.IsDefined<IdAttribute>())
             {
                 string id = (string)rawSettingsField.GetValue(rawSettings);
                 if (_settingsById.ContainsKey(id)) throw new ConfigurationException("Duplicated settings ID: '{0}'", id);

@@ -10,12 +10,12 @@ namespace Eco.FieldVisitors
 {
     class EnvironmentVariableExpander : IFieldVisitor
     {
-        public void Visit(string fieldPath, FieldInfo sourceField, object sourceSettings, FieldInfo targetField, object targetSettings)
+        public void Visit(string fieldPath, FieldInfo refinedSettingsField, object refinedSettings, FieldInfo rawSettingsField, object rawSettings)
         {
-            if (targetField.FieldType == typeof(string) && !targetField.IsDefined<SealedAttribute>())
+            if (refinedSettingsField.FieldType == typeof(string) && !refinedSettingsField.IsDefined<SealedAttribute>())
             {
-                string expandedStr = Environment.ExpandEnvironmentVariables((string)targetField.GetValue(targetSettings));
-                targetField.SetValue(targetSettings, expandedStr);
+                string expandedStr = Environment.ExpandEnvironmentVariables((string)refinedSettingsField.GetValue(refinedSettings));
+                refinedSettingsField.SetValue(refinedSettings, expandedStr);
             }
         }
     }

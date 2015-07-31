@@ -9,7 +9,7 @@ namespace Eco.FieldVisitors
 {
     class ConfigurationVariableExpander : IFieldVisitor
     {
-        public void Visit(string fieldPath, FieldInfo sourceField, object sourceSettings, FieldInfo targetField, object targetSettings)
+        public void Visit(string fieldPath, FieldInfo refinedSettingsField, object refinedSettings, FieldInfo rawSettingsField, object rawSettings)
         {
             throw new NotImplementedException();
         }

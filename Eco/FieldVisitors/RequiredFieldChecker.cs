@@ -11,10 +11,10 @@ namespace Eco.FieldVisitors
     // TODO implement me
     class RequiredFieldChecker : IFieldVisitor
     {
-        public void Visit(string fieldPath, FieldInfo sourceField, object sourceSettings, FieldInfo targetField, object targetSettings)
+        public void Visit(string fieldPath, FieldInfo refinedSettingsField, object refinedSettings, FieldInfo rawSettingsField, object rawSettings)
         {
-            bool isRequiredField = sourceField.IsDefined<RequiredAttribute>() || targetField.IsDefined<RequiredAttribute>();
-            if (isRequiredField && sourceField.GetValue(sourceSettings) == null)
+            bool isRequiredField = refinedSettingsField.IsDefined<RequiredAttribute>() || refinedSettingsField.IsDefined<RequiredAttribute>();
+            if (isRequiredField && refinedSettingsField.GetValue(refinedSettings) == null)
                 throw new ConfigurationException("Missing required field '{0}'", fieldPath);
         }
     }
