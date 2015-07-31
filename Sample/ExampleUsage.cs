@@ -7,7 +7,7 @@ using Eco;
 
 namespace Sample
 {
-[Doc("Represent one round of a space battle.")]
+    [Root, Doc("Represent one round of a space battle.")]
     public class spaceBattle
     {
         [Required, ItemName("add")]
@@ -15,6 +15,16 @@ namespace Sample
         public gameRound[] gameRounds;
 
         [Required, Doc("Fleets that can participate in the battle.")]
+        public fleet[] fleets;
+
+        [External, Doc("Fleets defined in a external configuration file.")]
+        public externalFleets externalFleets;
+    }
+
+    [Root, Doc("Fleets defined in a external configuration file.")]
+    public class externalFleets
+    {
+        [Required, Inline, Doc("Fleets that can participate in a space battle.")]
         public fleet[] fleets;
     }
 
@@ -68,8 +78,8 @@ namespace Sample
         public weapon[] weapons;
 
         // Explicitly specify known types through a wildcard.
-        [Required, Doc("Drive affects mobility of the ship during a combat.")]
-        public driveChoice drive;
+        [Required, Choice, Doc("Drive affects mobility of the ship during a combat.")]
+        public drive drive;
     } 
 
     public class driveChoice

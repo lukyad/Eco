@@ -18,6 +18,10 @@ namespace Sample
             using (var sw = new StreamWriter(@"d:\spaceBattle.xsd"))
                 sw.Write(schema);
 
+            schema = XmlSchemaExporter.GetSchemaFor<externalFleets>(defaultUsage: Usage.Optional);
+            using (var sw = new StreamWriter(@"d:\externalFleets.xsd"))
+                sw.Write(schema);
+
             string settingsFileName = "exampleUsage.config";
             spaceBattle settings = Settings.Load<spaceBattle>(settingsFileName);
             Settings.Save(settings, settingsFileName);
