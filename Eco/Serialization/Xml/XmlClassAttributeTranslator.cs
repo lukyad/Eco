@@ -9,26 +9,11 @@ namespace Eco.Serialization.Xml
 {
     static class XmlClassAttributeTranslator
     {
-        [Serializable]
-        class AttributesWithNoParams
-        {
-        }
+        const string StringParam = "StringParam";
 
-        [XmlRoot(Namespace = stringParam)]
+        [XmlRoot(Namespace = StringParam)]
         class AttributesWitnOneStringParam
         {
-
-        }
-
-        const string stringParam = "stringParam";
-
-        public static string GetTextFor<TAttribute>()
-        {
-            return
-                typeof(AttributesWithNoParams)
-                .GetCustomAttributesData()
-                .First(d => d.AttributeType == typeof(TAttribute))
-                .ToString();
         }
 
         public static string GetTextFor<TAttribute>(string attributeParam)
@@ -38,7 +23,7 @@ namespace Eco.Serialization.Xml
                 .GetCustomAttributesData()
                 .First(d => d.AttributeType == typeof(TAttribute))
                 .ToString()
-                .Replace(stringParam, attributeParam);
+                .Replace(StringParam, attributeParam);
         }
     }
 }

@@ -25,7 +25,7 @@ namespace Eco.Serialization
         /// [Eco.DocAttribute("Annotation")]
         /// [MyNamesapce.MyCustomTypeAttribute()]
         /// </summary>
-        IEnumerable<string> GetAttributesTextFor(Type settingsType, bool isRoot);
+        IEnumerable<string> GetAttributesTextFor(Type settingsType);
 
         /// <summary>
         /// This method gets called by the Eco library for each field of the serializable settings type.
@@ -38,6 +38,6 @@ namespace Eco.Serialization
         /// [Eco.SealedAttribute()]
         /// [MyNamesapce.MyCustomFieldAttribute()]
         /// </summary>
-        IEnumerable<string> GetAttributesTextFor(string settingsNamespace, FieldInfo settingsField, Usage defaulUsage);
+        IEnumerable<string> GetAttributesTextFor(FieldInfo settingsField, Usage defaulUsage);
     }
 }
