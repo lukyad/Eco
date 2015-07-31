@@ -9,8 +9,8 @@ using Eco.Extensions;
 namespace Eco
 {
     /// <summary>
-    /// Explicitily specifies known polimorphic types that can be serialized deserialized for the given field.
-    /// Can be used in combination with the ChoiceAttribute. By default the ChoiceAttribute automatically
+    /// Explicitily specifies known polimorphic types that can be serialized/deserialized for the given field.
+    /// Can be used in combination with the PolimorphicAttribute. By default the ChoiceAttribute automatically
     /// includes all non-abstract types derived from the field's type plus field type itself (if it's not abstract)
     /// to the list of object types that can be serialized/deserialized. KnownTypesAttribute can limit this list
     /// to a certain types specified in the attribute's constructor.
@@ -20,12 +20,12 @@ namespace Eco
     /// known by serializer. KnowTypesAttributes can be used to limit this list to a certain types.
     /// 
     /// Usage:
-    /// Can be applied to a field of a settings array type as well as to any field of a settings type marked with the ChoiceAttribute.
+    /// Can be applied to a field of a settings array type as well as to any field of a settings type marked with the PolimorphicAttribute.
     /// 
     /// Compatibility:
     /// Incompatible with the Id, ItemName, Ref and Converter attributes and compatible with all others.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Field)]
+    [AttributeUsage(AttributeTargets.Field, AllowMultiple = true)]
     public class KnownTypesAttribute : Attribute
     {
         readonly Type[] _ctorTypes;
@@ -49,7 +49,7 @@ namespace Eco
 
         public string Wildcard { get; set; }
 
-        public IEnumerable<Type> GetAllKnownTypes(FieldInfo context)
+        public IEnumerable<Type> GetKnownTypes(FieldInfo context)
         {
             foreach (var t in _ctorTypes) 
                 yield return t;

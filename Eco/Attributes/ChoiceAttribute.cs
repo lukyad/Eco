@@ -4,49 +4,53 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Reflection;
-using Eco.Extensions;
+using Eco.Elements;
 
 namespace Eco
 {
-    /// <summary>
-    /// Indicates that the given field can contain polymorphic objects.
-    /// By default the list of permitted polymorphic types includes
-    /// all non-abstract types derived from the field type 
-    /// plus field type itself, if it's not abstract.
-    /// 
-    /// The list of permitted polymorphic types can be limited with
-    /// the KnownTypes attribute.
-    /// 
-    /// Usage:
-    /// Can be applied to any field of a settings type (any type from the assembly marked with SettingsAssembly attribute)
-    /// 
-    /// Compatibility:
-    /// Incompatible with the Id, Inline, ItemName, Converter and Ref attributes and compatible with all others.
-    /// </summary>
-    //[AttributeUsage(AttributeTargets.Field)]
- //   public class ChoiceAttribute : Attribute
- //   {
-    //    static readonly HashSet<Type> _incompatibleAttributeTypes = new HashSet<Type>
-    //    {
-    //        typeof(IdAttribute),
-    //        typeof(InlineAttribute),
-    //        typeof(ItemNameAttribute),
-    //        typeof(ConverterAttribute),
-    //        typeof(RefAttribute)
-    //    };
+    [AttributeUsage(AttributeTargets.Field)]
+    public class ChoiceAttribute : FieldMutatorAttribute
+    {
+        public ChoiceAttribute()
+            : base(GetRawSettingsFieldType, GetRawSettingsFieldAttributeText, GetRawSettingsFieldValue, SetRawSettingsFieldValue)
+        {
+        }
 
-    //    public void ValidateContext(FieldInfo context)
-    //    {
-    //        if (!context.FieldType.IsSettingsType())
-    //        {
-    //            throw new ConfigurationException(
-    //                "{0} cannot be applied to {1}.{2}. Expected field of a settings type",
-    //                typeof(ChoiceAttribute).Name,
-    //                context.DeclaringType.Name,
-    //                context.Name
-    //            );
- //           }
-    //        AttributeValidator.CheckAttributesCompatibility(context, _incompatibleAttributeTypes);
-    //    }
- //   }
+        public void ValidateContext(FieldInfo context)
+        {
+        }
+
+        static new Type GetRawSettingsFieldType(FieldInfo refinedSettingsField)
+        {
+            return typeof(choice<>).MakeGenericType(refinedSettingsField.FieldType);
+        }
+
+        static new string GetRawSettingsFieldAttributeText(FieldInfo refinedSettingsField)
+        {
+            return null;
+        }
+
+        static new object GetRawSettingsFieldValue(FieldInfo rawSettingsField, object rawSettings)
+        {
+            object choice = rawSettingsField.GetValue(rawSettings);
+            if (choice == null) return null;
+            return GetValueField(choice).GetValue(choice);
+        }
+
+        static new void SetRawSettingsFieldValue(FieldInfo rawSettingsField, object rawSettings, object nonMutatedRawSettingsValue)
+        {
+            object choice = null;
+            if (nonMutatedRawSettingsValue != null)
+            {
+                choice = Activator.CreateInstance(rawSettingsField.FieldType);
+                GetValueField(choice).SetValue(choice, nonMutatedRawSettingsValue);
+            }
+            rawSettingsField.SetValue(rawSettings, choice);
+        }
+
+        static FieldInfo GetValueField(object choice)
+        {
+            return choice.GetType().GetField("value");
+        }
+    }
 }
