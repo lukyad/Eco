@@ -17,7 +17,7 @@ namespace Eco
     /// Compatible with all other attributes.
     /// </summary>
     [AttributeUsage(AttributeTargets.Assembly)]
-    public class SettingsAssemblyAttribute : Attribute
+    public class SettingsAssemblyAttribute : EcoAttribute
     {
         readonly string _settingsTypesNamesapace;
 

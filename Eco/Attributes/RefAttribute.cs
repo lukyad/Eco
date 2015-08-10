@@ -21,7 +21,7 @@ namespace Eco
     /// Incomaptible with the Id, Inline, ItemName, KnownTypes and Converter attributes and compatible with all others.
     /// </summary>
     [AttributeUsage(AttributeTargets.Field)]
-    public class RefAttribute : Attribute
+    public class RefAttribute : EcoFieldAttribute
     {
         static readonly HashSet<Type> _incompatibleAttributeTypes = new HashSet<Type>
         {
@@ -32,17 +32,11 @@ namespace Eco
             typeof(ConverterAttribute)
         };
 
-        public void ValidateContext(FieldInfo context)
+        public override void ValidateContext(FieldInfo context)
         {
             if (!context.FieldType.IsSettingsType() && !context.FieldType.IsSettingsArrayType())
-            {
-                throw new ConfigurationException(
-                    "{0} cannot be applied to {1}.{2}. Expected field of a settings type or settings array type",
-                    typeof(ChoiceAttribute).Name,
-                    context.DeclaringType.Name,
-                    context.Name
-                );
-            }
+                base.ThrowExpectedFieldOf("a settings type or a settings array type", context);
+
             AttributeValidator.CheckAttributesCompatibility(context, _incompatibleAttributeTypes);
         }
     }

@@ -138,14 +138,9 @@ namespace Eco.Serialization
 
         static void ValidateFieldAttributes(FieldInfo field)
         {
-            var ecoAttributes = field.GetCustomAttributes().Where(a => a.IsEcoAttribute());
+            var ecoAttributes = field.GetCustomAttributes().OfType<EcoFieldAttribute>();
             foreach (var a in ecoAttributes)
-            {
-                const string validationMethodName = "ValidateContext";
-                var validationMethod = a.GetType().GetMethod(validationMethodName);
-                if (validationMethod == null) throw new ConfigurationException("'{0}' is missing required '{1}' method", a.GetType().Name, validationMethodName);
-                validationMethod.Invoke(a, new [] { field });
-            }
+                a.ValidateContext(field);
         }
     }
 }

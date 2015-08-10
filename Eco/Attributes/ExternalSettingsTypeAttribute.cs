@@ -8,6 +8,10 @@ using Eco.Extensions;
 
 namespace Eco
 {
+    /// <summary>
+    /// Used internally by the Eco library.
+    /// Specifies raw settings type to be loaded from an external settings file being included to the configuration file.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Field)]
     public class ExternalSettingsTypeAttribute : Attribute
     {

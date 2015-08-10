@@ -32,8 +32,9 @@ namespace Eco
         {
         }
 
-        public void ValidateContext(FieldInfo context)
+        public override void ValidateContext(FieldInfo context)
         {
+            throw new NotImplementedException();
         }
 
         static new Type GetRawSettingsFieldType(FieldInfo refinedSettingsField)

@@ -54,24 +54,18 @@ namespace Eco
     /// Incompatible with the Ref attribute and compatible with all others.
     /// </summary>
     [AttributeUsage(AttributeTargets.Field)]
-    public class InlineAttribute : Attribute
+    public class InlineAttribute : EcoFieldAttribute
     {
         static readonly HashSet<Type> _incompatibleAttributeTypes = new HashSet<Type>
         {
             typeof(RefAttribute)
         };
 
-        public static void ValidateContext(FieldInfo context)
+        public override void ValidateContext(FieldInfo context)
         {
             if (!context.FieldType.IsArray)
-            {
-                throw new ConfigurationException(
-                    "{0} cannot be applied to {1}.{2}. Expected field of an array type",
-                    typeof(ChoiceAttribute).Name,
-                    context.DeclaringType.Name,
-                    context.Name
-                );
-            }
+                base.ThrowExpectedFieldOf("an array type", context);
+
             AttributeValidator.CheckAttributesCompatibility(context, _incompatibleAttributeTypes);
         }
     }

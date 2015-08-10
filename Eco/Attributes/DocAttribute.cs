@@ -19,7 +19,7 @@ namespace Eco
     /// Compatible with all attributes.
     /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Field)]
-    public class DocAttribute : Attribute
+    public class DocAttribute : EcoFieldAttribute
     {
         public DocAttribute(string annotation)
         {
@@ -28,9 +28,9 @@ namespace Eco
 
         public string Annotation { get; }
 
-        public void ValidateContext(FieldInfo context)
+        public override void ValidateContext(FieldInfo context)
         {
-            // do nothing
+            // Do nothing. Can be used in any context.
         }
     }
 }

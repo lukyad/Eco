@@ -18,7 +18,7 @@ namespace Eco
     /// Incompatible with: ChoiceAttribute, InlineAttribute, ItemNameAttribute, KnownTypesAttribute, RefAttribute.
     /// </summary>
     [AttributeUsage(AttributeTargets.Field)]
-    public class IdAttribute : Attribute
+    public class IdAttribute : EcoFieldAttribute
     {
         static readonly HashSet<Type> _incompatibleAttributeTypes = new HashSet<Type>
         {
@@ -29,17 +29,11 @@ namespace Eco
             typeof(RefAttribute)
         };
 
-        public static void ValidateContext(FieldInfo context)
+        public override void ValidateContext(FieldInfo context)
         {
             if (context.FieldType != typeof(string))
-            {
-                throw new ConfigurationException(
-                    "{0} cannot be applied to {1}.{2}. Expected field of the String type",
-                    typeof(IdAttribute).Name,
-                    context.DeclaringType.Name,
-                    context.Name
-                );
-            }
+                base.ThrowExpectedFieldOf("the String type", context);
+
             AttributeValidator.CheckAttributesCompatibility(context, _incompatibleAttributeTypes);
         }
     }

@@ -23,7 +23,7 @@ namespace Eco
     /// Incompatible with the Id, Inline, ItemName, KnownTypes and Ref attributes and compatible with all others.
     /// </summary>
     [AttributeUsage(AttributeTargets.Field)]
-    public class ConverterAttribute : Attribute
+    public class ConverterAttribute : EcoFieldAttribute
     {
         static readonly HashSet<Type> _incompatibleAttributeTypes = new HashSet<Type>
         {
@@ -55,17 +55,11 @@ namespace Eco
 
         public Func<string, object> FromString { get; private set; }
 
-        public void ValidateContext(FieldInfo context)
+        public override void ValidateContext(FieldInfo context)
         {
             if (context.FieldType == typeof(string))
-            {
-                throw new ConfigurationException(
-                    "{0} cannot be applied to {1}.{2}. Expected field of a non-String type",
-                    typeof(ChoiceAttribute).Name,
-                    context.DeclaringType.Name,
-                    context.Name
-                );
-            }
+                base.ThrowExpectedFieldOf("a non-String type", context);
+            
             AttributeValidator.CheckAttributesCompatibility(context, _incompatibleAttributeTypes);
         }
 

@@ -21,24 +21,18 @@ namespace Eco
     /// Incompatible with Required attribute and compatible with all others.
     /// </summary>
     [AttributeUsage(AttributeTargets.Field)]
-    public class OptionalAttribute : Attribute
+    public class OptionalAttribute : EcoFieldAttribute
     {
         static readonly HashSet<Type> _incompatibleAttributeTypes = new HashSet<Type>
         {
             typeof(RequiredAttribute),
         };
 
-        public static void ValidateContext(FieldInfo context)
+        public override void ValidateContext(FieldInfo context)
         {
             if (context.FieldType.IsValueType || Nullable.GetUnderlyingType(context.FieldType) != null)
-            {
-                throw new ConfigurationException(
-                    "{0} cannot be applied to {1}.{2}. Expected a field of a reference non-Nullable type",
-                    typeof(OptionalAttribute).Name,
-                    context.DeclaringType.Name,
-                    context.Name
-                );
-            }
+                base.ThrowExpectedFieldOf("a reference non-Nullable type", context);
+
             AttributeValidator.CheckAttributesCompatibility(context, _incompatibleAttributeTypes);
         }
     }

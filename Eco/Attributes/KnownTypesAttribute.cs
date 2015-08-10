@@ -26,7 +26,7 @@ namespace Eco
     /// Incompatible with the Id, ItemName, Ref and Converter attributes and compatible with all others.
     /// </summary>
     [AttributeUsage(AttributeTargets.Field, AllowMultiple = true)]
-    public class KnownTypesAttribute : Attribute
+    public class KnownTypesAttribute : EcoFieldAttribute
     {
         readonly Type[] _ctorTypes;
         static readonly HashSet<Type> _incompatibleAttributeTypes = new HashSet<Type>
@@ -64,13 +64,13 @@ namespace Eco
             }
         }
 
-        public static void ValidateContext(FieldInfo context)
+        public override void ValidateContext(FieldInfo context)
         {
             if (!context.FieldType.IsSettingsArrayType() && !(context.FieldType.IsSettingsType() && context.IsDefined<ChoiceAttribute>()))
             {
                 throw new ConfigurationException(
                     "{0} cannot be applied to {1}.{2}. Expected either a field of a settings array type or a field of a settings type marked with the ChoiceAttribute",
-                    typeof(KnownTypesAttribute).Name,
+                    this.GetType().Name,
                     context.DeclaringType.Name,
                     context.Name
                 );

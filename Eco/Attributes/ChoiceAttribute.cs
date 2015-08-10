@@ -5,9 +5,20 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Reflection;
 using Eco.Elements;
+using Eco.Extensions;
 
 namespace Eco
 {
+    /// <summary>
+    /// Instructs serializer to wrap the given field into the choice<TFieldType> object.
+    /// The choice element contains a single polimorfic field. Usefull for XML serialization.
+    /// 
+    /// Usage: 
+    /// Can be applied to a field of a settings type only.
+    /// 
+    /// Compatibility: 
+    /// Incompatible with the Id, Inline, ItemName, Converter, External and Ref attributes and compatible with all others.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Field)]
     public class ChoiceAttribute : FieldMutatorAttribute
     {
@@ -16,8 +27,12 @@ namespace Eco
         {
         }
 
-        public void ValidateContext(FieldInfo context)
+        public override void ValidateContext(FieldInfo context)
         {
+            if (!context.FieldType.IsSettingsType() || !context.FieldType.IsAbstract)
+                base.ThrowExpectedFieldOf("a non-abstract settings type", context);
+
+            //AttributeValidator.CheckAttributesCompatibility(context, _incompatibleAttributeTypes);
         }
 
         static new Type GetRawSettingsFieldType(FieldInfo refinedSettingsField)

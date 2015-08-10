@@ -17,7 +17,7 @@ namespace Eco
     /// Incomaptible with KnownTypes and Ref attributes and compatible with all others.
     /// </summary>
     [AttributeUsage(AttributeTargets.Field)]
-    public class ItemNameAttribute : Attribute
+    public class ItemNameAttribute : EcoFieldAttribute
     {
         static readonly HashSet<Type> _incompatibleAttributeTypes = new HashSet<Type>
         {
@@ -32,17 +32,11 @@ namespace Eco
 
         public string Name { get; private set; }
 
-        public static void ValidateContext(FieldInfo context)
+        public override void ValidateContext(FieldInfo context)
         {
             if (!context.FieldType.IsArray)
-            {
-                throw new ConfigurationException(
-                    "{0} cannot be applied to {1}.{2}. Expected field of an array type",
-                    typeof(ItemNameAttribute).Name,
-                    context.DeclaringType.Name,
-                    context.Name
-                );
-            }
+                base.ThrowExpectedFieldOf("an array type", context);
+
             AttributeValidator.CheckAttributesCompatibility(context, _incompatibleAttributeTypes);
         }
     }

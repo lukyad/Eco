@@ -7,7 +7,10 @@ using System.Reflection;
 
 namespace Eco
 {
-    public abstract class FieldMutatorAttribute : Attribute
+    /// <summary>
+    /// Base class for all attributes that instruct serializer to change raw type of the field.
+    /// </summary>
+    public abstract class FieldMutatorAttribute : EcoFieldAttribute
     {
         readonly Func<FieldInfo, Type> _fieldTypeProvider;
         readonly Func<FieldInfo, string> _fieldAttributeProvider;

@@ -40,11 +40,6 @@ namespace Eco.Extensions
                 fieldType.IsSettingsArrayType() && (fieldType.GetElementType().IsAbstract || field.IsDefined<PolimorphicAttribute>());
         }
 
-        public static bool IsEcoAttribute(this Attribute a)
-        {
-            return a.GetType().Namespace == typeof(Eco.SettingsAssemblyAttribute).Namespace;
-        }
-
         public static IEnumerable<Type> GetDerivedTypes(this Type type)
         {
              return type.Assembly.GetTypes().Where(t => t.IsSubclassOf(type));

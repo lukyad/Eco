@@ -21,13 +21,13 @@ namespace Eco
     /// the KnownTypes attribute.
     /// 
     /// Usage:
-    /// Can be applied to any field of a non-abstract settings type (any type from the assembly marked with SettingsAssembly attribute)
+    /// Can be applied to any field of a settings type (any type from the assembly marked with SettingsAssembly attribute)
     /// 
     /// Compatibility:
     /// Incompatible with the Id, Inline, ItemName, Converter and Ref attributes and compatible with all others.
     /// </summary>
     [AttributeUsage(AttributeTargets.Field)]
-    public class PolimorphicAttribute : Attribute
+    public class PolimorphicAttribute : EcoFieldAttribute
     {
         static readonly HashSet<Type> _incompatibleAttributeTypes = new HashSet<Type>
         {
@@ -38,17 +38,11 @@ namespace Eco
             typeof(RefAttribute)
         };
 
-        public void ValidateContext(FieldInfo context)
+        public override void ValidateContext(FieldInfo context)
         {
-            if (!context.FieldType.IsSettingsType() || !context.FieldType.IsAbstract)
-            {
-                throw new ConfigurationException(
-                    "{0} cannot be applied to {1}.{2}. Expected field of a non-abstract settings type",
-                    typeof(ChoiceAttribute).Name,
-                    context.DeclaringType.Name,
-                    context.Name
-                );
-            }
+            if (!context.FieldType.IsSettingsType())
+                base.ThrowExpectedFieldOf("a settings type", context);
+
             AttributeValidator.CheckAttributesCompatibility(context, _incompatibleAttributeTypes);
         }
     }

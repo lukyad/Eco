@@ -19,7 +19,7 @@ namespace Eco
                     attributeContext.DeclaringType.Name,
                     attributeContext.Name,
                     attributeContext.GetCustomAttributes()
-                        .Where(a => a.IsEcoAttribute())
+                        .Where(a => a is EcoAttribute)
                         .Select(a => a.GetType().Name)
                         .CommaWhiteSpaceSeparated()
                 );

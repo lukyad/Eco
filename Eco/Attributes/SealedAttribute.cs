@@ -19,7 +19,7 @@ namespace Eco
     /// Incomaptible with the Converter and Ref attributes and compatible with all others.
     /// </summary>
     [AttributeUsage(AttributeTargets.Field)]
-    public class SealedAttribute : Attribute
+    public class SealedAttribute : EcoFieldAttribute
     {
         static readonly HashSet<Type> _incompatibleAttributeTypes = new HashSet<Type>
         {
@@ -27,7 +27,7 @@ namespace Eco
             typeof(RefAttribute),
         };
 
-        public void ValidateContext(FieldInfo context)
+        public override void ValidateContext(FieldInfo context)
         {
             AttributeValidator.CheckAttributesCompatibility(context, _incompatibleAttributeTypes);
         }

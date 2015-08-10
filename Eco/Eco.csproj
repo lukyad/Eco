@@ -42,6 +42,8 @@
     <Compile Include="Attributes\AttributeValidator.cs" />
     <Compile Include="Attributes\ConverterAttribute.cs" />
     <Compile Include="Attributes\ChoiceAttribute.cs" />
+    <Compile Include="Attributes\EcoAttribute.cs" />
+    <Compile Include="Attributes\EcoFieldAttribute.cs" />
     <Compile Include="Attributes\ExternalAttribute.cs" />
     <Compile Include="Attributes\FieldMutatorAttribute.cs" />
     <Compile Include="Attributes\OptionalAttribute.cs" />
