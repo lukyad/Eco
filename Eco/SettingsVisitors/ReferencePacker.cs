@@ -8,8 +8,10 @@ using Eco.Extensions;
 
 namespace Eco
 {
-    class ReferencePacker : IFieldVisitor
+    public class ReferencePacker : IRefinedSettingsVisitor
     {
+        public bool IsReversable { get { return true; } }
+
         public void Visit(string fieldPath, FieldInfo refinedSettingsField, object refinedSettings, FieldInfo rawSettingsField, object rawSettings)
         {
             if (refinedSettingsField.IsDefined<RefAttribute>())

@@ -8,7 +8,7 @@ using Eco.Extensions;
 
 namespace Eco
 {
-    class ReferenceResolver : IFieldVisitor
+    class ReferenceResolver : IRefinedSettingsVisitor
     {
         readonly Dictionary<string, object> _settingsById;
 
@@ -16,6 +16,8 @@ namespace Eco
         {
             _settingsById = settingsById;
         }
+
+        public bool IsReversable { get { return true; } }
 
         public void Visit(string fieldPath, FieldInfo refinedSettingsField, object refinedSettings, FieldInfo rawSettingsField, object rawSettings)
         {

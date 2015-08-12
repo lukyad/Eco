@@ -8,9 +8,11 @@ using Eco.Extensions;
 
 namespace Eco.FieldVisitors
 {
-    class SettingsMapBuilder : IFieldVisitor
+    class SettingsMapBuilder : IRefinedSettingsVisitor
     {
         readonly Dictionary<string, object> _settingsById = new Dictionary<string, object>();
+
+        public bool IsReversable { get { return true; } }
 
         public Dictionary<string, object> SettingsById{ get { return _settingsById; } }
 

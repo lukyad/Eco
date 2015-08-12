@@ -8,9 +8,10 @@ using Eco.Extensions;
 
 namespace Eco.FieldVisitors
 {
-    // TODO implement me
-    class RequiredFieldChecker : IFieldVisitor
+    public class RequiredFieldChecker : IRefinedSettingsVisitor
     {
+        public bool IsReversable { get { return true; } }
+
         public void Visit(string fieldPath, FieldInfo refinedSettingsField, object refinedSettings, FieldInfo rawSettingsField, object rawSettings)
         {
             bool isRequiredField = refinedSettingsField.IsDefined<RequiredAttribute>() || refinedSettingsField.IsDefined<RequiredAttribute>();

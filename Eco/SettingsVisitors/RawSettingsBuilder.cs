@@ -8,9 +8,17 @@ using Eco.Extensions;
 
 namespace Eco.FieldVisitors
 {
-    class RawSettingsBuilder : IFieldVisitor
+    /// <summary>
+    /// Used by the Eco library when writing settings to a stream.
+    /// Given an object graph of refined settings initialize parallel graph of the corresponding raw settings.
+    /// </summary>
+    public class RawSettingsBuilder : IRefinedSettingsVisitor
     {
         readonly Dictionary<Type, Type> _typeMappings = new Dictionary<Type, Type>();
+
+        // Raw settings built by the RawSettingsBuilder can be converted back to 
+        // the refined settings by the RefinedSettingsBuilder. Thus, it considered to be a revocable visitor.
+        public bool IsReversable { get { return true; } }
 
         public void Visit(string fieldPath, FieldInfo refinedSettingsField, object refinedSettings, FieldInfo rawSettingsField, object rawSettings)
         {
