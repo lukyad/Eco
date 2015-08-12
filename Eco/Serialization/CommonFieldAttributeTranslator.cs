@@ -30,7 +30,7 @@ namespace Eco.Serialization.Xml
             if (mutator != null)
                 return mutator.GetRawSettingsFieldAttributeText(context);
             else
-                return null;
+                return d.ToString();
         }
     }
 }
