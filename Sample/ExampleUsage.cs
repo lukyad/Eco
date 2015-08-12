@@ -4,12 +4,16 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Eco;
+using Eco.Elements;
 
 namespace Sample
 {
     [Root, Doc("Represent one round of a space battle.")]
     public class spaceBattle
     {
+        [Doc("Configuration variables.")]
+        public variable[] vars;
+
         [Required, ItemName("add")]
         [Doc("Battles specification.")]
         public gameRound[] gameRounds;
@@ -82,11 +86,11 @@ namespace Sample
         public drive drive;
     } 
 
-    public class driveChoice
-    {
-        [Required, Choice]
-        public drive instance;
-    }
+    //public class driveChoice
+    //{
+    //    [Required, Polimorphic]
+    //    public drive instance;
+    //}
 
     public abstract class drive    { }
 
