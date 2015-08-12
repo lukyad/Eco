@@ -11,8 +11,8 @@ using Eco.Extensions;
 namespace Eco
 {
     /// <summary>
-    /// Instructs serializer to get value for the given field from another file 
-    /// by using SettingsManager with the specified file format.
+    /// Instructs serializer to load value for the given field from another file 
+    /// by using SettingsManager.Load method with the specified file format.
     /// 
     /// Usage: 
     /// Can be applied to a field of a settings type only. Type of the 'extrnal' field must be marked with the Root attribute.
@@ -34,7 +34,7 @@ namespace Eco
 
         public override void ValidateContext(FieldInfo context)
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
 
         static new Type GetRawSettingsFieldType(FieldInfo refinedSettingsField)
