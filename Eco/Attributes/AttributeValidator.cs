@@ -8,7 +8,7 @@ using Eco.Extensions;
 
 namespace Eco
 {
-    static class AttributeValidator
+    public static class AttributeValidator
     {
         public static void CheckAttributesCompatibility(FieldInfo attributeContext, HashSet<Type> incompatibleAttributeTypes)
         {
