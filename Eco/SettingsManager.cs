@@ -132,12 +132,18 @@ namespace Eco
 
         object CreateRefinedSettings(Type refinedSettingsType, object rawSettings, bool skipNonReversableOperations)
         {
-            foreach (var v in this.RawSettingsLoadVisitors.Where(v => v.IsReversable == !skipNonReversableOperations))
-                VisitRawFieldsRecursive(rawSettings, v);
+            if (this.RawSettingsLoadVisitors != null)
+            {
+                foreach (var v in this.RawSettingsLoadVisitors.Where(v => v.IsReversable == !skipNonReversableOperations))
+                    VisitRawFieldsRecursive(rawSettings, v);
+            }
 
             object refinedSettings = Activator.CreateInstance(refinedSettingsType);
-            foreach (var v in this.RefinedSettingsLoadVisitors.Where(v => v.IsReversable == !skipNonReversableOperations))
-                VisitRefinedFieldsRecursive(refinedSettings, rawSettings, v);
+            if (this.RefinedSettingsLoadVisitors != null)
+            {
+                foreach (var v in this.RefinedSettingsLoadVisitors.Where(v => v.IsReversable == !skipNonReversableOperations))
+                    VisitRefinedFieldsRecursive(refinedSettings, rawSettings, v);
+            }
 
             return refinedSettings;
         }
@@ -145,11 +151,16 @@ namespace Eco
         object CreateRawSettings(Type rawSettingsType, object refinedSettings)
         {
             object rawSettings = Activator.CreateInstance(rawSettingsType);
-            foreach (var v in this.RefinedSettingsSaveVisitors)
-                VisitRefinedFieldsRecursive(refinedSettings, rawSettings, v);
-
-            foreach (var v in this.RawSettingsSaveVisitors)
-                VisitRawFieldsRecursive(rawSettings, v);
+            if (this.RefinedSettingsSaveVisitors != null)
+            {
+                foreach (var v in this.RefinedSettingsSaveVisitors)
+                    VisitRefinedFieldsRecursive(refinedSettings, rawSettings, v);
+            }
+            if (this.RawSettingsSaveVisitors != null)
+            {
+                foreach (var v in this.RawSettingsSaveVisitors)
+                    VisitRawFieldsRecursive(rawSettings, v);
+            }
            
             return rawSettings;
         }
