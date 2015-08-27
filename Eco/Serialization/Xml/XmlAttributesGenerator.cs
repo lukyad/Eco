@@ -45,7 +45,7 @@ namespace Eco.Serialization.Xml
             if (field.GetRawFieldType().IsSimple())
                 res.Add(XmlFieldAttributeTranslator.GetTextFor<XmlAttributeAttribute>());
 
-            return res;
+            return res.Where(a => a != null);
         }
     }
 }
