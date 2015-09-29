@@ -22,10 +22,12 @@ namespace Eco
     /// </summary>
     public class ExternalAttribute : FieldMutatorAttribute
     {
+        #region implementation details
         class SampleType { }
 
         [ExternalSettingsType(typeof(SampleType))]
         readonly static object _attributePrototype = null;
+        #endregion
 
         public ExternalAttribute()
             : base(GetRawSettingsFieldType, GetRawSettingsFieldAttributeText, GetRawSettingsFieldValue, SetRawSettingsFieldValueValue)
@@ -69,7 +71,8 @@ namespace Eco
 
         static void SetRawSettingsFieldValueValue(FieldInfo rawSettingsField, object rawSettings, object nonMutatedRawSettingsValue)
         {
-            // do nothing
+            // We do not save included configuration files back to the drive. (ie included field are immutable).
+            // Thus, do nothing.
         }
     }
 }

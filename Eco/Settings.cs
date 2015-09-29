@@ -8,38 +8,63 @@ using Eco.Serialization.Xml;
 
 namespace Eco
 {
+    /// <summary>
+    /// Provide access to basic load/save settins functionality.
+    /// If you need more controll, check SettingsManager class.
+    /// </summary>
     public static class Settings
     {
+        // Character used to separate IDs in the reference fields (ie string fields marked with the Ref attribute).
         public const char IdSeparator = ',';
 
+        // Default SettingsManager used to load/save settings.
         public static SettingsManager DefaultManager = new SettingsManager(new XmlSerializer(), new XmlAttributesGenerator());
 
-
+        /// <summary>
+        /// Loads settings of the specified type from a configuration file in the current working directory.
+        /// Name of the file is defined as typeof(T).Name + ".config"
+        /// </summary>
         public static T Load<T>()
         {
             return DefaultManager.Load<T>();
         }
 
+        /// <summary>
+        /// Loads settings from the specified configuration file.
+        /// </summary>
         public static T Load<T>(string fileName)
         {
             return DefaultManager.Load<T>(fileName);
         }
 
+        /// <summary>
+        /// Saves settings to the configuration file in the current working directory.
+        /// Name of the file is defined as typeof(T).Name + ".config"
+        /// </summary>
         public static void Save(object settings)
         {
             DefaultManager.Save(settings);
         }
 
+        /// <summary>
+        /// Saves settings to the specified configuration file.
+        /// </summary>
         public static void Save(object settings, string fileName)
         {
             DefaultManager.Save(settings, fileName);
         }
 
+        /// <summary>
+        /// Read settins of the specified type from a stream.
+        /// </summary>
         public static T Read<T>(Stream stream)
         {
             return DefaultManager.Read<T>(stream);
         }
 
+        /// <summary>
+        /// Write settins to a stream.
+        /// </summary>
         public static void Write(object settings, Stream stream)
         {
             DefaultManager.Write(settings, stream);

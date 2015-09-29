@@ -9,6 +9,9 @@ using Eco.FieldVisitors;
 
 namespace Eco
 {
+    /// <summary>
+    /// Internal implementation class used by the Eco library.
+    /// </summary>
     static class SettingsConstruction
     {
         public static object CreateSettingsObject(object sourceObject, FieldInfo targetField, Dictionary<Type, Type> typeMappings)

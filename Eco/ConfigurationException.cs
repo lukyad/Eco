@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace Eco
 {
+    /// <summary>
+    /// Type for all exceptions raised by the Eco library.
+    /// </summary>
     public class ConfigurationException : ApplicationException
     {
         public ConfigurationException(string format, params object[] args) 

@@ -8,7 +8,7 @@ using System.Reflection;
 namespace Eco
 {
     /// <summary>
-    /// Base class for all EcoAttributes.
+    /// Base class for all Eco attributes.
     /// </summary>
     public abstract class EcoAttribute : Attribute
     {
