@@ -9,8 +9,9 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Eco</RootNamespace>
     <AssemblyName>Eco</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -40,6 +41,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Attributes\AttributeValidator.cs" />
+    <Compile Include="Attributes\ConversionPolicy.cs" />
     <Compile Include="Attributes\ConverterAttribute.cs" />
     <Compile Include="Attributes\ChoiceAttribute.cs" />
     <Compile Include="Attributes\EcoAttribute.cs" />
@@ -51,6 +53,7 @@
     <Compile Include="Attributes\PolimorphicAttribute.cs" />
     <Compile Include="Attributes\RootAttribute.cs" />
     <Compile Include="Attributes\SealedAttribute.cs" />
+    <Compile Include="CodeBuilder\AttributeBuilder.cs" />
     <Compile Include="ConfigurationException.cs" />
     <Compile Include="Elements\choice.cs" />
     <Compile Include="Elements\include.cs" />
@@ -69,7 +72,6 @@
     <Compile Include="SettingsConstruction.cs" />
     <Compile Include="Serialization\ISerializationAttributesGenerator.cs" />
     <Compile Include="Serialization\ISerializer.cs" />
-    <Compile Include="Serialization\Xml\XmlClassAttributeTranslator.cs" />
     <Compile Include="Extensions\CollectionExtensions.cs" />
     <Compile Include="Attributes\DocAttribute.cs" />
     <Compile Include="Attributes\IdAttribute.cs" />
