@@ -22,7 +22,7 @@ namespace Sample
             using (var sw = new StreamWriter(@"d:\externalFleets.xsd"))
                 sw.Write(schema);
 
-            string settingsFileName = "exampleUsage.config";
+            string settingsFileName = @"d:\exampleUsage.config";
             spaceBattle settings = Settings.Load<spaceBattle>(settingsFileName);
             Settings.Save(settings, settingsFileName);
         }

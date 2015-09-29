@@ -6,6 +6,7 @@ using System.Xml.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 using Eco.Extensions;
+using Eco.CodeBuilder;
 
 namespace Eco.Serialization.Xml
 {
@@ -16,7 +17,7 @@ namespace Eco.Serialization.Xml
             return Enumerable.Empty<string>();
         }
 
-        public virtual IEnumerable<string> GetAttributesTextFor(FieldInfo field, Usage defaultUsage)
+        public virtual IEnumerable<string> GetAttributesTextFor(FieldInfo field, Usage defaultUsage, ConversionPolicyAttribute[] conversionPolicies)
         {
             var res = new List<string>();
 
@@ -24,17 +25,17 @@ namespace Eco.Serialization.Xml
             string usageAttribute = null;
             if (fieldType.IsSimple() && fieldType != typeof(string))
             {
-                usageAttribute = CommonFieldAttributeTranslator.GetTextFor<RequiredAttribute>();
+                usageAttribute = AttributeBuilder.GetTextFor<RequiredAttribute>();
             }
             else if (Nullable.GetUnderlyingType(field.FieldType) != null)
             {
-                usageAttribute = CommonFieldAttributeTranslator.GetTextFor<OptionalAttribute>();
+                usageAttribute = AttributeBuilder.GetTextFor<OptionalAttribute>();
             }
             else if (!field.IsDefined<RequiredAttribute>() && !field.IsDefined<OptionalAttribute>())
             {
                 usageAttribute = defaultUsage == Usage.Required ?
-                    CommonFieldAttributeTranslator.GetTextFor<RequiredAttribute>() :
-                    CommonFieldAttributeTranslator.GetTextFor<OptionalAttribute>();
+                    AttributeBuilder.GetTextFor<RequiredAttribute>() :
+                    AttributeBuilder.GetTextFor<OptionalAttribute>();
             }
             if (usageAttribute != null)
                 res.Add(usageAttribute);
@@ -47,6 +48,9 @@ namespace Eco.Serialization.Xml
                 if (attributeText != null)
                     res.Add(attributeText);
             }
+
+            foreach (var policy in conversionPolicies.Where(p => p.SourceType == fieldType))
+                res.Add(AttributeBuilder.GetTextFor<ConverterAttribute>(policy.ConverterType, policy.Format, false));
 
             return res;
         }

@@ -27,6 +27,8 @@ namespace Eco
             this.DefaultUsage = Usage.Optional;
             this.InitializeRawSettingsLoadVisitors();
             this.InitializeRefinedSettingsLoadVisitors();
+            this.InitializeRefinedSettingsSaveVisitors();
+            this.InitializeRawSettingsSaveVisitors();
         }
 
         void InitializeRawSettingsLoadVisitors()

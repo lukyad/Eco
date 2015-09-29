@@ -6,6 +6,7 @@ using System.Xml.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 using Eco.Extensions;
+using Eco.CodeBuilder;
 
 namespace Eco.Serialization.Xml
 {
@@ -20,21 +21,33 @@ namespace Eco.Serialization.Xml
         {
             var attributesText = base.GetAttributesTextFor(settingsType);
             if (settingsType.IsDefined<RootAttribute>())
-                attributesText = attributesText.Append(XmlClassAttributeTranslator.GetTextFor<XmlRootAttribute>(GetXmlNamesapceForRootType(settingsType)));
+            {
+                string xmlRootAttribute =
+                    new AttributeBuilder(typeof(XmlRootAttribute).FullName)
+                    .AddStringParam("Namespace", GetXmlNamesapceForRootType(settingsType))
+                    .ToString();
+                attributesText = attributesText.Append(xmlRootAttribute);
+            }
 
             return attributesText;
         }
 
-        public override IEnumerable<string> GetAttributesTextFor(FieldInfo field, Usage defaultUsage)
+        public override IEnumerable<string> GetAttributesTextFor(FieldInfo field, Usage defaultUsage, ConversionPolicyAttribute[] conversionPolicies)
         {
-            var res = new List<string>(base.GetAttributesTextFor(field, defaultUsage));
+            var res = new List<string>(base.GetAttributesTextFor(field, defaultUsage, conversionPolicies));
 
             var fieldType = field.FieldType;
             if (field.IsPolimorphic() && !field.IsDefined<RefAttribute>() && !field.IsDefined<FieldMutatorAttribute>())
             {
                 Type attributeType = fieldType.IsArray || field.IsDefined<InlineAttribute>() ? typeof(XmlArrayItemAttribute) : typeof(XmlElementAttribute);
                 foreach (var t in field.GetKnownSerializableTypes())
-                    res.Add(XmlFieldAttributeTranslator.GetTextFor(attributeType, t.GetNonGenericName()));
+                {
+                    string attributeText =
+                        new AttributeBuilder(attributeType.FullName)
+                        .AddTypeParam(t.GetNonGenericName())
+                        .ToString();
+                    res.Add(attributeText);
+                }
             }
 
             var attributes = field.GetCustomAttributes().ToArray();
@@ -42,8 +55,8 @@ namespace Eco.Serialization.Xml
             for (int i = 0; i < attributes.Length; i++)
                 res.Add(XmlFieldAttributeTranslator.Translate(attributes[i], attributesData[i], field));
 
-            if (field.GetRawFieldType().IsSimple())
-                res.Add(XmlFieldAttributeTranslator.GetTextFor<XmlAttributeAttribute>());
+            if (field.GetRawFieldType(conversionPolicies).IsSimple())
+                res.Add(AttributeBuilder.GetTextFor<XmlAttributeAttribute>());
 
             return res.Where(a => a != null);
         }

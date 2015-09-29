@@ -39,8 +39,11 @@ namespace Eco.FieldVisitors
             else if (rawSettingsField.FieldType.GetElementType()?.Name == typeof(variable).Name)
             {
                 var arr = (Array)rawSettingsField.GetValue(rawSettings);
-                foreach (object variable in arr)
-                    this.RegisterVariable(variable);
+                if (arr != null)
+                {
+                    foreach (object variable in arr)
+                        this.RegisterVariable(variable);
+                }
             }
         }
 

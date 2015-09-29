@@ -54,6 +54,7 @@
     <Compile Include="Attributes\RootAttribute.cs" />
     <Compile Include="Attributes\SealedAttribute.cs" />
     <Compile Include="CodeBuilder\AttributeBuilder.cs" />
+    <Compile Include="CodeBuilder\AttributeParam.cs" />
     <Compile Include="ConfigurationException.cs" />
     <Compile Include="Elements\choice.cs" />
     <Compile Include="Elements\include.cs" />

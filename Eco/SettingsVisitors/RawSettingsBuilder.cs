@@ -63,11 +63,12 @@ namespace Eco.FieldVisitors
             if (value != null && Nullable.GetUnderlyingType(sourceField.FieldType) != null)
                 value = sourceField.FieldType.GetProperty("Value").GetValue(value);
 
-            ConverterAttribute converter = sourceField.GetCustomAttribute<ConverterAttribute>();
+            // Use the first default converter from the list.
+            ConverterAttribute converter = sourceField.GetCustomAttributes<ConverterAttribute>().FirstOrDefault(c => c.IsDefault);
             if (converter != null)
                 return converter.ToString(value);
             else
-                return value != null ? value.ToString() : null;
+                return value?.ToString();
         }
     }
 }

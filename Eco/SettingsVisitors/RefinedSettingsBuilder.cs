@@ -48,22 +48,32 @@ namespace Eco.FieldVisitors
 
         static object FromString(string sourceStr, FieldInfo targetField)
         {
+            // if source string is null, return null object.
             if (sourceStr == null) return null;
 
-            ConverterAttribute converter = targetField.GetCustomAttribute<ConverterAttribute>();
-            if (converter != null)
+            object result = null;
+            // If field is market with any Converter attributes, go through the converters list and try to parse the string
+            // Assign result to the first non-null string.
+            ConverterAttribute[] converters = targetField.GetCustomAttributes<ConverterAttribute>().ToArray();
+            if (converters != null && converters.Length > 0)
             {
-                return converter.FromString(sourceStr);
+                result = converters
+                    .OrderBy(c => c.IsDefault ? 0 : 1) // try default convertors first
+                    .Select(c => c.FromString(sourceStr))
+                    .FirstOrDefault(o => o != null);
             }
-            else
+            // If there were no converters or no convertor was able to parse the string,
+            // Use native TryParse method. Throw if the method doesn't exist.
+            if (result == null)
             {
                 Type targetType = targetField.FieldType;
                 MethodInfo tryParseMethod = GetTryParseMethod(targetType);
                 var args = new object[] { sourceStr, Activator.CreateInstance(targetType) };
                 bool parsed = (bool)tryParseMethod.Invoke(null, args);
                 if (!parsed) throw new ConfigurationException("Failed to parse '{0}' from '{1}'", targetType.Name, sourceStr);
-                return args[1];
+                result = args[1];
             }
+            return result;
         }
 
         static MethodInfo GetTryParseMethod(Type container)
