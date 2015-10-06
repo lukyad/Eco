@@ -6,6 +6,20 @@ using System.Threading.Tasks;
 
 namespace Sample
 {
+    public static class TimeSpanParser
+    {
+        public static object Parse(string timeSpan, string format)
+        {
+            TimeSpan result;
+            bool succeed = TimeSpanConverter.TryParseTimeSpan(timeSpan, out result);
+            if (!succeed)
+                return null;
+
+            return result;
+        }
+    }
+
+
     public static class TimeSpanConverter
     {
         private static readonly Dictionary<string, Func<double, TimeSpan>> _fromDoubleMethods = new Dictionary<string, Func<double, TimeSpan>> {
@@ -24,7 +38,7 @@ namespace Sample
             { "d", t => t.TotalDays }
         };
 
-        public static object FromString(string format, string timeSpan)
+        public static object FromString(string timeSpan, string format)
         {
             TimeSpan result;
             bool succeed = TryParseTimeSpan(timeSpan, out result);
@@ -34,7 +48,7 @@ namespace Sample
             return result;
         }
 
-        public static string ToString(string format, object timeSpan)
+        public static string ToString(object timeSpan, string format)
         {
             Func<TimeSpan, double> ToDouble = _toDoubleMethods[format];
             return String.Format("{0}{1}", ToDouble((TimeSpan)timeSpan), format);

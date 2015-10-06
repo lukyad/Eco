@@ -22,6 +22,17 @@ namespace Eco
     [AttributeUsage(AttributeTargets.Field)]
     public class ChoiceAttribute : FieldMutatorAttribute
     {
+        static readonly HashSet<Type> _incompatibleAttributeTypes = new HashSet<Type>
+        {
+            typeof(ConverterAttribute),
+            typeof(ExternalAttribute),
+            typeof(InlineAttribute),
+            typeof(ItemNameAttribute),
+            typeof(KnownTypesAttribute),
+            typeof(PolimorphicAttribute),
+            typeof(RefAttribute)
+        };
+
         public ChoiceAttribute()
             : base(GetRawSettingsFieldType, GetRawSettingsFieldAttributeText, GetRawSettingsFieldValue, SetRawSettingsFieldValue)
         {
@@ -30,9 +41,9 @@ namespace Eco
         public override void ValidateContext(FieldInfo context)
         {
             if (!context.FieldType.IsSettingsType() || !context.FieldType.IsAbstract)
-                base.ThrowExpectedFieldOf("a non-abstract settings type", context);
+                base.ThrowExpectedFieldOf("a settings type", context);
 
-            //AttributeValidator.CheckAttributesCompatibility(context, _incompatibleAttributeTypes);
+            CheckAttributesCompatibility(context, _incompatibleAttributeTypes);
         }
 
         static new Type GetRawSettingsFieldType(FieldInfo refinedSettingsField)

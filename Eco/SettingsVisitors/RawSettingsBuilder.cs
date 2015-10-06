@@ -20,6 +20,8 @@ namespace Eco.FieldVisitors
         // the refined settings by the RefinedSettingsBuilder. Thus, it considered to be a revocable visitor.
         public bool IsReversable { get { return true; } }
 
+        public void Initialize(Type rootSettingsType) { }
+
         public void Visit(string fieldPath, FieldInfo refinedSettingsField, object refinedSettings, FieldInfo rawSettingsField, object rawSettings)
         {
             if (refinedSettingsField.IsDefined<RefAttribute>()) return;
@@ -60,11 +62,14 @@ namespace Eco.FieldVisitors
         static string ToString(FieldInfo sourceField, object container)
         {
             object value = sourceField.GetValue(container);
+            // Handle nullable types here
             if (value != null && Nullable.GetUnderlyingType(sourceField.FieldType) != null)
-                value = sourceField.FieldType.GetProperty("Value").GetValue(value);
+            {
+                bool hasValue = (bool)sourceField.FieldType.GetProperty("HasValue").GetValue(value);
+                if (hasValue) value = sourceField.FieldType.GetProperty("Value").GetValue(value);
+            }
 
-            // Use the first default converter from the list.
-            ConverterAttribute converter = sourceField.GetCustomAttributes<ConverterAttribute>().FirstOrDefault(c => c.IsDefault);
+            ConverterAttribute converter = sourceField.GetCustomAttribute<ConverterAttribute>();
             if (converter != null)
                 return converter.ToString(value);
             else

@@ -9,7 +9,7 @@ using Eco.Extensions;
 namespace Eco
 {
     /// <summary>
-    /// Instructs IFieldVisitors to skip any post-processing of the given field.
+    /// Instructs the IRawFieldVisitors to skip any processing of the given field.
     /// (e.g. EnvironmnetVariableExpander would skip any fields marked as Sealed)
     /// 
     /// Usage:
@@ -21,15 +21,9 @@ namespace Eco
     [AttributeUsage(AttributeTargets.Field)]
     public class SealedAttribute : EcoFieldAttribute
     {
-        static readonly HashSet<Type> _incompatibleAttributeTypes = new HashSet<Type>
-        {
-            typeof(ConverterAttribute),
-            typeof(RefAttribute),
-        };
-
         public override void ValidateContext(FieldInfo context)
         {
-            AttributeValidator.CheckAttributesCompatibility(context, _incompatibleAttributeTypes);
+            // do nothing. can be applied to field of any type and is compatible with all Eco attributes.
         }
     }
 }

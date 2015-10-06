@@ -239,9 +239,9 @@ namespace Eco
             return rawSettings;
         }
 
-        static void VisitRawFieldsRecursive(object rawSettings, IRawSettingsVisitor visitor)
+        static void VisitRawFieldsRecursive(object rootRawSettings, IRawSettingsVisitor visitor)
         {
-            VisitRawFieldsRecursive(rawSettings.GetType().Name, rawSettings, visitor, visitedSettings: new HashSet<object>());
+            VisitRawFieldsRecursive(rootRawSettings.GetType().Name, rootRawSettings, visitor, visitedSettings: new HashSet<object>());
         }
 
         static void VisitRawFieldsRecursive(string settingsPath, object rawSettings, IRawSettingsVisitor visitor, HashSet<object> visitedSettings)
@@ -274,9 +274,10 @@ namespace Eco
             }
         }
 
-        static void VisitRefinedFieldsRecursive(object refinedSettings, object rawSettings, IRefinedSettingsVisitor visitor)
+        static void VisitRefinedFieldsRecursive(object rootRefinedSettings, object rawSettings, IRefinedSettingsVisitor visitor)
         {
-            VisitRefinedFieldsRecursive(refinedSettings.GetType().Name, refinedSettings, rawSettings, visitor, new HashSet<object>());
+            visitor.Initialize(rootRefinedSettings.GetType());
+            VisitRefinedFieldsRecursive(rootRefinedSettings.GetType().Name, rootRefinedSettings, rawSettings, visitor, new HashSet<object>());
         }
 
         static void VisitRefinedFieldsRecursive(string settingsPath, object refinedSettings, object rawSettings, IRefinedSettingsVisitor visitor, HashSet<object> visitedSettings)

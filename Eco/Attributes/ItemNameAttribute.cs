@@ -21,7 +21,13 @@ namespace Eco
     {
         static readonly HashSet<Type> _incompatibleAttributeTypes = new HashSet<Type>
         {
+            typeof(ChoiceAttribute),
+            typeof(ConverterAttribute),
+            typeof(ExternalAttribute),
+            typeof(IdAttribute),
             typeof(KnownTypesAttribute),
+            typeof(ParserAttribute),
+            typeof(PolimorphicAttribute),
             typeof(RefAttribute)
         };
 
@@ -35,9 +41,9 @@ namespace Eco
         public override void ValidateContext(FieldInfo context)
         {
             if (!context.FieldType.IsArray)
-                base.ThrowExpectedFieldOf("an array type", context);
+                ThrowExpectedFieldOf("an array type", context);
 
-            AttributeValidator.CheckAttributesCompatibility(context, _incompatibleAttributeTypes);
+            CheckAttributesCompatibility(context, _incompatibleAttributeTypes);
         }
     }
 }

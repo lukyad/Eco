@@ -31,19 +31,21 @@ namespace Eco
     {
         static readonly HashSet<Type> _incompatibleAttributeTypes = new HashSet<Type>
         {
-            typeof(IdAttribute),
-            typeof(InlineAttribute),
-            typeof(ItemNameAttribute),
+            typeof(ChoiceAttribute),
             typeof(ConverterAttribute),
+            typeof(ExternalAttribute),
+            typeof(IdAttribute),
+            typeof(ItemNameAttribute),
+            typeof(ParserAttribute),
             typeof(RefAttribute)
         };
 
         public override void ValidateContext(FieldInfo context)
         {
             if (!context.FieldType.IsSettingsType())
-                base.ThrowExpectedFieldOf("a settings type", context);
+                ThrowExpectedFieldOf("a settings type", context);
 
-            AttributeValidator.CheckAttributesCompatibility(context, _incompatibleAttributeTypes);
+            CheckAttributesCompatibility(context, _incompatibleAttributeTypes);
         }
     }
 }

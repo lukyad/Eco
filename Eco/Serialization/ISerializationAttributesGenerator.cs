@@ -38,6 +38,6 @@ namespace Eco.Serialization
         /// [Eco.SealedAttribute()]
         /// [MyNamesapce.MyCustomFieldAttribute()]
         /// </summary>
-        IEnumerable<string> GetAttributesTextFor(FieldInfo settingsField, Usage defaulUsage, ConversionPolicyAttribute[] conversionPolicies);
+        IEnumerable<string> GetAttributesTextFor(FieldInfo settingsField, Usage defaulUsage, ParsingRuleAttribute[] parsingRules);
     }
 }

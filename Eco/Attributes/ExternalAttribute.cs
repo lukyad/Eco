@@ -7,6 +7,7 @@ using System.IO;
 using System.Reflection;
 using Eco.Elements;
 using Eco.Extensions;
+using Eco.CodeBuilder;
 
 namespace Eco
 {
@@ -22,12 +23,17 @@ namespace Eco
     /// </summary>
     public class ExternalAttribute : FieldMutatorAttribute
     {
-        #region implementation details
-        class SampleType { }
-
-        [ExternalSettingsType(typeof(SampleType))]
-        readonly static object _attributePrototype = null;
-        #endregion
+        static readonly HashSet<Type> _incompatibleAttributeTypes = new HashSet<Type>
+        {
+            typeof(ChoiceAttribute),
+            typeof(ConverterAttribute),
+            typeof(InlineAttribute),
+            typeof(ItemNameAttribute),
+            typeof(KnownTypesAttribute),
+            typeof(ParserAttribute),
+            typeof(PolimorphicAttribute),
+            typeof(RefAttribute)
+        };
 
         public ExternalAttribute()
             : base(GetRawSettingsFieldType, GetRawSettingsFieldAttributeText, GetRawSettingsFieldValue, SetRawSettingsFieldValueValue)
@@ -36,7 +42,10 @@ namespace Eco
 
         public override void ValidateContext(FieldInfo context)
         {
-            //throw new NotImplementedException();
+            if (!context.FieldType.IsSettingsType())
+                ThrowExpectedFieldOf("a settings type", context);
+
+            CheckAttributesCompatibility(context, _incompatibleAttributeTypes);
         }
 
         static new Type GetRawSettingsFieldType(FieldInfo refinedSettingsField)
@@ -46,13 +55,10 @@ namespace Eco
 
         static new string GetRawSettingsFieldAttributeText(FieldInfo refinedSettingsField)
         {
-            return 
-                typeof(ExternalAttribute)
-                .GetField(nameof(_attributePrototype), BindingFlags.Static | BindingFlags.NonPublic)
-                .GetCustomAttributesData()
-                .First(d => d.AttributeType == typeof(ExternalSettingsTypeAttribute))
-                .ToString()
-                .Replace(typeof(SampleType).FullName, refinedSettingsField.FieldType.Name);
+            return
+                new AttributeBuilder(typeof(ExternalSettingsTypeAttribute).FullName)
+                .AddTypeParam(refinedSettingsField.FieldType.Name)
+                .ToString();
         }
 
         static new object GetRawSettingsFieldValue(FieldInfo rawSettingsField, object rawSettings)

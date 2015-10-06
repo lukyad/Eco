@@ -32,6 +32,13 @@ namespace Eco
         /// </summary>
         bool IsReversable { get; }
 
+
+        /// <summary>
+        /// Gets called by the Eco library ones on each Load/Save operation.
+        /// Allows to initialize visitor before the fields processing start.
+        /// </summary>
+        void Initialize(Type rootRefinedSettingsType);
+
         /// <summary>
         /// Gets called ones for each field for all objects of a settings type in the raw settings object graph.
         /// </summary>

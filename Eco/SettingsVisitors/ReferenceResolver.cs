@@ -19,6 +19,8 @@ namespace Eco
 
         public bool IsReversable { get { return true; } }
 
+        public void Initialize(Type rootSettingsType) { }
+
         public void Visit(string fieldPath, FieldInfo refinedSettingsField, object refinedSettings, FieldInfo rawSettingsField, object rawSettings)
         {
             if (refinedSettingsField.IsDefined<RefAttribute>())

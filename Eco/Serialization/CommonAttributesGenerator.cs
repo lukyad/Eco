@@ -17,7 +17,7 @@ namespace Eco.Serialization.Xml
             return Enumerable.Empty<string>();
         }
 
-        public virtual IEnumerable<string> GetAttributesTextFor(FieldInfo field, Usage defaultUsage, ConversionPolicyAttribute[] conversionPolicies)
+        public virtual IEnumerable<string> GetAttributesTextFor(FieldInfo field, Usage defaultUsage, ParsingRuleAttribute[] parsingRules)
         {
             var res = new List<string>();
 
@@ -48,9 +48,6 @@ namespace Eco.Serialization.Xml
                 if (attributeText != null)
                     res.Add(attributeText);
             }
-
-            foreach (var policy in conversionPolicies.Where(p => p.SourceType == fieldType))
-                res.Add(AttributeBuilder.GetTextFor<ConverterAttribute>(policy.ConverterType, policy.Format, false));
 
             return res;
         }

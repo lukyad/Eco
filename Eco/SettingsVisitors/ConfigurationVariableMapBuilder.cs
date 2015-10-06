@@ -27,6 +27,11 @@ namespace Eco.FieldVisitors
         // ConfigurationVariableMapBuilder doesn't make any changes per se.
         public bool IsReversable { get { return true; } }
 
+        public void Initialize(Type rootRefinedSettingsType)
+        {
+            _vars.Clear();
+        }
+
         public void Visit(string fieldPath, FieldInfo rawSettingsField, object rawSettings)
         {
             // Raw settings type is generated at runtime. Thus, we do not have a static variable type to use here,

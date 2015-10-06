@@ -30,9 +30,9 @@ namespace Eco
         public override void ValidateContext(FieldInfo context)
         {
             if (context.FieldType.IsValueType || Nullable.GetUnderlyingType(context.FieldType) != null)
-                base.ThrowExpectedFieldOf("a reference non-Nullable type", context);
+                ThrowExpectedFieldOf("a reference non-Nullable type", context);
 
-            AttributeValidator.CheckAttributesCompatibility(context, _incompatibleAttributeTypes);
+            CheckAttributesCompatibility(context, _incompatibleAttributeTypes);
         }
     }
 }

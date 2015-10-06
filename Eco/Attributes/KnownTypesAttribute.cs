@@ -31,10 +31,13 @@ namespace Eco
         readonly Type[] _ctorTypes;
         static readonly HashSet<Type> _incompatibleAttributeTypes = new HashSet<Type>
         {
+            typeof(ChoiceAttribute),
+            typeof(ConverterAttribute),
+            typeof(ExternalAttribute),
             typeof(IdAttribute),
             typeof(ItemNameAttribute),
+            typeof(ParserAttribute),
             typeof(RefAttribute),
-            typeof(ConverterAttribute)
         };
 
         public KnownTypesAttribute()
@@ -75,7 +78,7 @@ namespace Eco
                     context.Name
                 );
             }
-            AttributeValidator.CheckAttributesCompatibility(context, _incompatibleAttributeTypes);
+            CheckAttributesCompatibility(context, _incompatibleAttributeTypes);
         }
     }
 }

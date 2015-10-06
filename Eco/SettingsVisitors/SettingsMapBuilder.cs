@@ -16,6 +16,11 @@ namespace Eco.FieldVisitors
 
         public Dictionary<string, object> SettingsById{ get { return _settingsById; } }
 
+        public void Initialize(Type rootSettingsType)
+        {
+            _settingsById.Clear();
+        }
+
         public void Visit(string fieldPath, FieldInfo refinedSettingsField, object refinedSettings, FieldInfo rawSettingsField, object rawSettings)
         {
             if (refinedSettingsField.IsDefined<IdAttribute>())

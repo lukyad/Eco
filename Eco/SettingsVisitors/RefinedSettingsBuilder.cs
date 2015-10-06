@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using Eco.Extensions;
 
 namespace Eco.FieldVisitors
@@ -11,8 +9,15 @@ namespace Eco.FieldVisitors
     public class RefinedSettingsBuilder : IRefinedSettingsVisitor
     {
         readonly Dictionary<Type, Type> _typeMappings = new Dictionary<Type, Type>();
+        ParsingRuleAttribute[] _parsingRules;
 
         public bool IsReversable { get { return true; } }
+
+        public void Initialize(Type rootSettingsType)
+        {
+            // Capture parsing rules that applies to all fields.
+            _parsingRules = rootSettingsType.GetCustomAttributes<ParsingRuleAttribute>().ToArray();
+        }
 
         public void Visit(string fieldPath, FieldInfo refinedSettingsField, object refinedSettings, FieldInfo rawSettingsField, object rawSettings)
         {
@@ -46,33 +51,49 @@ namespace Eco.FieldVisitors
             refinedSettingsField.SetValue(refinedSettings, refinedValue);
         }
 
-        static object FromString(string sourceStr, FieldInfo targetField)
+        object FromString(string sourceStr, FieldInfo targetField)
         {
             // if source string is null, return null object.
             if (sourceStr == null) return null;
 
             object result = null;
-            // If field is market with any Converter attributes, go through the converters list and try to parse the string
-            // Assign result to the first non-null string.
-            ConverterAttribute[] converters = targetField.GetCustomAttributes<ConverterAttribute>().ToArray();
-            if (converters != null && converters.Length > 0)
+            // If field is marked with a Converter attribute, use the Converter.FromString method
+            // to get field's value.
+            var converter = targetField.GetCustomAttribute<ConverterAttribute>();
+            if (converter != null)
             {
-                result = converters
-                    .OrderBy(c => c.IsDefault ? 0 : 1) // try default convertors first
-                    .Select(c => c.FromString(sourceStr))
-                    .FirstOrDefault(o => o != null);
+                result = converter.FromString(sourceStr);
             }
-            // If there were no converters or no convertor was able to parse the string,
-            // Use native TryParse method. Throw if the method doesn't exist.
-            if (result == null)
+            else
             {
-                Type targetType = targetField.FieldType;
-                MethodInfo tryParseMethod = GetTryParseMethod(targetType);
-                var args = new object[] { sourceStr, Activator.CreateInstance(targetType) };
-                bool parsed = (bool)tryParseMethod.Invoke(null, args);
-                if (!parsed) throw new ConfigurationException("Failed to parse '{0}' from '{1}'", targetType.Name, sourceStr);
-                result = args[1];
+                // If field is marked with any Parser attributes, go through the parsers list and try to parse the source string.
+                // Assign result to the first non-null object.
+                result =
+                    targetField.GetCustomAttributes<ParserAttribute>()
+                    .Select(a => a.Parse(sourceStr, a.Format))
+                    .FirstOrDefault(r => r != null);
+
+                // If result is still null, try to use parsingRules.
+                if (result == null)
+                {
+                    result = _parsingRules
+                        .Where(r => r.SourceType == targetField.FieldType)
+                        .Select(r => r.Parse(sourceStr, r.Format))
+                        .FirstOrDefault(o => o != null);
+                }
+                // If there were no parsers or they have not been able to parse the string,
+                // Use native TryParse method. Throw if the method doesn't exist.
+                if (result == null)
+                {
+                    Type targetType = targetField.FieldType;
+                    MethodInfo tryParseMethod = GetTryParseMethod(targetType);
+                    var args = new object[] { sourceStr, Activator.CreateInstance(targetType) };
+                    bool parsed = (bool)tryParseMethod.Invoke(null, args);
+                    if (!parsed) throw new ConfigurationException("Failed to parse '{0}' from '{1}'", targetType.Name, sourceStr);
+                    result = args[1];
+                }
             }
+
             return result;
         }
 

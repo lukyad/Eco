@@ -32,9 +32,10 @@ namespace Eco
         public override void ValidateContext(FieldInfo context)
         {
             if (context.FieldType != typeof(string))
-                base.ThrowExpectedFieldOf("the String type", context);
+                ThrowExpectedFieldOf("the String type", context);
 
-            AttributeValidator.CheckAttributesCompatibility(context, _incompatibleAttributeTypes);
+            // Do not check attribute compatibility as it compatible  with all existing Eco attributes
+            // that can be applied to a field of the String type.
         }
     }
 }

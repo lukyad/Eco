@@ -32,9 +32,9 @@ namespace Eco.Serialization.Xml
             return attributesText;
         }
 
-        public override IEnumerable<string> GetAttributesTextFor(FieldInfo field, Usage defaultUsage, ConversionPolicyAttribute[] conversionPolicies)
+        public override IEnumerable<string> GetAttributesTextFor(FieldInfo field, Usage defaultUsage, ParsingRuleAttribute[] parsingRules)
         {
-            var res = new List<string>(base.GetAttributesTextFor(field, defaultUsage, conversionPolicies));
+            var res = new List<string>(base.GetAttributesTextFor(field, defaultUsage, parsingRules));
 
             var fieldType = field.FieldType;
             if (field.IsPolimorphic() && !field.IsDefined<RefAttribute>() && !field.IsDefined<FieldMutatorAttribute>())
@@ -55,7 +55,7 @@ namespace Eco.Serialization.Xml
             for (int i = 0; i < attributes.Length; i++)
                 res.Add(XmlFieldAttributeTranslator.Translate(attributes[i], attributesData[i], field));
 
-            if (field.GetRawFieldType(conversionPolicies).IsSimple())
+            if (field.GetRawFieldType(parsingRules).IsSimple())
                 res.Add(AttributeBuilder.GetTextFor<XmlAttributeAttribute>());
 
             return res.Where(a => a != null);

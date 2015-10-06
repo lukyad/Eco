@@ -19,6 +19,8 @@ namespace Eco.FieldVisitors
         // i.e. it's not possible to pack expanded strings back to variables.
         public bool IsReversable { get { return false; } }
 
+        public void Initialize(Type rootRefinedSettingsType) { }
+
         public void Visit(string fieldPath, FieldInfo rawSettingsField, object rawSettings)
         {
             // Skip 'sealed' fields.

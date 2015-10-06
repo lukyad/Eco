@@ -9,6 +9,7 @@ using Eco.Elements;
 namespace Sample
 {
     [Root, Doc("Represent one round of a space battle.")]
+    [ParsingRule(typeof(TimeSpan), typeof(TimeSpanParser))]
     public class spaceBattle
     {
         [Doc("Configuration variables.")]
@@ -41,7 +42,7 @@ namespace Sample
         [Required, Ref, Doc("Fleet that will be fighting on the alians's side.")]
         public fleet aliensFleet;
 
-        [Converter(typeof(TimeSpanConverter), "s")]
+        //[Converter(typeof(TimeSpanConverter), "s")]
         public TimeSpan duration;
     }
 

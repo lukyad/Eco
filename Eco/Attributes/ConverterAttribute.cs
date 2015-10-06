@@ -27,10 +27,13 @@ namespace Eco
     {
         static readonly HashSet<Type> _incompatibleAttributeTypes = new HashSet<Type>
         {
-            typeof(IdAttribute),
+            typeof(ChoiceAttribute),
+            typeof(ExternalAttribute),
             typeof(InlineAttribute),
             typeof(ItemNameAttribute),
             typeof(KnownTypesAttribute),
+            typeof(ParserAttribute),
+            typeof(PolimorphicAttribute),
             typeof(RefAttribute)
         };
 
@@ -40,15 +43,9 @@ namespace Eco
         }
 
         public ConverterAttribute(Type converterType, string format)
-            : this(converterType, format, isDefault: true)
-        {
-        }
-
-        public ConverterAttribute(Type converterType, string format, bool isDefault)
         {
             this.Type = converterType;
             this.Format = format;
-            this.IsDefault = isDefault;
             this.ToString = GetToStringMethod(converterType, format);
             this.FromString = GetFromStringMethod(converterType, format);
         }
@@ -57,20 +54,18 @@ namespace Eco
 
         public string Format { get; set; }
 
-        public bool IsDefault { get; set; }
-
         // Returns string representation of the specified object.
         public new Func<object, string> ToString { get; private set; }
 
-        // Returns null, if converter is not able to parse the specified string.
+        // Should return null, if converter is not able to parse the specified string.
         public Func<string, object> FromString { get; private set; }
 
         public override void ValidateContext(FieldInfo context)
         {
             if (context.FieldType == typeof(string))
-                base.ThrowExpectedFieldOf("a non-String type", context);
-            
-            AttributeValidator.CheckAttributesCompatibility(context, _incompatibleAttributeTypes);
+                ThrowExpectedFieldOf("a non-String type", context);
+
+            CheckAttributesCompatibility(context, _incompatibleAttributeTypes);
         }
 
         static Func<object, string> GetToStringMethod(Type converterType, string format)

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Reflection;
+using Eco.Extensions;
 
 namespace Eco
 {
@@ -23,6 +24,10 @@ namespace Eco
                 context.Name,
                 type
             );
+        }
+        protected static void ThrowMissingMethodException(Type methodContainer, string methodSignature)
+        {
+            throw new ConfigurationException("{0} type doesn't have required method: {1}", methodContainer.Name, methodSignature);
         }
     }
 }
