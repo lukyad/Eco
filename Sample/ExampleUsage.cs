@@ -15,7 +15,7 @@ namespace Sample
         [Doc("Configuration variables.")]
         public variable[] vars;
 
-        [Required, ItemName("add")]
+        [Required, Rename(".+", "add")]
         [Doc("Battles specification.")]
         public gameRound[] gameRounds;
 
@@ -79,6 +79,7 @@ namespace Sample
         [Doc("Shield is twice as effective protecting ship from energy weapons comparing to armor, but doesn't protect ship from missels attacts at all.")]
         public int? shield;
 
+        [Rename("sample(.+)Weapon", "$1")]
         [Doc("References to weapons to be used by the ship in a combat.")]
         public weapon[] weapons;
 
@@ -98,37 +99,37 @@ namespace Sample
     public abstract class weapon { }
 
     [Doc("Deals 3 - 8 damage to the target.")]
-    public class ionCannon : weapon
+    public class sampleIonCannonWeapon : weapon
     {
     }
 
     [Doc("Deals 4 - 16 damage with a 1 space range.")]
-    public class fusionBeam : weapon
+    public class sampleFusionBeamWeapon : weapon
     {
     }
 
     [Doc("Regular is 5 - 20. Heavy is 5 - 40 with a 2 space range.")]
-    public class phaser : weapon
+    public class samplePhaserWeapon : weapon
     {
     }
 
     [Doc("10 - 40 damage, Range 2.")]
-    public class disruptor : weapon
+    public class sampleDisruptorWeapon : weapon
     {
     }
 
     [Doc("Deals 6 damage to the target. Adds +1 level to the attacker's attack rating for this missile only.")]
-    public class hyperRocket : weapon
+    public class sampleHyperRocketWeapon : weapon
     {
     }
 
     [Doc("Deals 15 damage to the target. Adds + 3 level to the attacker's attack rating for this missile only.")]
-    public class stingerMissle : weapon
+    public class sampleStingerMissleWeapon : weapon
     {
     }
 
     [Doc("Deals 30 damage, can only be fired every other turn.")]
-    public class antiMatterTorpedoes : weapon
+    public class sampleAntiMatterTorpedoesWeapon : weapon
     {
     }
 

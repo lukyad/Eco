@@ -30,7 +30,7 @@ namespace Eco
             typeof(ChoiceAttribute),
             typeof(ExternalAttribute),
             typeof(InlineAttribute),
-            typeof(ItemNameAttribute),
+            typeof(RenameAttribute),
             typeof(KnownTypesAttribute),
             typeof(ParserAttribute),
             typeof(PolimorphicAttribute),

@@ -28,7 +28,7 @@ namespace Eco
             typeof(ChoiceAttribute),
             typeof(ConverterAttribute),
             typeof(InlineAttribute),
-            typeof(ItemNameAttribute),
+            typeof(RenameAttribute),
             typeof(KnownTypesAttribute),
             typeof(ParserAttribute),
             typeof(PolimorphicAttribute),

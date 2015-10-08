@@ -7,11 +7,11 @@ using Eco;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("Eco")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("Yet another configuration library for .NET")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("MICROSOFT")]
+[assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("Eco")]
-[assembly: AssemblyCopyright("Copyright © MICROSOFT 2015")]
+[assembly: AssemblyCopyright("Copyright © 2015")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -33,7 +33,6 @@ using Eco;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.0.0.0")]
-[assembly: AssemblyFileVersion("1.0.0.0")]
+[assembly: AssemblyVersion("1.0.*")]
 
 [assembly:SettingsAssembly("Eco.Elements")]

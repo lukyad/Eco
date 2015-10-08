@@ -35,7 +35,7 @@ namespace Eco
             typeof(ConverterAttribute),
             typeof(ExternalAttribute),
             typeof(IdAttribute),
-            typeof(ItemNameAttribute),
+            typeof(RenameAttribute),
             typeof(ParserAttribute),
             typeof(RefAttribute)
         };

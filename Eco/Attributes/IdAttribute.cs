@@ -24,7 +24,7 @@ namespace Eco
         {
             typeof(ChoiceAttribute),
             typeof(InlineAttribute),
-            typeof(ItemNameAttribute),
+            typeof(RenameAttribute),
             typeof(KnownTypesAttribute),
             typeof(RefAttribute)
         };

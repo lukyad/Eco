@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Xml.Serialization;
-using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Eco.Extensions;
 using Eco.CodeBuilder;
@@ -37,28 +37,36 @@ namespace Eco.Serialization.Xml
             var res = new List<string>(base.GetAttributesTextFor(field, defaultUsage, parsingRules));
 
             var fieldType = field.FieldType;
+            var renameRule = field.GetCustomAttribute<RenameAttribute>();
             if (field.IsPolimorphic() && !field.IsDefined<RefAttribute>() && !field.IsDefined<FieldMutatorAttribute>())
             {
-                Type attributeType = fieldType.IsArray || field.IsDefined<InlineAttribute>() ? typeof(XmlArrayItemAttribute) : typeof(XmlElementAttribute);
+                Type attributeType = !fieldType.IsArray || field.IsDefined<InlineAttribute>() ? typeof(XmlElementAttribute) : typeof(XmlArrayItemAttribute);
+                
                 foreach (var t in field.GetKnownSerializableTypes())
-                {
-                    string attributeText =
-                        new AttributeBuilder(attributeType.FullName)
-                        .AddTypeParam(t.GetNonGenericName())
-                        .ToString();
-                    res.Add(attributeText);
-                }
+                    res.Add(GetItemAttributeText(attributeType, t, renameRule));
             }
-
-            var attributes = field.GetCustomAttributes().ToArray();
-            var attributesData = field.GetCustomAttributesData();
-            for (int i = 0; i < attributes.Length; i++)
-                res.Add(XmlFieldAttributeTranslator.Translate(attributes[i], attributesData[i], field));
+            else if (field.FieldType.IsArray)
+            {
+                Type attributeType = field.IsDefined<InlineAttribute>() ? typeof(XmlElementAttribute) : typeof(XmlArrayItemAttribute);
+                Type itemTypeName = field.FieldType.GetElementType();
+                res.Add(GetItemAttributeText(attributeType, itemTypeName, renameRule));
+            }
 
             if (field.GetRawFieldType(parsingRules).IsSimple())
                 res.Add(AttributeBuilder.GetTextFor<XmlAttributeAttribute>());
 
             return res.Where(a => a != null);
+        }
+
+        static string GetItemAttributeText(Type attributeType, Type itemType, RenameAttribute renameRule)
+        {
+            string originalItemTypeName = itemType.GetNonGenericName();
+            string xmlItemTypeName = renameRule != null ? renameRule.Rename(originalItemTypeName) : originalItemTypeName;
+            return 
+                new AttributeBuilder(attributeType.FullName)
+                .AddStringParam(xmlItemTypeName)
+                .AddTypeParam(originalItemTypeName)
+                .ToString();
         }
     }
 }

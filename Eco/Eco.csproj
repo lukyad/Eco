@@ -21,6 +21,8 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DocumentationFile>
+    </DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -29,6 +31,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Release\Eco.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -77,7 +80,7 @@
     <Compile Include="Attributes\DocAttribute.cs" />
     <Compile Include="Attributes\IdAttribute.cs" />
     <Compile Include="Attributes\InlineAttribute.cs" />
-    <Compile Include="Attributes\ItemNameAttribute.cs" />
+    <Compile Include="Attributes\RenameAttribute.cs" />
     <Compile Include="Attributes\KnownTypesAttribute.cs" />
     <Compile Include="Attributes\RefAttribute.cs" />
     <Compile Include="Attributes\RequiredAttribute.cs" />
@@ -88,7 +91,6 @@
     <Compile Include="CodeBuilder\FieldBuilder.cs" />
     <Compile Include="CodeBuilder\FragmentBuilder.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
-    <Compile Include="Serialization\Xml\XmlFieldAttributeTranslator.cs" />
     <Compile Include="SettingsVisitors\RefinedSettingsBuilder.cs" />
     <Compile Include="SettingsVisitors\IRefinedSettingsVisitor.cs" />
     <Compile Include="SettingsVisitors\ReferenceResolver.cs" />
