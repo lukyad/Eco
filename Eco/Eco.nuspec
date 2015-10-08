@@ -1,0 +1,17 @@
+﻿<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>$id$</id>
+    <version>$version$</version>
+    <title>$title$</title>
+    <authors>Dmitry Lukyanov</authors>
+    <owners>Dmitry Lukyanov</owners>
+    <licenseUrl>http://www.apache.org/licenses/LICENSE-2.0.txt</licenseUrl>
+    <projectUrl>https://github.com/lukyad/Eco</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>$description$</description>
+    <releaseNotes>First release.</releaseNotes>
+    <copyright>Copyright © 2015</copyright>
+    <tags>Configuration, XML</tags>
+  </metadata>
+</package>
