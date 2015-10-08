@@ -28,7 +28,7 @@ namespace Eco
             for (int i = 0; i < targetArray.Length; i++)
             {
                 Type sourceElementType = sourceArray.GetValue(i).GetType();
-                Type targetElementType = GetMatchingTargetType(sourceElementType, targetField.FieldType.Assembly, typeMappings);
+                Type targetElementType = GetMatchingTargetType(sourceElementType, targetField.DeclaringType.Assembly, typeMappings);
                 targetArray.SetValue(Activator.CreateInstance(targetElementType), i);
             }
             return targetArray;

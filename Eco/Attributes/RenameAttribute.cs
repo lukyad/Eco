@@ -6,8 +6,8 @@ using System.Reflection;
 namespace Eco
 {
     /// <summary>
-    /// Applies to a field of a polimorphic type only.
-    /// Instructs serializer to rename any known polimorphic type according to the specified rule.
+    /// Applies to a field of a polymorphic type only.
+    /// Instructs serializer to rename any known polymorphic type according to the specified rule.
     /// 
     /// Usage:
     /// Can be applied to a field of a polymorphic type only.
@@ -24,9 +24,7 @@ namespace Eco
             typeof(ConverterAttribute),
             typeof(ExternalAttribute),
             typeof(IdAttribute),
-            typeof(KnownTypesAttribute),
             typeof(ParserAttribute),
-            typeof(PolimorphicAttribute),
             typeof(RefAttribute)
         };
 

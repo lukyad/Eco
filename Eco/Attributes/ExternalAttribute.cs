@@ -31,7 +31,7 @@ namespace Eco
             typeof(RenameAttribute),
             typeof(KnownTypesAttribute),
             typeof(ParserAttribute),
-            typeof(PolimorphicAttribute),
+            typeof(PolymorphicAttribute),
             typeof(RefAttribute)
         };
 

@@ -63,7 +63,7 @@ namespace Eco
             typeof(ExternalAttribute),
             typeof(IdAttribute),
             typeof(ParserAttribute),
-            typeof(PolimorphicAttribute),
+            typeof(PolymorphicAttribute),
             typeof(RefAttribute),
         };
 

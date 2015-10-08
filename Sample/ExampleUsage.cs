@@ -79,9 +79,9 @@ namespace Sample
         [Doc("Shield is twice as effective protecting ship from energy weapons comparing to armor, but doesn't protect ship from missels attacts at all.")]
         public int? shield;
 
-        [Rename("sample(.+)Weapon", "$1")]
+        [KnownTypes(Wildcard = "*Weapon"), Rename("sample(.+)Weapon", "$1")]
         [Doc("References to weapons to be used by the ship in a combat.")]
-        public weapon[] weapons;
+        public object[] weapons;
 
         // Explicitly specify known types through a wildcard.
         [Required, Choice, Doc("Drive affects mobility of the ship during a combat.")]
@@ -90,7 +90,7 @@ namespace Sample
 
     //public class driveChoice
     //{
-    //    [Required, Polimorphic]
+    //    [Required, Polymorphic]
     //    public drive instance;
     //}
 

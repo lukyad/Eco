@@ -53,7 +53,7 @@
     <Compile Include="Attributes\FieldMutatorAttribute.cs" />
     <Compile Include="Attributes\OptionalAttribute.cs" />
     <Compile Include="Attributes\ExternalSettingsTypeAttribute.cs" />
-    <Compile Include="Attributes\PolimorphicAttribute.cs" />
+    <Compile Include="Attributes\PolymorphicAttribute.cs" />
     <Compile Include="Attributes\RootAttribute.cs" />
     <Compile Include="Attributes\SealedAttribute.cs" />
     <Compile Include="CodeBuilder\AttributeBuilder.cs" />

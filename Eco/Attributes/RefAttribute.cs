@@ -33,7 +33,7 @@ namespace Eco
             typeof(RenameAttribute),
             typeof(KnownTypesAttribute),
             typeof(ParserAttribute),
-            typeof(PolimorphicAttribute)
+            typeof(PolymorphicAttribute)
         };
 
         public override void ValidateContext(FieldInfo context)

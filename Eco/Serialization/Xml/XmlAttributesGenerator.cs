@@ -38,7 +38,7 @@ namespace Eco.Serialization.Xml
 
             var fieldType = field.FieldType;
             var renameRule = field.GetCustomAttribute<RenameAttribute>();
-            if (field.IsPolimorphic() && !field.IsDefined<RefAttribute>() && !field.IsDefined<FieldMutatorAttribute>())
+            if (field.IsPolymorphic() && !field.IsDefined<RefAttribute>() && !field.IsDefined<FieldMutatorAttribute>())
             {
                 Type attributeType = !fieldType.IsArray || field.IsDefined<InlineAttribute>() ? typeof(XmlElementAttribute) : typeof(XmlArrayItemAttribute);
                 

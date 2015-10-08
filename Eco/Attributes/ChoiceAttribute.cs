@@ -11,7 +11,7 @@ namespace Eco
 {
     /// <summary>
     /// Instructs serializer to wrap the given field into the choice<TFieldType> object.
-    /// The choice element contains a single polimorfic field. Usefull for XML serialization.
+    /// The choice element contains a single polymorfic field. Usefull for XML serialization.
     /// 
     /// Usage: 
     /// Can be applied to a field of a settings type only.
@@ -29,7 +29,7 @@ namespace Eco
             typeof(InlineAttribute),
             typeof(RenameAttribute),
             typeof(KnownTypesAttribute),
-            typeof(PolimorphicAttribute),
+            typeof(PolymorphicAttribute),
             typeof(RefAttribute)
         };
 

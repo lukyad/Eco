@@ -32,12 +32,13 @@ namespace Eco.Extensions
             return t.GetElementType().IsSettingsType();
         }
 
-        public static bool IsPolimorphic(this FieldInfo field)
+        public static bool IsPolymorphic(this FieldInfo field)
         {
             var fieldType = field.FieldType;
-            return
-                fieldType.IsSettingsType() && (fieldType.IsAbstract || field.IsDefined<PolimorphicAttribute>()) ||
-                fieldType.IsSettingsArrayType() && (fieldType.GetElementType().IsAbstract || field.IsDefined<PolimorphicAttribute>());
+            return 
+                fieldType == typeof(object) || fieldType == typeof(object[]) ||
+                fieldType.IsSettingsType() && (fieldType.IsAbstract || field.IsDefined<PolymorphicAttribute>()) ||
+                fieldType.IsSettingsArrayType() && (fieldType.GetElementType().IsAbstract || field.IsDefined<PolymorphicAttribute>());
         }
 
         public static IEnumerable<Type> GetDerivedTypes(this Type type)

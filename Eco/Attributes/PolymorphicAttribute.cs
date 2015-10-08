@@ -14,8 +14,8 @@ namespace Eco
     /// all non-abstract types derived from the field type 
     /// plus field type itself, if it's not abstract.
     /// 
-    /// If field is of an abstract settings type then it's already polimorphic
-    /// and the Polimorphic attribute can be omitted
+    /// If field is of an abstract settings type then it's already polymorphic
+    /// and the Polymorphic attribute can be omitted
     /// 
     /// The list of permitted polymorphic types can be limited with
     /// the KnownTypes attribute.
@@ -27,7 +27,7 @@ namespace Eco
     /// Incompatible with the Id, Inline, ItemName, Converter and Ref attributes and compatible with all others.
     /// </summary>
     [AttributeUsage(AttributeTargets.Field)]
-    public class PolimorphicAttribute : EcoFieldAttribute
+    public class PolymorphicAttribute : EcoFieldAttribute
     {
         static readonly HashSet<Type> _incompatibleAttributeTypes = new HashSet<Type>
         {

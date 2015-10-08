@@ -11,7 +11,7 @@ namespace Eco.Elements
     /// </summary>
     public class choice<T>
     {
-        [Required, Polimorphic]
+        [Required, Polymorphic]
         public T value;
     }
 }
