@@ -24,7 +24,7 @@ namespace Eco
         {
             _serializer = serializer;
             _serializationAttributesGenerator = serializationAttributesGenerator;
-            this.DefaultUsage = Usage.Optional;
+            this.DefaultUsage = Usage.Required;
             this.InitializeRawSettingsLoadVisitors();
             this.InitializeRefinedSettingsLoadVisitors();
             this.InitializeRefinedSettingsSaveVisitors();
@@ -208,14 +208,16 @@ namespace Eco
         {
             if (this.RawSettingsLoadVisitors != null)
             {
-                foreach (var v in this.RawSettingsLoadVisitors.Where(v => v.IsReversable == !skipNonReversableOperations))
+                var visitors = skipNonReversableOperations ? this.RawSettingsLoadVisitors.Where(v => v.IsReversable) : this.RawSettingsLoadVisitors;
+                foreach (var v in visitors)
                     VisitRawFieldsRecursive(rawSettings, v);
             }
 
             object refinedSettings = Activator.CreateInstance(refinedSettingsType);
             if (this.RefinedSettingsLoadVisitors != null)
             {
-                foreach (var v in this.RefinedSettingsLoadVisitors.Where(v => v.IsReversable == !skipNonReversableOperations))
+                var visitors = skipNonReversableOperations ? this.RefinedSettingsLoadVisitors.Where(v => v.IsReversable) : this.RefinedSettingsLoadVisitors;
+                foreach (var v in visitors)
                     VisitRefinedFieldsRecursive(refinedSettings, rawSettings, v);
             }
 
@@ -261,7 +263,7 @@ namespace Eco
                     {
                         VisitRawFieldsRecursive(currentPath, rawSettingsValue, visitor, visitedSettings);
                     }
-                    else if (rawSettingsValue.GetType().IsSettingsArrayType())
+                    else if (rawSettingsValue.GetType().IsSettingsOrObjectArrayType())
                     {
                         var arr = (Array)rawSettingsValue;
                         for (int i = 0; i < arr.Length; i++)
@@ -302,7 +304,7 @@ namespace Eco
                     {
                         VisitRefinedFieldsRecursive(currentPath, refinedSettingsValue, rawSettingsValue, visitor, visitedSettings);
                     }
-                    else if (refinedSettingsValue.GetType().IsSettingsArrayType())
+                    else if (refinedSettingsValue.GetType().IsSettingsOrObjectArrayType())
                     {
                         var refinedSettingsArray = (Array)refinedSettingsValue;
                         var rawSettingsArray = (Array)rawSettingsValue;

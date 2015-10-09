@@ -65,7 +65,7 @@ namespace Eco
             {
                 var regexp = new Wildcard(this.Wildcard);
                 Func<Type, bool> MatchesWildcard = t => regexp.Match(t.FullName).Success;
-                var knownSettingsTypes = context.DeclaringType.Assembly.GetTypes().Where(t => MatchesWildcard(t) && t.IsSettingsType());
+                var knownSettingsTypes = context.DeclaringType.Assembly.GetTypes().Where(t => MatchesWildcard(t) && t.IsSettingsType()).ToArray() ;
                 foreach (var t in knownSettingsTypes)
                     yield return t;
             }

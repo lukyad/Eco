@@ -25,9 +25,8 @@ namespace Eco
         {
             if (refinedSettingsField.IsDefined<RefAttribute>())
             {
-                if (refinedSettingsField.FieldType.IsSettingsType()) ResolveReference(rawSettingsField, rawSettings, refinedSettingsField, refinedSettings);
-                else if (refinedSettingsField.FieldType.IsSettingsArrayType()) ResolveReferenceArray(rawSettingsField, rawSettings, refinedSettingsField, refinedSettings);
-                else throw new ConfigurationException("Did not expect to get here");
+                if (refinedSettingsField.FieldType.IsArray) ResolveReferenceArray(rawSettingsField, rawSettings, refinedSettingsField, refinedSettings); 
+                else ResolveReference(rawSettingsField, rawSettings, refinedSettingsField, refinedSettings);
             }
         }
 
@@ -36,8 +35,8 @@ namespace Eco
             string id = (string)rawSettingsField.GetValue(rawSettings);
             if (id != null)
             {
-                object settings = GetSettings(id);
-                if (!refinedSettingsField.FieldType.IsAssignableFrom(settings.GetType()))
+                object settings = GetSettings(id, throwIfMissing: !refinedSettingsField.GetCustomAttribute<RefAttribute>().Weak);
+                if (settings != null && !refinedSettingsField.FieldType.IsAssignableFrom(settings.GetType()))
                 {
                     throw new ConfigurationException("Could not assign object with ID='{0}' of type '{1}' to the '{2}' field of type '{3}'",
                         id, settings.GetType().Name, refinedSettingsField.Name, refinedSettingsField.FieldType.Name);
@@ -51,28 +50,42 @@ namespace Eco
             string idWildcards = (string)rawSettingsField.GetValue(rawSettings);
             if (idWildcards != null)
             {
-                Func<string, IEnumerable<string>> MatchIds = w => _settingsById.Keys.Where(id => new Wildcard(w).IsMatch(id));
-                var ids = idWildcards.Split(',').SelectMany(w => MatchIds(w)).ToArray();
+                Func<string, IEnumerable<string>> MatchIds = w => _settingsById.Keys.Where(id => new Wildcard(w.Trim()).IsMatch(id));
                 var elementType = refinedSettingsField.FieldType.GetElementType();
-                Array settingsArray = Array.CreateInstance(elementType, ids.Length);
-                for (int i = 0; i < ids.Length; i++)
+                var settingsList = new List<object>();
+                foreach (var wildcard in idWildcards.Split(','))
                 {
-                    object settings = GetSettings(ids[i]);
-                    if (!elementType.IsAssignableFrom(settings.GetType()))
+                    var matchedIds = _settingsById.Keys.Where(id => new Wildcard(wildcard.Trim()).IsMatch(id)).ToArray();
+                    if (matchedIds.Length == 0 && !refinedSettingsField.GetCustomAttribute<RefAttribute>().Weak)
+                        throw new ConfigurationException("Could not find any settings matching '{0}' id", wildcard);
+
+                    for (int i = 0; i < matchedIds.Length; i++)
                     {
-                        throw new ConfigurationException("Could not assign object with ID='{0}' of type '{1}' to an element of the array '{2}' of type '{3}'",
-                            ids[i], settings.GetType().Name, refinedSettingsField.Name, elementType.Name);
+                        object settings = GetSettings(matchedIds[i]);
+                        if (settings != null)
+
+                        {
+                            if (!elementType.IsAssignableFrom(settings.GetType()))
+                            {
+                                throw new ConfigurationException("Could not assign object with ID='{0}' of type '{1}' to an element of the array '{2}.{3}' of type '{4}'",
+                                    matchedIds[i], settings.GetType().Name, refinedSettingsField.DeclaringType.Name, refinedSettingsField.Name, elementType.Name);
+                            }
+                            settingsList.Add(settings);
+                        }
                     }
-                    settingsArray.SetValue(settings, i);
                 }
+                Array settingsArray = Array.CreateInstance(elementType, settingsList.Count);
+                for (int i = 0; i < settingsList.Count; i++)
+                    settingsArray.SetValue(settingsList[i], i);
+
                 refinedSettingsField.SetValue(refinedSettings, settingsArray);
             }
         }
 
-        object GetSettings(string id)
+        object GetSettings(string id, bool throwIfMissing = false)
         {
             object settings;
-            if (!_settingsById.TryGetValue(id, out settings)) throw new ConfigurationException("Missing configuration ID: {0}", id);
+            if (!_settingsById.TryGetValue(id, out settings) && throwIfMissing) throw new ConfigurationException("Missing configuration ID: {0}", id);
             return settings;
         }
 

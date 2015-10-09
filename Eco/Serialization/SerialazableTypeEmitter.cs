@@ -64,7 +64,7 @@ namespace Eco.Serialization
             if (field.IsDefined(typeof(RefAttribute)) ||
                 field.IsDefined(typeof(ConverterAttribute)) ||
                 parsingRules.Any(p => p.SourceType == sourceType) ||
-                Nullable.GetUnderlyingType(sourceType).IsSimple())
+                sourceType.IsNullable())
             {
                 return typeof(string);
             }
@@ -87,9 +87,12 @@ namespace Eco.Serialization
             {
                 return typeof(string);
             }
-            else if (Nullable.GetUnderlyingType(sourceType).IsSimple())
+            else if (sourceType.IsNullable())
             {
-                return Nullable.GetUnderlyingType(sourceType);
+                if (Nullable.GetUnderlyingType(sourceType).IsSimple())
+                    return Nullable.GetUnderlyingType(sourceType);
+                else
+                    return typeof(string);
             }
             else if (field.IsDefined<FieldMutatorAttribute>())
             {
@@ -115,8 +118,23 @@ namespace Eco.Serialization
                 .ToArray();
             CompilerParameters p = new CompilerParameters(referencedAssemblies);
             CompilerResults results = new CSharpCodeProvider().CompileAssemblyFromSource(p, compilationUnit);
-            if (results.Errors.Count > 0) throw new ConfigurationException("Could not emit xml serialization classes for the '{0}' settings type", rootSettingsType.Name);
+            if (results.Errors.Count > 0)
+            {
+                throw new ConfigurationException(
+                    "Could not emit xml serialization classes for the '{0}' settings type: {1}{2}", 
+                    rootSettingsType.Name, 
+                    Environment.NewLine,
+                    GetCompilationErrorsDescription(results.Errors));
+            }
             return results.CompiledAssembly.GetTypes().First(t => t.Name == rootSettingsType.Name);
+        }
+
+        static string GetCompilationErrorsDescription(CompilerErrorCollection errors)
+        {
+            var description = new StringBuilder();
+            foreach (var error in errors)
+                description.AppendLine(error.ToString());
+            return description.ToString();
         }
 
         static string GenerateClassDefinitionRecursive(
@@ -134,7 +152,7 @@ namespace Eco.Serialization
                 string baseTypeName = type.BaseType.IsSettingsType() ? type.BaseType.GetNonGenericName() : null;
                 var classBuilder = codeBuilder.AddClass(type.GetNonGenericName(), baseTypeName);
                 classBuilder.AddAttributes(attributesGenerator.GetAttributesTextFor(type));
-                foreach (var field in type.GetFields())
+                foreach (var field in type.GetOwnFields())
                 {
                     ValidateFieldAttributes(field);
                     var serializableFieldType = GetRawFieldType(field, parsingRules);

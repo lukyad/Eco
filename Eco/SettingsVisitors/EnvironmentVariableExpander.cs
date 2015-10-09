@@ -28,14 +28,20 @@ namespace Eco.FieldVisitors
 
             if (rawSettingsField.FieldType == typeof(string))
             {
-                string expandedValue = Environment.ExpandEnvironmentVariables((string)rawSettingsField.GetValue(rawSettings));
-                rawSettingsField.SetValue(rawSettings, expandedValue);
+                string value = (string)rawSettingsField.GetValue(rawSettings);
+                if (value != null)
+                {
+                    string expandedValue = Environment.ExpandEnvironmentVariables(value);
+                    rawSettingsField.SetValue(rawSettings, expandedValue);
+                }
             }
             else if (rawSettingsField.FieldType == typeof(string[]))
             {
                 var arr = (string[])rawSettingsField.GetValue(rawSettings);
                 for (int i = 0; i < arr.Length; i++)
-                    arr[i] = Environment.ExpandEnvironmentVariables(arr[i]);
+                {
+                    if (arr[i] != null) arr[i] = Environment.ExpandEnvironmentVariables(arr[i]);
+                }
             }
         }
     }

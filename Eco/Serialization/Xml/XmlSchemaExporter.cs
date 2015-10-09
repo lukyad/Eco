@@ -17,7 +17,12 @@ namespace Eco.Serialization.Xml
 
         public static string GetSchemaFor<T>(Usage defaultUsage)
         {
-            var xmlSettingsType = SerializableTypeEmitter.GetSchemaTypeFor<T>(new XmlAttributesGenerator(), defaultUsage);
+            return GetSchemaFor(typeof(T), defaultUsage);
+        }
+
+        public static string GetSchemaFor(Type exportedType, Usage defaultUsage)
+        {
+            var xmlSettingsType = SerializableTypeEmitter.GetSchemaTypeFor(exportedType, new XmlAttributesGenerator(), defaultUsage);
             var importer = new XmlReflectionImporter();
             var schemas = new XmlSchemas();
             var exporter = new System.Xml.Serialization.XmlSchemaExporter(schemas);

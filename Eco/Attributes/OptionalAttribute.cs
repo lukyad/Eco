@@ -31,7 +31,7 @@ namespace Eco
         public override void ValidateContext(FieldInfo context)
         {
             if (context.FieldType.IsValueType || Nullable.GetUnderlyingType(context.FieldType) != null)
-                ThrowExpectedFieldOf("a reference non-Nullable type", context);
+                ThrowExpectedFieldOf("a reference non-Nullable type. For value types field usage is controlled by the ? mark", context);
 
             CheckAttributesCompatibility(context, _incompatibleAttributeTypes);
         }

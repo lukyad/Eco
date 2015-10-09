@@ -21,7 +21,7 @@ namespace Eco
     /// the KnownTypes attribute.
     /// 
     /// Usage:
-    /// Can be applied to any field of a settings type (any type from the assembly marked with SettingsAssembly attribute)
+    /// Can be applied to any field of a settings or settings array type (any type from the assembly marked with SettingsAssembly attribute)
     /// 
     /// Compatibility:
     /// Incompatible with the Id, Inline, ItemName, Converter and Ref attributes and compatible with all others.
@@ -42,8 +42,8 @@ namespace Eco
 
         public override void ValidateContext(FieldInfo context)
         {
-            if (!context.FieldType.IsSettingsType())
-                ThrowExpectedFieldOf("a settings type", context);
+            if (!context.FieldType.IsSettingsType() && !context.FieldType.IsSettingsArrayType())
+                ThrowExpectedFieldOf("a settings or settings array type", context);
 
             CheckAttributesCompatibility(context, _incompatibleAttributeTypes);
         }

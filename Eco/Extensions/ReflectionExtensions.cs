@@ -26,10 +26,34 @@ namespace Eco.Extensions
                 t.Namespace.StartsWith(settingsAssemblyAttr.SettingsTypesNamesapace));
         }
 
+        public static bool IsSettingsOrObjectType(this Type t)
+        {
+            if (t == typeof(object)) return true;
+            if (t.IsArray || !t.IsClass) return false;
+
+            var settingsAssemblyAttr = t.Assembly.GetCustomAttribute<SettingsAssemblyAttribute>();
+            return
+                settingsAssemblyAttr != null && (
+                String.IsNullOrEmpty(settingsAssemblyAttr.SettingsTypesNamesapace) ||
+                t.Namespace.StartsWith(settingsAssemblyAttr.SettingsTypesNamesapace));
+        }
+
         public static bool IsSettingsArrayType(this Type t)
         {
             if (!t.IsArray) return false;
             return t.GetElementType().IsSettingsType();
+        }
+
+        public static bool IsSettingsOrObjectArrayType(this Type t)
+        {
+            if (t == typeof(object[])) return true;
+            if (!t.IsArray) return false;
+            return t.GetElementType().IsSettingsType();
+        }
+
+        public static bool IsNullable(this Type t)
+        {
+            return Nullable.GetUnderlyingType(t) != null;
         }
 
         public static bool IsPolymorphic(this FieldInfo field)
@@ -40,6 +64,8 @@ namespace Eco.Extensions
                 fieldType.IsSettingsType() && (fieldType.IsAbstract || field.IsDefined<PolymorphicAttribute>()) ||
                 fieldType.IsSettingsArrayType() && (fieldType.GetElementType().IsAbstract || field.IsDefined<PolymorphicAttribute>());
         }
+
+        
 
         public static IEnumerable<Type> GetDerivedTypes(this Type type)
         {

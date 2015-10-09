@@ -35,7 +35,7 @@ namespace Eco.FieldVisitors
                 {
                     refinedValue = SettingsConstruction.CreateSettingsObject(rawValue, refinedSettingsField, _typeMappings);
                 }
-                else if (rawValueType.IsSettingsArrayType())
+                else if (rawValueType.IsSettingsOrObjectArrayType())
                 {
                     refinedValue = SettingsConstruction.CreateSettingsArray((Array)rawValue, refinedSettingsField, _typeMappings);
                 }

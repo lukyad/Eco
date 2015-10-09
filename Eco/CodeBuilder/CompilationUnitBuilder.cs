@@ -13,6 +13,7 @@ namespace Eco
 
         public CompilationUnitBuilder(string unitNamespace)
         {
+            base.AddPart("using System;");
             base.AddPart(_assemblyAttributesBuilder);
             base.AddPart("namespace " + unitNamespace);
             base.AddPart(_compilationUnit);

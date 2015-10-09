@@ -18,8 +18,8 @@ namespace Eco
         {
             if (refinedSettingsField.IsDefined<RefAttribute>())
             {
-                if (refinedSettingsField.FieldType.IsSettingsType()) PackReference(fieldPath, refinedSettingsField, refinedSettings, rawSettingsField, rawSettings);
-                else if (refinedSettingsField.FieldType.IsSettingsArrayType()) PackReferenceArray(fieldPath, refinedSettingsField, refinedSettings, rawSettingsField, rawSettings);
+                if (refinedSettingsField.FieldType.IsSettingsOrObjectType()) PackReference(fieldPath, refinedSettingsField, refinedSettings, rawSettingsField, rawSettings);
+                else if (refinedSettingsField.FieldType.IsSettingsOrObjectArrayType()) PackReferenceArray(fieldPath, refinedSettingsField, refinedSettings, rawSettingsField, rawSettings);
                 else throw new ConfigurationException("Did not expect to get here");
             }
         }

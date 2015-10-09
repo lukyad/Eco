@@ -38,18 +38,22 @@ namespace Eco.Serialization.Xml
 
             var fieldType = field.FieldType;
             var renameRule = field.GetCustomAttribute<RenameAttribute>();
-            if (field.IsPolymorphic() && !field.IsDefined<RefAttribute>() && !field.IsDefined<FieldMutatorAttribute>())
+
+            if (!field.IsDefined<RefAttribute>() && !field.IsDefined<FieldMutatorAttribute>())
             {
-                Type attributeType = !fieldType.IsArray || field.IsDefined<InlineAttribute>() ? typeof(XmlElementAttribute) : typeof(XmlArrayItemAttribute);
-                
-                foreach (var t in field.GetKnownSerializableTypes())
-                    res.Add(GetItemAttributeText(attributeType, t, renameRule));
-            }
-            else if (field.FieldType.IsArray)
-            {
-                Type attributeType = field.IsDefined<InlineAttribute>() ? typeof(XmlElementAttribute) : typeof(XmlArrayItemAttribute);
-                Type itemTypeName = field.FieldType.GetElementType();
-                res.Add(GetItemAttributeText(attributeType, itemTypeName, renameRule));
+                if (field.IsPolymorphic())
+                {
+                    Type attributeType = !fieldType.IsArray || field.IsDefined<InlineAttribute>() ? typeof(XmlElementAttribute) : typeof(XmlArrayItemAttribute);
+
+                    foreach (var t in field.GetKnownSerializableTypes())
+                        res.Add(GetItemAttributeText(attributeType, t, renameRule));
+                }
+                else if (field.FieldType.IsArray)
+                {
+                    Type attributeType = field.IsDefined<InlineAttribute>() ? typeof(XmlElementAttribute) : typeof(XmlArrayItemAttribute);
+                    Type itemTypeName = field.FieldType.GetElementType();
+                    res.Add(GetItemAttributeText(attributeType, itemTypeName, renameRule));
+                }
             }
 
             if (field.GetRawFieldType(parsingRules).IsSimple())

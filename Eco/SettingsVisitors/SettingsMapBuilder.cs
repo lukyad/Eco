@@ -26,8 +26,11 @@ namespace Eco.FieldVisitors
             if (refinedSettingsField.IsDefined<IdAttribute>())
             {
                 string id = (string)rawSettingsField.GetValue(rawSettings);
-                if (_settingsById.ContainsKey(id)) throw new ConfigurationException("Duplicated settings ID: '{0}'", id);
-                _settingsById.Add(id, refinedSettings);
+                if (id != null)
+                {
+                    if (_settingsById.ContainsKey(id)) throw new ConfigurationException("Duplicated settings ID: '{0}'", id);
+                    _settingsById.Add(id, refinedSettings);
+                }
             }
         }
     }

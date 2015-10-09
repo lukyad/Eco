@@ -19,7 +19,7 @@ namespace Eco
 
 		public static string Combine(string left, string right, int index)
 		{
-			return left + String.Format(ArrayIndexFormat, index) + Separator + right;
+			return Combine(left, right) + String.Format(ArrayIndexFormat, index);
         }
 	}
 }
