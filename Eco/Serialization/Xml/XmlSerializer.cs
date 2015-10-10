@@ -14,20 +14,17 @@ namespace Eco.Serialization.Xml
 {
     public class XmlSerializer : ISerializer
     {
-        public object Deserialize(Type rawSettingsType, Stream stream)
+        public Encoding Encoding { get; set; } = Encoding.ASCII;
+
+        public object Deserialize(Type rawSettingsType, TextReader reater)
         {
             var serializer = new SystemXmlSerializer(rawSettingsType);
             serializer.UnknownAttribute += new XmlAttributeEventHandler(serializer_UnknownAttribute);
             serializer.UnknownElement += new XmlElementEventHandler(serializer_UnknownElement);
-
-            object xmlSettings;
-            using (var sr = new StreamReader(stream))
-                xmlSettings = serializer.Deserialize(sr);
-
-            return xmlSettings;
+            return serializer.Deserialize(reater);
         }
 
-        public void Serialize(object rawSettings, Stream stream)
+        public void Serialize(object rawSettings, TextWriter writer)
         {
             var settingsType = rawSettings.GetType();
             var serializer = new SystemXmlSerializer(settingsType);
@@ -41,10 +38,11 @@ namespace Eco.Serialization.Xml
             {
                 OmitXmlDeclaration = true,
                 ConformanceLevel = ConformanceLevel.Auto,
-                Indent = true
+                Indent = true,
+                Encoding = this.Encoding
             };
 
-            using (var xw = XmlWriter.Create(stream, xws))
+            using (var xw = XmlWriter.Create(writer, xws))
                 serializer.Serialize(xw, rawSettings, ns);
         }
 

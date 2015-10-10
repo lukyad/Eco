@@ -63,9 +63,25 @@ namespace Eco
         }
 
         /// <summary>
+        /// Read settins of the specified type from the specified TextReader.
+        /// </summary>
+        public static T Read<T>(TextReader reader)
+        {
+            return DefaultManager.Read<T>(reader);
+        }
+
+        /// <summary>
         /// Write settins to a stream.
         /// </summary>
         public static void Write(object settings, Stream stream)
+        {
+            DefaultManager.Write(settings, stream);
+        }
+
+        /// <summary>
+        /// Write settins using the specified TextWriter.
+        /// </summary>
+        public static void Write(object settings, TextWriter stream)
         {
             DefaultManager.Write(settings, stream);
         }

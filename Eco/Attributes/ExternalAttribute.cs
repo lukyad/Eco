@@ -72,7 +72,8 @@ namespace Eco
 
             Type externalSettingsType = rawSettingsField.GetCustomAttribute<ExternalSettingsTypeAttribute>().Type;
             using (var fileStream = File.Open(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-                return Settings.DefaultManager.Serializer.Deserialize(externalSettingsType, fileStream);
+            using (var reader = new StreamReader(fileStream))
+                return Settings.DefaultManager.Serializer.Deserialize(externalSettingsType, reader);
         }
 
         static void SetRawSettingsFieldValueValue(FieldInfo rawSettingsField, object rawSettings, object nonMutatedRawSettingsValue)

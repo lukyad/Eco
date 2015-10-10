@@ -15,15 +15,15 @@ namespace Eco.Serialization
     public interface ISerializer
     {
         /// <summary>
-        /// This method gets called by the Eco library as a final serialization step to put an instance of
-        /// raw settings type to an output stream.
+        /// This method gets called by the Eco library as a final serialization step to write an instance of
+        /// a raw settings type using the specified TextWriter.
         /// </summary>
-        void Serialize(object rawSettings, Stream stream);
+        void Serialize(object rawSettings, TextWriter stream);
 
         /// <summary>
-        /// This method gets called by the Eco library as the very first deserialization step to get an instance of
-        /// raw settings type from an input stream.
+        /// This method gets called by the Eco library as the very first deserialization step to read an instance of
+        /// a raw settings type using the specified TextReader.
         /// </summary>
-        object Deserialize(Type rawSettingsType, Stream stream);
+        object Deserialize(Type rawSettingsType, TextReader stream);
     }
 }

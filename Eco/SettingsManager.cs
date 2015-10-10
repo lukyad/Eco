@@ -183,13 +183,32 @@ namespace Eco
         }
 
         /// <summary>
+        /// Reads settings of the specified type from the specified TextReader.
+        /// For description of the skipNonReversableOperations argument please check summary of the Load method.
+        /// </summary>
+        public T Read<T>(TextReader reader, bool skipNonReversableOperations = false)
+        {
+            return (T)Read(typeof(T), reader, skipNonReversableOperations);
+        }
+
+        /// <summary>
         /// Reads settings of the specified type from a stream.
         /// For description of the skipNonReversableOperations argument please check summary of the Load method.
         /// </summary>
         public object Read(Type settingsType, Stream stream, bool skipNonReversableOperations = false)
         {
+            using (var reader = new StreamReader(stream))
+                return Read(settingsType, reader, skipNonReversableOperations);
+        }
+
+        /// <summary>
+        /// Reads settings of the specified type from the specified TextReader.
+        /// For description of the skipNonReversableOperations argument please check summary of the Load method.
+        /// </summary>
+        public object Read(Type settingsType, TextReader reader, bool skipNonReversableOperations = false)
+        {
             Type rawSettingsType = SerializableTypeEmitter.GetRawTypeFor(settingsType, this.SerializationAttributesGenerator, this.DefaultUsage);
-            object rawSettings = this.Serializer.Deserialize(rawSettingsType, stream);
+            object rawSettings = this.Serializer.Deserialize(rawSettingsType, reader);
             return CreateRefinedSettings(settingsType, rawSettings, skipNonReversableOperations);
         }
 
@@ -198,10 +217,19 @@ namespace Eco
         /// </summary>
         public void Write(object settings, Stream stream)
         {
+            using (var writer = new StreamWriter(stream))
+                this.Write(settings, writer);
+        }
+
+        /// <summary>
+        /// Writes settings using the specified TextWriter.
+        /// </summary>
+        public void Write(object settings, TextWriter writer)
+        {
             if (settings == null) throw new ArgumentNullException(nameof(settings));
             Type rawSettingsType = SerializableTypeEmitter.GetRawTypeFor(settings.GetType(), this.SerializationAttributesGenerator, this.DefaultUsage);
             object rawSettings = CreateRawSettings(rawSettingsType, settings);
-            this.Serializer.Serialize(rawSettings, stream);
+            this.Serializer.Serialize(rawSettings, writer);
         }
 
         object CreateRefinedSettings(Type refinedSettingsType, object rawSettings, bool skipNonReversableOperations)
