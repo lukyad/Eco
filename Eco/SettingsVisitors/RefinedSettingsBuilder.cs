@@ -86,23 +86,35 @@ namespace Eco.FieldVisitors
                 if (result == null)
                 {
                     Type targetType = targetField.FieldType;
-                    MethodInfo tryParseMethod = GetTryParseMethod(targetType);
+                    MethodInfo tryParseMethod;
+                    if (targetType.IsEnum) tryParseMethod = GetEnumTryParseMethod(targetType);
+                    else if (Nullable.GetUnderlyingType(targetType).IsEnum) tryParseMethod = GetEnumTryParseMethod(Nullable.GetUnderlyingType(targetType));
+                    else tryParseMethod = GetNativeTryParseMethod(targetType);
+
+                    if (tryParseMethod == null) throw new ConfigurationException("Not able to parse {0}.{1}", targetField.DeclaringType.Name, targetField.FieldType);
                     var args = new object[] { sourceStr, Activator.CreateInstance(targetType) };
                     bool parsed = (bool)tryParseMethod.Invoke(null, args);
                     if (!parsed) throw new ConfigurationException("Failed to parse '{0}' from '{1}'", targetType.Name, sourceStr);
                     result = args[1];
                 }
+                
             }
 
             return result;
         }
 
-        static MethodInfo GetTryParseMethod(Type container)
+        static MethodInfo GetNativeTryParseMethod(Type container)
         {
             // TODO validate TryParse method
             const string TryParseMethodName = "TryParse";
             Type valueType = Nullable.GetUnderlyingType(container) ?? container;
             return valueType.GetMethod(TryParseMethodName, new[] { typeof(string), valueType.MakeByRefType() });
+        }
+
+        static MethodInfo GetEnumTryParseMethod(Type enumType)
+        {
+            MethodInfo tryParseMethod = typeof(Enum).GetMethod("TryParse");
+            return tryParseMethod.MakeGenericMethod(enumType);
         }
     }
 }
