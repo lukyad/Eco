@@ -8,7 +8,7 @@ using Eco.Extensions;
 
 namespace Eco
 {
-    // <summary>
+    /// <summary>
     /// Indicates that the given field can contain polymorphic objects.
     /// By default the list of permitted polymorphic types includes
     /// all non-abstract types derived from the field type 

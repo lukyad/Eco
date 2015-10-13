@@ -85,10 +85,5 @@ namespace Eco
 
             return str => fromStringMethod.Invoke(null, new[] { format, str });
         }
-
-        static void ThrowMissingMethodException(Type methodContainer, string methodSignature)
-        {
-            throw new ConfigurationException("{0} type doesn't have required method: {1}", methodContainer.Name, methodSignature);
-        }
     }
 }
