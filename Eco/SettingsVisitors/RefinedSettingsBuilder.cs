@@ -87,8 +87,9 @@ namespace Eco.FieldVisitors
                 {
                     Type targetType = targetField.FieldType;
                     MethodInfo tryParseMethod;
+                    Type underlyingNullableType = Nullable.GetUnderlyingType(targetType);
                     if (targetType.IsEnum) tryParseMethod = GetEnumTryParseMethod(targetType);
-                    else if (Nullable.GetUnderlyingType(targetType).IsEnum) tryParseMethod = GetEnumTryParseMethod(Nullable.GetUnderlyingType(targetType));
+                    else if (underlyingNullableType != null && underlyingNullableType.IsEnum) tryParseMethod = GetEnumTryParseMethod(underlyingNullableType);
                     else tryParseMethod = GetNativeTryParseMethod(targetType);
 
                     if (tryParseMethod == null) throw new ConfigurationException("Not able to parse {0}.{1}", targetField.DeclaringType.Name, targetField.FieldType);
@@ -113,7 +114,7 @@ namespace Eco.FieldVisitors
 
         static MethodInfo GetEnumTryParseMethod(Type enumType)
         {
-            MethodInfo tryParseMethod = typeof(Enum).GetMethod("TryParse");
+            MethodInfo tryParseMethod = typeof(Enum).GetMethods().First(m => m.Name == "TryParse" && m.GetParameters().Count() == 2);
             return tryParseMethod.MakeGenericMethod(enumType);
         }
     }
