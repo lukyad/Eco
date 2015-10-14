@@ -101,6 +101,9 @@ namespace Eco.FieldVisitors
                 
             }
 
+            // By here, result could be of a different type, but convertable to the target type.
+            result = Convert.ChangeType(result, targetField.FieldType);
+
             return result;
         }
 

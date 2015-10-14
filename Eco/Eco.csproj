@@ -62,6 +62,8 @@
     <Compile Include="CodeBuilder\AttributeBuilder.cs" />
     <Compile Include="CodeBuilder\AttributeParam.cs" />
     <Compile Include="ConfigurationException.cs" />
+    <Compile Include="Converters\NumberConverter.cs" />
+    <Compile Include="Converters\TimeSpanConverter.cs" />
     <Compile Include="Elements\choice.cs" />
     <Compile Include="Elements\include.cs" />
     <Compile Include="Elements\variable.cs" />
