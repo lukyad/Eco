@@ -9,14 +9,14 @@ namespace Eco.FieldVisitors
     public class RefinedSettingsBuilder : IRefinedSettingsVisitor
     {
         readonly Dictionary<Type, Type> _typeMappings = new Dictionary<Type, Type>();
-        ParsingRuleAttribute[] _parsingRules;
+        ParsingPolicyAttribute[] _parsingPolicies;
 
         public bool IsReversable { get { return true; } }
 
         public void Initialize(Type rootSettingsType)
         {
-            // Capture parsing rules that applies to all fields.
-            _parsingRules = rootSettingsType.GetCustomAttributes<ParsingRuleAttribute>().ToArray();
+            // Capture parsing policies that applies to all fields.
+            _parsingPolicies = rootSettingsType.GetCustomAttributes<ParsingPolicyAttribute>().ToArray();
         }
 
         public void Visit(string fieldPath, FieldInfo refinedSettingsField, object refinedSettings, FieldInfo rawSettingsField, object rawSettings)
@@ -73,12 +73,12 @@ namespace Eco.FieldVisitors
                     .Select(a => a.Parse(sourceStr, a.Format))
                     .FirstOrDefault(r => r != null);
 
-                // If result is still null, try to use parsingRules.
+                // If result is still null, try to use parsingPolicies.
                 if (result == null)
                 {
-                    result = _parsingRules
-                        .Where(r => r.SourceType == targetField.FieldType)
-                        .Select(r => r.Parse(sourceStr, r.Format))
+                    result = _parsingPolicies
+                        .Where(p => p.CanParse(targetField.FieldType))
+                        .Select(p => p.Parse(sourceStr, p.Format))
                         .FirstOrDefault(o => o != null);
                 }
                 // If there were no parsers or they have not been able to parse the string,

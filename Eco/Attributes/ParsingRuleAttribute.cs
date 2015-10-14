@@ -20,28 +20,29 @@ namespace Eco
     /// 
     /// Usage: 
     /// Should be applied to a root settings type. The rool is propogated to all referenced settings types recursively.
-    /// Eco library allows usage of multiple ParsingRule attributes for the same source type.
+    /// Eco library allows usage of multiple ParsingPolicy attributes for the same source type.
     /// </summary>
     [AttributeUsage(AttributeTargets.Class)]
-    public class ParsingRuleAttribute : EcoAttribute
+    public class ParsingPolicyAttribute : EcoAttribute
     {
-        public ParsingRuleAttribute(Type sourceType, Type parserType)
-            : this(sourceType, parserType, null)
+        public ParsingPolicyAttribute(Type parserType)
+            : this(parserType, null)
         {
         }
 
-        public ParsingRuleAttribute(Type sourceType, Type parserType, string format)
+        public ParsingPolicyAttribute(Type parserType, string format)
         {
-            this.SourceType = sourceType;
             this.Format = format;
             this.Parse = ParserAttribute.GetParseMethod(parserType);
+            this.CanParse = ParserAttribute.GetCanParseMethod(parserType);
         }
-
-        public Type SourceType { get; set; }
 
         public string Format { get; set; }
 
         // Returns null, if converter is not able to parse the specified string.
         public Func<string, string, object> Parse { get; private set; }
+
+        // Can converter parse the given Type?
+        public Func<Type, bool> CanParse { get; private set; }
     }
 }

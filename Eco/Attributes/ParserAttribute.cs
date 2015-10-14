@@ -57,6 +57,9 @@ namespace Eco
         // Returns null, if converter is not able to parse the specified string.
         public Func<string, string, object> Parse { get; private set; }
 
+        // Can converter parse the given Type?
+        public Func<Type, bool> CanParse { get; private set; }
+
         public override void ValidateContext(FieldInfo context)
         {
             if (!context.FieldType.IsSimple() || context.FieldType == typeof(string))
@@ -72,6 +75,15 @@ namespace Eco
                 ThrowMissingMethodException(parserType, "object Parse(string source, string format)");
 
             return (source, format) => parseMethod.Invoke(null, new[] { source, format });
+        }
+
+        public static Func<Type, bool> GetCanParseMethod(Type converterType)
+        {
+            MethodInfo canParseMethod = converterType.GetMethod("CanParse", new[] { typeof(Type) });
+            if (canParseMethod == null || canParseMethod.ReturnType != typeof(bool))
+                ThrowMissingMethodException(converterType, "bool CanParse(Type sourceType)");
+
+            return type => (bool)canParseMethod.Invoke(null, new[] { type });
         }
     }
 }

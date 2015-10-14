@@ -17,7 +17,7 @@ namespace Eco.Serialization.Xml
             return Enumerable.Empty<string>();
         }
 
-        public virtual IEnumerable<string> GetAttributesTextFor(FieldInfo field, Usage defaultUsage, ParsingRuleAttribute[] parsingRules)
+        public virtual IEnumerable<string> GetAttributesTextFor(FieldInfo field, Usage defaultUsage, ParsingPolicyAttribute[] parsingPolicies)
         {
             var res = new List<string>();
 

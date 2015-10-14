@@ -48,6 +48,7 @@ namespace Eco
             this.Format = format;
             this.ToString = GetToStringMethod(converterType, format);
             this.FromString = GetFromStringMethod(converterType, format);
+            this.CanParse = ParserAttribute.GetCanParseMethod(converterType);
         }
 
         public Type Type { get; set; }
@@ -60,10 +61,13 @@ namespace Eco
         // Should return null, if converter is not able to parse the specified string.
         public Func<string, object> FromString { get; private set; }
 
+        // Can converter parse the given TYpe.
+        public Func<Type, bool> CanParse { get; private set; }
+
         public override void ValidateContext(FieldInfo context)
         {
-            if (context.FieldType == typeof(string))
-                ThrowExpectedFieldOf("a non-String type", context);
+            if (!CanParse(context.FieldType))
+                new ConfigurationException("Invalid Converter type for the {0}.{1} field", context.DeclaringType.Name, context.Name);
 
             CheckAttributesCompatibility(context, _incompatibleAttributeTypes);
         }
@@ -74,7 +78,7 @@ namespace Eco
             if (toStringMethod == null || toStringMethod.ReturnType != typeof(string))
                 ThrowMissingMethodException(converterType, "string ToString(string format, object source)");
             
-            return value => (string)toStringMethod.Invoke(null, new[] { format, value });
+            return value => (string)toStringMethod.Invoke(null, new[] { value, format });
         }
 
         static Func<string, object> GetFromStringMethod(Type converterType, string format)
@@ -83,7 +87,7 @@ namespace Eco
             if (fromStringMethod == null || fromStringMethod.ReturnType != typeof(object))
                 ThrowMissingMethodException(converterType, "object FromString(string format, string source)");
 
-            return str => fromStringMethod.Invoke(null, new[] { format, str });
+            return str => fromStringMethod.Invoke(null, new[] { str, format });
         }
     }
 }

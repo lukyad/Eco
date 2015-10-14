@@ -8,7 +8,7 @@ namespace Eco.Converters
 {
     /// <summary>
     /// Defines String to TimeSpan conversion rules.
-    /// Can be used in conjunction with the Converter, Parser and ParsingRule attributes.
+    /// Can be used in conjunction with the Converter, Parser and ParsingPolicy attributes.
     /// </summary>
     public static class NumberConverter
     {
@@ -20,6 +20,14 @@ namespace Eco.Converters
             { "mb", 1024 * 1024 },
             { "gb", 1024 * 1024 * 1024 },
         };
+        static readonly Type[] _supportedTypes = new[] {
+                typeof(sbyte), typeof(byte), typeof(decimal), typeof(double),
+                typeof(float), typeof(int), typeof(long), typeof(short), typeof(uint), typeof(ulong), typeof(ushort) };
+
+        public static bool CanParse(Type sourceType)
+        {
+            return _supportedTypes.Contains(sourceType);
+        }
 
         /// <summary>
         /// FromString()  implementation of the ConverterAttribute contract.
@@ -45,7 +53,7 @@ namespace Eco.Converters
         }
 
         /// <summary>
-        /// Parse() implementation of the ParserAttribute/ParsingRuleAttribute contract.
+        /// Parse() implementation of the ParserAttribute/ParsingPolicyAttribute contract.
         /// </summary>
         public static object Parse(string timeSpan, string multiplier)
         {

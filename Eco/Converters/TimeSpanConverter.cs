@@ -8,7 +8,7 @@ namespace Eco.Converters
 {
     /// <summary>
     /// Defines String to TimeSpan conversion rules.
-    /// Can be used in conjunction with the Converter, Parser and ParsingRule attributes.
+    /// Can be used in conjunction with the Converter, Parser and ParsingPolicy attributes.
     /// </summary>
     public static class TimeSpanConverter
     {
@@ -35,6 +35,11 @@ namespace Eco.Converters
         const double DaysPerWeek = 7;
         const double DaysPerYear = 365;
 
+        public static bool CanParse(Type sourceType)
+        {
+            return sourceType == typeof(TimeSpan);
+        }
+
         /// <summary>
         /// FromString()  implementation of the ConverterAttribute contract.
         /// </summary>
@@ -58,7 +63,7 @@ namespace Eco.Converters
         }
 
         /// <summary>
-        /// Parse() implementation of the ParserAttribute/ParsingRuleAttribute contract.
+        /// Parse() implementation of the ParserAttribute/ParsingPolicyAttribute contract.
         /// </summary>
         public static object Parse(string timeSpan, string format)
         {
