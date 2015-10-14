@@ -13,7 +13,7 @@ namespace Sample
     /// The ParsingPolicy specified below will be applied recoursive to all fields of type TimeSpan.
     /// </summary>
     [Root, Doc("Represent one round of a space battle.")]
-    [ParsingPolicy(typeof(TimeSpan), typeof(TimeSpanParser))]
+    [ParsingPolicy(typeof(TimeSpanParser))]
     public class spaceBattle
     {
         /// <summary>
