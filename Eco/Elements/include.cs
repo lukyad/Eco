@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Eco.Elements
+namespace Eco
 {
     /// <summary>
     /// This class is used internally by the Eco library.

@@ -4,8 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Eco.Elements
-{
+namespace Eco
+{ 
     /// <summary>
     /// Eco configuration library supports string varibales.
     /// You can enable variables in your configuration file by adding 'public variable[] variables;'
