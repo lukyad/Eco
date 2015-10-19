@@ -38,7 +38,7 @@ namespace Eco.FieldVisitors
             // This might be refactored to leverage attributes in the future.
             if (rawSettingsField.FieldType.Name == typeof(variable).Name)
             {
-                this.RegisterVariable(rawSettingsField.GetValue(rawSettings));
+                this.RegisterVariable(rawSettingsField.GetValue(rawSettings), fieldPath);
             }
             else if (rawSettingsField.FieldType.GetElementType()?.Name == typeof(variable).Name)
             {
@@ -46,17 +46,18 @@ namespace Eco.FieldVisitors
                 if (arr != null)
                 {
                     foreach (object variable in arr)
-                        this.RegisterVariable(variable);
+                        this.RegisterVariable(variable, fieldPath);
                 }
             }
         }
 
-        void RegisterVariable(object variable)
+        void RegisterVariable(object variable, string fieldPath)
         {
             string varName = (string)variable.GetFieldValue("name");
             string varValue = (string)variable.GetFieldValue("value");
-            if (_invalidVarChars.IsMatch(varName)) throw new ConfigurationException("Invalid configuration variable name: '{0}'", varName);
-            if (_vars.ContainsKey(varName)) throw new ConfigurationException("Duplicated configuration variable: '{0}'", varName);
+            if (String.IsNullOrWhiteSpace(varName)) throw new ConfigurationException("Detected null or empty configuration variable name: path = '{0}'", fieldPath);
+            if (_invalidVarChars.IsMatch(varName)) throw new ConfigurationException("Invalid configuration variable name: '{0}', path = '{1}'", varName, fieldPath);
+            if (_vars.ContainsKey(varName)) throw new ConfigurationException("Duplicated configuration variable: '{0}', path = '{1}'", varName, fieldPath);
             _vars.Add(varName, varValue);
         }
     }

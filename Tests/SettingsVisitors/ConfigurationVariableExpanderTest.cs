@@ -10,7 +10,7 @@ using Eco.FieldVisitors;
 
 namespace Tests.SettingsVisitors
 {
-    public class ConfigurationVariableExpanderTest
+    public class ConfigurationVariableExpanderTest : SettingsVisitorTestBase
     {
         const string Var1 = "Var1";
         const string Var2 = "Var2";
@@ -26,24 +26,16 @@ namespace Tests.SettingsVisitors
         class settings
         {
             public string value1;
-        }
-
-        class settings { public string[] array; }
-
-        class settings
-        {
-            public string value1;
             [Sealed]
             public string value2;
+            public string[] array;
         }
 
         [Fact]
         public static void ExpandStringField()
         {
             var settings = new settings { value1 = S1 + S2 + S3 };
-            var fieldVisitor = new ConfigurationVariableExpander(_vars);
-            var field = Reflect<settings>.Field(s => s.value1);
-            fieldVisitor.Visit(null, field, settings);
+            Visit(new ConfigurationVariableExpander(_vars), s => s.value1, settings);
             Assert.That(settings.value1, Is.EqualTo("abcdef123456" + S3));
         }
 
@@ -53,9 +45,7 @@ namespace Tests.SettingsVisitors
         public static void ExpandStringArrayField()
         {
             var settings = new settings { array = new[] { S1, S2, S3 } };
-            var fieldVisitor = new ConfigurationVariableExpander(_vars);
-            var field = Reflect<settings>.Field(s => s.array);
-            fieldVisitor.Visit(null, field, settings);
+            Visit(new ConfigurationVariableExpander(_vars), s => s.array, settings);
             Assert.That(settings.array[0], Is.EqualTo("abcdef"));
             Assert.That(settings.array[1], Is.EqualTo("123456"));
             Assert.That(settings.array[2], Is.EqualTo(S3));
@@ -70,14 +60,9 @@ namespace Tests.SettingsVisitors
                 value1 = S1,
                 value2 = S1
             };
-            Environment.SetEnvironmentVariable(Var1, "def");
-
             var fieldVisitor = new ConfigurationVariableExpander(_vars);
-            var field = Reflect<settings>.Field(s => s.value1);
-            fieldVisitor.Visit(null, field, settings);
-            field = Reflect<settings>.Field(s => s.value2);
-            fieldVisitor.Visit(null, field, settings);
-
+            Visit(fieldVisitor, s => s.value1, settings);
+            Visit(fieldVisitor, s => s.value2, settings);
             Assert.That(settings.value1, Is.EqualTo("abcdef"));
             Assert.That(settings.value2, Is.EqualTo($"abc${{Var1}}"));
         }

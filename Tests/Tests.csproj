@@ -67,7 +67,10 @@
     <Compile Include="Converters\NumberConverterTest.cs" />
     <Compile Include="Converters\TimeSpanConverterTest.cs" />
     <Compile Include="Reflect.cs" />
+    <Compile Include="SettingsVisitors\ConfigurationVariableMapBuilderTest.cs" />
     <Compile Include="SettingsVisitors\ConfigurationVariableExpanderTest.cs" />
+    <Compile Include="SettingsVisitors\EnvironmentVariableExpanderTest.cs" />
+    <Compile Include="SettingsVisitors\SettingsVisitorTestBase.cs" />
     <Compile Include="XUnitExtension.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

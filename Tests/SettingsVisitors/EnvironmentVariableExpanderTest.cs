@@ -10,7 +10,7 @@ using Eco.FieldVisitors;
 
 namespace Tests.SettingsVisitors
 {
-    public class EnvironmentVariableExpanderTest
+    public class EnvironmentVariableExpanderTest : SettingsVisitorTestBase
     {
         const string EnvVar1 = "ENV_VAR1";
         const string EnvVar2 = "ENV_VAR2";
@@ -22,6 +22,8 @@ namespace Tests.SettingsVisitors
         {
             public string value1;
             public string[] array;
+            [Sealed]
+            public string value2;
         }
 
         [Fact]
@@ -30,11 +32,7 @@ namespace Tests.SettingsVisitors
             var settings = new settings { value1 = S1 + S2 + S3 };
             Environment.SetEnvironmentVariable(EnvVar1, "def");
             Environment.SetEnvironmentVariable(EnvVar2, "123");
-
-            var fieldVisitor = new EnvironmentVariableExpander();
-            var field = Reflect<settings>.Field(s => s.value1);
-            fieldVisitor.Visit(null, field, settings);
-
+            Visit(new EnvironmentVariableExpander(), s => s.value1, settings);
             Assert.That((string)settings.value1, Is.EqualTo("abcdef123456" + S3));
         }
 
@@ -44,22 +42,12 @@ namespace Tests.SettingsVisitors
             var settings = new settings { array = new[] { S1, S2, S3 } };
             Environment.SetEnvironmentVariable(EnvVar1, "def");
             Environment.SetEnvironmentVariable(EnvVar2, "123");
-
-            var fieldVisitor = new EnvironmentVariableExpander();
-            var field = Reflect<settings>.Field(s => s.array);
-            fieldVisitor.Visit(null, field, settings);
-
+            Visit(new EnvironmentVariableExpander(), s => s.array, settings);
             Assert.That(settings.array[0], Is.EqualTo("abcdef"));
             Assert.That(settings.array[1], Is.EqualTo("123456"));
             Assert.That(settings.array[2], Is.EqualTo(S3));
         }
 
-        class settings
-        {
-            public string value1;
-            [Sealed]
-            public string value2;
-        }
         [Fact]
         public static void SkipSealedFields()
         {
@@ -69,14 +57,10 @@ namespace Tests.SettingsVisitors
                 value2 = S1
             };
             Environment.SetEnvironmentVariable(EnvVar1, "def");
-
             var fieldVisitor = new EnvironmentVariableExpander();
-            var field = Reflect<settings>.Field(s => s.value1);
-            fieldVisitor.Visit(null, field, settings);
-            field = Reflect<settings>.Field(s => s.value2);
-            fieldVisitor.Visit(null, field, settings);
-
-            Assert.That((string)settings.value1, Is.EqualTo("abcdef"));
+            Visit(fieldVisitor, s => s.value1, settings);
+            Visit(fieldVisitor, s => s.value2, settings);
+            Assert.That(settings.value1, Is.EqualTo("abcdef"));
             Assert.That(settings.value2, Is.EqualTo($"abc%{EnvVar1}%"));
         }
 
