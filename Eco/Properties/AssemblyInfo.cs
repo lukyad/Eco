@@ -35,4 +35,4 @@ using Eco;
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("1.0.*")]
 
-[assembly:SettingsAssembly("Eco.Elements")]
+[assembly:SettingsAssembly("Eco")]
