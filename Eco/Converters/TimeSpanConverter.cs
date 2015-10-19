@@ -18,8 +18,8 @@ namespace Eco.Converters
             { "m", TimeSpan.FromMinutes },
             { "h", TimeSpan.FromHours },
             { "d", TimeSpan.FromDays },
-            { "w", value => TimeSpan.FromDays(value / DaysPerWeek) },
-            { "y", value => TimeSpan.FromDays(value / DaysPerYear) }
+            { "w", value => TimeSpan.FromDays(value * DaysPerWeek) },
+            { "y", value => TimeSpan.FromDays(value * DaysPerYear) }
         };
 
         static readonly Dictionary<string, Func<TimeSpan, double>> _toDoubleMethods = new Dictionary<string, Func<TimeSpan, double>> {
@@ -28,8 +28,8 @@ namespace Eco.Converters
             { "m", t => t.TotalMinutes },
             { "h", t => t.TotalHours },
             { "d", t => t.TotalDays },
-            { "w", t => t.TotalDays * DaysPerWeek},
-            { "y", t => t.TotalDays * DaysPerYear }
+            { "w", t => t.TotalDays / DaysPerWeek},
+            { "y", t => t.TotalDays / DaysPerYear }
         };
 
         const double DaysPerWeek = 7;
@@ -45,12 +45,7 @@ namespace Eco.Converters
         /// </summary>
         public static object FromString(string timeSpan, string format)
         {
-            TimeSpan result;
-            bool succeed = TryParse(timeSpan, out result);
-            if (!succeed)
-                throw new ApplicationException(String.Format("Unsupported TimeSpan format: '{0}'", timeSpan));
-
-            return result;
+            return ParseTimeSpan(timeSpan);
         }
 
         /// <summary>
@@ -68,14 +63,20 @@ namespace Eco.Converters
         public static object Parse(string timeSpan, string format)
         {
             TimeSpan result;
-            bool succeed = TimeSpanConverter.TryParse(timeSpan, out result);
+            return TryParseTimeSpan(timeSpan, out result) ? (object)result : null;
+        }
+
+        public static TimeSpan ParseTimeSpan(this string timeSpan)
+        {
+            TimeSpan result;
+            bool succeed = TryParseTimeSpan(timeSpan, out result);
             if (!succeed)
-                return null;
+                throw new ApplicationException(String.Format("Unsupported TimeSpan format: '{0}'", timeSpan));
 
             return result;
         }
 
-        public static bool TryParse(string timeSpanStr, out TimeSpan timeSpan)
+        public static bool TryParseTimeSpan(this string timeSpanStr, out TimeSpan timeSpan)
         {
             timeSpan = default(TimeSpan);
 

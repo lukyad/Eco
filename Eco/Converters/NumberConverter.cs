@@ -32,14 +32,9 @@ namespace Eco.Converters
         /// <summary>
         /// FromString()  implementation of the ConverterAttribute contract.
         /// </summary>
-        public static object FromString(string number, string multiplier)
+        public static object FromString(string number, string notUsed)
         {
-            decimal result;
-            bool succeed = TryParse(number, out result);
-            if (!succeed)
-                throw new ConfigurationException("Unsupported number multiplier: '{0}'", number);
-
-            return result;
+            return ParseDecimal(number);
         }
 
         /// <summary>
@@ -55,17 +50,23 @@ namespace Eco.Converters
         /// <summary>
         /// Parse() implementation of the ParserAttribute/ParsingPolicyAttribute contract.
         /// </summary>
-        public static object Parse(string timeSpan, string multiplier)
+        public static object Parse(string number, string notUsed)
         {
-            TimeSpan result;
-            bool succeed = TimeSpanConverter.TryParse(timeSpan, out result);
+            decimal result;
+            return TryParseDecimal(number, out result) ? (object)result : null;
+        }
+
+        public static decimal ParseDecimal(this string number)
+        {
+            decimal result;
+            bool succeed = TryParseDecimal(number, out result);
             if (!succeed)
-                return null;
+                throw new ConfigurationException("Unsupported number multiplier: '{0}'", number);
 
             return result;
         }
 
-        public static bool TryParse(string number, out decimal value)
+        public static bool TryParseDecimal(this string number, out decimal value)
         {
             value = default(decimal);
 
