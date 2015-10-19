@@ -18,7 +18,7 @@ namespace Eco
     [Doc("Represents a configuration variable of the string type. Can be referenced anywhere in a configuration file by the following syntax: ${name}.")]
     public class variable
     {
-        [Required, Doc("Name of the varible. Can contain 'word' characters only.")]
+        [Required, Doc("Name of the varible. Can contain 'word' characters only (ie [A-Za-z0-9_]).")]
         public string name;
 
         [Required, Doc("Variable's value.")]
