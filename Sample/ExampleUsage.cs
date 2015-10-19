@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Eco;
+using Eco.Converters;
 
 namespace Sample
 {
@@ -12,7 +13,7 @@ namespace Sample
     /// The ParsingPolicy specified below will be applied recoursive to all fields of type TimeSpan.
     /// </summary>
     [Root, Doc("Represent one round of a space battle.")]
-    [ParsingPolicy(typeof(TimeSpanParser))]
+    [ParsingPolicy(typeof(TimeSpanConverter))]
     public class spaceBattle
     {
         /// <summary>
