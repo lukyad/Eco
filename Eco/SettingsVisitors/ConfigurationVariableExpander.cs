@@ -17,7 +17,7 @@ namespace Eco.FieldVisitors
     /// 
     /// Throws an exception if a circular variable dependency is detected.
     /// </summary>
-    class ConfigurationVariableExpander : IRawSettingsVisitor
+    public class ConfigurationVariableExpander : IRawSettingsVisitor
     {
         // Mathes variable reference in a string.
         static readonly Regex _variableReferenceRegex = new Regex(@"\$\{(?<varName>\w)\}");

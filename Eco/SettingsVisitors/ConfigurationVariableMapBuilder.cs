@@ -16,7 +16,7 @@ namespace Eco.FieldVisitors
     /// * an invalid variable name is detected (valid name contains 'word' charcters only)
     /// * a duplicated variable is detected.
     /// </summary>
-    class ConfigurationVariableMapBuilder : IRawSettingsVisitor
+    public class ConfigurationVariableMapBuilder : IRawSettingsVisitor
     {
         static readonly Regex _invalidVarChars = new Regex(@"\W");
         readonly Dictionary<string, string> _vars = new Dictionary<string, string>();

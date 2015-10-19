@@ -13,7 +13,7 @@ namespace Eco.FieldVisitors
     /// Variables expantion is performed on the 'raw settings' (not refined one),
     /// this allows using of variables in any raw settings field of the string type (e.g. fields marked with Converter and Ref attributes).
     /// </summary>
-    class EnvironmentVariableExpander : IRawSettingsVisitor
+    public class EnvironmentVariableExpander : IRawSettingsVisitor
     {
         // Changes made by the EnvironmentVariableExpander are not revocable.
         // i.e. it's not possible to pack expanded strings back to variables.

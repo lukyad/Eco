@@ -8,7 +8,7 @@ using Eco.Extensions;
 
 namespace Eco
 {
-    class ReferenceResolver : IRefinedSettingsVisitor
+    public class ReferenceResolver : IRefinedSettingsVisitor
     {
         readonly Dictionary<string, object> _settingsById;
 

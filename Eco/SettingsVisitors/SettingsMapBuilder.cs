@@ -8,7 +8,7 @@ using Eco.Extensions;
 
 namespace Eco.FieldVisitors
 {
-    class SettingsMapBuilder : IRefinedSettingsVisitor
+    public class SettingsMapBuilder : IRefinedSettingsVisitor
     {
         readonly Dictionary<string, object> _settingsById = new Dictionary<string, object>();
 
