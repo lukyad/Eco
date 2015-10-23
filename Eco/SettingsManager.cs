@@ -8,7 +8,7 @@ using System.Reflection;
 using Eco.Extensions;
 using Eco.Serialization;
 using Eco.Serialization.Xml;
-using Eco.FieldVisitors;
+using Eco.SettingsVisitors;
 
 namespace Eco
 {
@@ -34,18 +34,19 @@ namespace Eco
         void InitializeRawSettingsLoadVisitors()
         {
             var variableMapBuilder = new ConfigurationVariableMapBuilder();
-            this.RawSettingsLoadVisitors = new List<IRawSettingsVisitor>
+            this.RawSettingsReadVisitors = new List<IRawSettingsVisitor>
             {
                 variableMapBuilder,
                 new ConfigurationVariableExpander(variableMapBuilder.Variables),
-                new EnvironmentVariableExpander()
+                new EnvironmentVariableExpander(),
+                new IncludeElementReader()
             };
         }
 
         void InitializeRefinedSettingsLoadVisitors()
         {
             var settingsMapBuilder = new SettingsMapBuilder();
-            this.RefinedSettingsLoadVisitors = new List<IRefinedSettingsVisitor>
+            this.RefinedSettingsReadVisitors = new List<IRefinedSettingsVisitor>
             {
                 new RefinedSettingsBuilder(),
                 settingsMapBuilder,
@@ -56,11 +57,15 @@ namespace Eco
 
         void InitializeRawSettingsSaveVisitors()
         {
+            this.RawSettingsWriteVisitors = new List<IRawSettingsVisitor>
+            {
+                new IncludeElementWriter()
+            };
         }
 
         void InitializeRefinedSettingsSaveVisitors()
         {
-            this.RefinedSettingsSaveVisitors = new List<IRefinedSettingsVisitor>
+            this.RefinedSettingsWriteVisitors = new List<IRefinedSettingsVisitor>
             {
                 new RequiredFieldChecker(),
                 new RawSettingsBuilder(),
@@ -89,13 +94,13 @@ namespace Eco
         /// Fields visitors to be invoked right after raw settins object has been deserialized from a source stream.
         /// By default Eco library uses ConfigurationVariableExpander and EnvironmentVariableExpander visitors.
         /// </summary>
-        public IEnumerable<IRawSettingsVisitor> RawSettingsLoadVisitors { get; set; }
+        public List<IRawSettingsVisitor> RawSettingsReadVisitors { get; set; }
 
         /// <summary>
         /// Fields visitors to be invoked right before raw settins object to be serialized to a stream.
         /// Eco library doesn't implement any default save visitors.
         /// </summary>
-        public IEnumerable<IRawSettingsVisitor> RawSettingsSaveVisitors { get; set; }
+        public List<IRawSettingsVisitor> RawSettingsWriteVisitors { get; set; }
 
         /// <summary>
         /// Field visitors to be invoked after raw settins load visitors complete thier job.
@@ -103,7 +108,7 @@ namespace Eco
         /// It's recomended that you append any your custom visitors to the end of the default visitors collection to 
         /// not break refined settins graph construction.
         /// </summary>
-        public IEnumerable<IRefinedSettingsVisitor> RefinedSettingsLoadVisitors { get; set; }
+        public List<IRefinedSettingsVisitor> RefinedSettingsReadVisitors { get; set; }
 
         /// <summary>
         /// Field visitors to be invoked as the very first operation on the refined settings graph.
@@ -111,7 +116,7 @@ namespace Eco
         /// It's recomended that you append any your custom visitors to the end of the default visitors collection to 
         /// not break raw settins graph construction.
         /// </summary>
-        public IEnumerable<IRefinedSettingsVisitor> RefinedSettingsSaveVisitors { get; set; }
+        public List<IRefinedSettingsVisitor> RefinedSettingsWriteVisitors { get; set; }
 
         /// <summary>
         /// Returns default configuration file name for the specified settins type which is typeof(T).Name + ".config"
@@ -234,17 +239,17 @@ namespace Eco
 
         object CreateRefinedSettings(Type refinedSettingsType, object rawSettings, bool skipNonReversableOperations)
         {
-            if (this.RawSettingsLoadVisitors != null)
+            if (this.RawSettingsReadVisitors != null)
             {
-                var visitors = skipNonReversableOperations ? this.RawSettingsLoadVisitors.Where(v => v.IsReversable) : this.RawSettingsLoadVisitors;
+                var visitors = skipNonReversableOperations ? this.RawSettingsReadVisitors.Where(v => v.IsReversable) : this.RawSettingsReadVisitors;
                 foreach (var v in visitors)
                     VisitRawFieldsRecursive(rawSettings, v);
             }
 
             object refinedSettings = Activator.CreateInstance(refinedSettingsType);
-            if (this.RefinedSettingsLoadVisitors != null)
+            if (this.RefinedSettingsReadVisitors != null)
             {
-                var visitors = skipNonReversableOperations ? this.RefinedSettingsLoadVisitors.Where(v => v.IsReversable) : this.RefinedSettingsLoadVisitors;
+                var visitors = skipNonReversableOperations ? this.RefinedSettingsReadVisitors.Where(v => v.IsReversable) : this.RefinedSettingsReadVisitors;
                 foreach (var v in visitors)
                     VisitRefinedFieldsRecursive(refinedSettings, rawSettings, v);
             }
@@ -255,14 +260,14 @@ namespace Eco
         object CreateRawSettings(Type rawSettingsType, object refinedSettings)
         {
             object rawSettings = Activator.CreateInstance(rawSettingsType);
-            if (this.RefinedSettingsSaveVisitors != null)
+            if (this.RefinedSettingsWriteVisitors != null)
             {
-                foreach (var v in this.RefinedSettingsSaveVisitors)
+                foreach (var v in this.RefinedSettingsWriteVisitors)
                     VisitRefinedFieldsRecursive(refinedSettings, rawSettings, v);
             }
-            if (this.RawSettingsSaveVisitors != null)
+            if (this.RawSettingsWriteVisitors != null)
             {
-                foreach (var v in this.RawSettingsSaveVisitors)
+                foreach (var v in this.RawSettingsWriteVisitors)
                     VisitRawFieldsRecursive(rawSettings, v);
             }
            
@@ -322,10 +327,7 @@ namespace Eco
                 visitor.Visit(currentPath, refinedSettingsField, refinedSettings, rawSettingsField, rawSettings);
 
                 object refinedSettingsValue = refinedSettingsField.GetValue(refinedSettings);
-                object rawSettingsValue = refinedSettingsField.IsDefined<FieldMutatorAttribute>() ?
-                    refinedSettingsField.GetCustomAttribute<FieldMutatorAttribute>().GetRawSettingsFieldValue(rawSettingsField, rawSettings) :
-                    rawSettingsField.GetValue(rawSettings);
-
+                object rawSettingsValue = rawSettingsField.GetValue(rawSettings);
                 if (!refinedSettingsField.IsDefined<RefAttribute>() && refinedSettingsValue != null && rawSettingsValue != null)
                 {
                     if (refinedSettingsValue.GetType().IsSettingsType())

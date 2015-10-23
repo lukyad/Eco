@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Eco.Extensions;
 
-namespace Eco.FieldVisitors
+namespace Eco.SettingsVisitors
 {
     public class SettingsMapBuilder : IRefinedSettingsVisitor
     {

@@ -68,10 +68,6 @@ namespace Eco.Serialization
             {
                 return typeof(string);
             }
-            else if (field.IsDefined<FieldMutatorAttribute>())
-            {
-                return field.GetCustomAttribute<FieldMutatorAttribute>().GetRawSettingsFieldType(field);
-            }
             else
             {
                 return sourceType;
@@ -93,10 +89,6 @@ namespace Eco.Serialization
                     return Nullable.GetUnderlyingType(sourceType);
                 else
                     return typeof(string);
-            }
-            else if (field.IsDefined<FieldMutatorAttribute>())
-            {
-                return field.GetCustomAttribute<FieldMutatorAttribute>().GetRawSettingsFieldType(field);
             }
             else
             {
@@ -149,10 +141,10 @@ namespace Eco.Serialization
             codeBuilder.AddAssemblyAttribute(typeof(SettingsAssemblyAttribute).FullName);
             foreach (var type in settingsType.GetReferencedSettingsTypesRecursive())
             {
-                string baseTypeName = type.BaseType.IsSettingsType() ? type.BaseType.GetNonGenericName() : null;
-                var classBuilder = codeBuilder.AddClass(type.GetNonGenericName(), baseTypeName);
+                string baseTypeName = type.BaseType.IsSettingsType() ? type.BaseType.NonGenericName() : null;
+                var classBuilder = codeBuilder.AddClass(type.NonGenericName(), baseTypeName);
                 classBuilder.AddAttributes(attributesGenerator.GetAttributesTextFor(type));
-                foreach (var field in type.GetOwnFields())
+                foreach (var field in type.OwnFields())
                 {
                     ValidateFieldAttributes(field);
                     var serializableFieldType = GetRawFieldType(field, parsingPolicies);
@@ -165,7 +157,7 @@ namespace Eco.Serialization
 
         static string GetUnivocalTypeName(Type type)
         {
-            if (type.IsSettingsType() || type.IsSettingsArrayType()) return type.GetNonGenericName();
+            if (type.IsSettingsType() || type.IsSettingsArrayType()) return type.NonGenericName();
             else return type.FullName;
         }
 
@@ -174,6 +166,23 @@ namespace Eco.Serialization
             var ecoAttributes = field.GetCustomAttributes().OfType<EcoFieldAttribute>();
             foreach (var a in ecoAttributes)
                 a.ValidateContext(field);
+
+            var requiredAttrTypes = field.FieldType.GetCustomAttribute<RequiredAttributesAttribute>(inherit: false)?.AttributeTypes;
+            if (requiredAttrTypes != null)
+            {
+                var fieldAttributes = field.GetCustomAttributes();
+                foreach (var requiredAttrType in requiredAttrTypes)
+                {
+                    if (!fieldAttributes.Any(a => a.GetType() == requiredAttrType))
+                    {
+                        throw new ConfigurationException(
+                            "Field of type '{0}' requires an attribute(s) of type '{1}'.", 
+                            field.FieldType, 
+                            requiredAttrTypes.Select(a => a.FullName).CommaWhiteSpaceSeparated());
+                    }
+                }
+            }
+            
         }
     }
 }

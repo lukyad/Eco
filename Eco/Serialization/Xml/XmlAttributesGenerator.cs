@@ -39,7 +39,7 @@ namespace Eco.Serialization.Xml
             var fieldType = field.FieldType;
             var renameRule = field.GetCustomAttribute<RenameAttribute>();
 
-            if (!field.IsDefined<RefAttribute>() && !field.IsDefined<FieldMutatorAttribute>())
+            if (!field.IsDefined<RefAttribute>())
             {
                 if (field.IsPolymorphic())
                 {
@@ -59,12 +59,15 @@ namespace Eco.Serialization.Xml
             if (field.GetRawFieldType(parsingPolicies).IsSimple())
                 res.Add(AttributeBuilder.GetTextFor<XmlAttributeAttribute>());
 
+            if (field.IsDefined<IgnoreAttribute>())
+                res.Add(AttributeBuilder.GetTextFor<XmlIgnoreAttribute>());
+
             return res.Where(a => a != null);
         }
 
         static string GetItemAttributeText(Type attributeType, Type itemType, RenameAttribute renameRule)
         {
-            string originalItemTypeName = itemType.GetNonGenericName();
+            string originalItemTypeName = itemType.NonGenericName();
             string xmlItemTypeName = renameRule != null ? renameRule.Rename(originalItemTypeName) : originalItemTypeName;
             return 
                 new AttributeBuilder(attributeType.FullName)

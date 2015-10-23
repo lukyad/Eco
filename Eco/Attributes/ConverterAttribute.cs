@@ -27,8 +27,6 @@ namespace Eco
     {
         static readonly HashSet<Type> _incompatibleAttributeTypes = new HashSet<Type>
         {
-            typeof(ChoiceAttribute),
-            typeof(ExternalAttribute),
             typeof(InlineAttribute),
             typeof(RenameAttribute),
             typeof(KnownTypesAttribute),

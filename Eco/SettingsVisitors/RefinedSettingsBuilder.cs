@@ -4,7 +4,7 @@ using System.Linq;
 using System.Reflection;
 using Eco.Extensions;
 
-namespace Eco.FieldVisitors
+namespace Eco.SettingsVisitors
 {
     public class RefinedSettingsBuilder : IRefinedSettingsVisitor
     {
@@ -22,11 +22,7 @@ namespace Eco.FieldVisitors
         public void Visit(string fieldPath, FieldInfo refinedSettingsField, object refinedSettings, FieldInfo rawSettingsField, object rawSettings)
         {
             if (refinedSettingsField.IsDefined<RefAttribute>()) return;
-
-            object rawValue = refinedSettingsField.IsDefined<FieldMutatorAttribute>() ?
-                refinedSettingsField.GetCustomAttribute<FieldMutatorAttribute>().GetRawSettingsFieldValue(rawSettingsField, rawSettings) :
-                rawSettingsField.GetValue(rawSettings);
-
+            object rawValue = rawSettingsField.GetValue(rawSettings);
             object refinedValue = null;
             if (rawValue != null)
             {

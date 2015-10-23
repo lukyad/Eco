@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Reflection;
-using System.Xml.Serialization;
+using System.Linq.Expressions;
 
 namespace Eco.Extensions
 {
@@ -67,12 +67,12 @@ namespace Eco.Extensions
 
         
 
-        public static IEnumerable<Type> GetDerivedTypes(this Type type)
+        public static IEnumerable<Type> DerivedTypes(this Type type)
         {
              return type.Assembly.GetTypes().Where(t => t.IsSubclassOf(type));
         }
 
-        public static IEnumerable<FieldInfo> GetOwnFields(this Type type)
+        public static IEnumerable<FieldInfo> OwnFields(this Type type)
         {
             IEnumerable<FieldInfo> ownFields = type.GetFields(BindingFlags.Public | BindingFlags.Instance);
             if (type.BaseType != null)
@@ -83,7 +83,7 @@ namespace Eco.Extensions
             return ownFields;
         }
 
-        public static string GetNonGenericName(this Type type)
+        public static string NonGenericName(this Type type)
         {
             string nonGenericName = type.Name;
             if (type.IsGenericType)
@@ -99,7 +99,7 @@ namespace Eco.Extensions
                 {
                     Type typeParam = typeParameters[i];
                     string typeParamName = typeParam.IsSettingsType() || typeParam.IsSettingsArrayType() ?
-                        GetNonGenericName(typeParameters[i]) :
+                        NonGenericName(typeParameters[i]) :
                         typeParam.FullName;
                     nonGenericName += i == 0 ? typeParamName : "__" + typeParamName.Replace('.', '_');
                 }
@@ -132,7 +132,7 @@ namespace Eco.Extensions
                         yield return t;
                 }
 
-                foreach (var derivedType in rootType.GetDerivedTypes())
+                foreach (var derivedType in rootType.DerivedTypes())
                 {
                     foreach (var t in GetReferencedSettingsTypesRecursive(derivedType, visitedTypes))
                         yield return t;
@@ -144,13 +144,10 @@ namespace Eco.Extensions
         {
             yield return type.BaseType;
 
-            foreach (var field in type.GetOwnFields())
+            foreach (var field in type.OwnFields())
             {
                 foreach (var t in GetKnownSerializableTypes(field))
                     yield return t;
-
-                if (field.IsDefined<FieldMutatorAttribute>())
-                    yield return field.GetCustomAttribute<FieldMutatorAttribute>().GetRawSettingsFieldType(field);
             }
         }
 
@@ -169,7 +166,7 @@ namespace Eco.Extensions
                 if (field.FieldType.IsArray) baseType = field.FieldType.GetElementType();
                 else baseType = field.FieldType;
 
-                knownTypes = baseType.GetDerivedTypes().Append(baseType);
+                knownTypes = baseType.DerivedTypes().Append(baseType);
             }
 
             var serializableKnownTypes = knownTypes.Where(t => !t.IsAbstract && !t.IsGenericTypeDefinition);
@@ -189,6 +186,11 @@ namespace Eco.Extensions
         public static object GetFieldValue(this object container, string fieldName)
         {
             return container.GetType().GetField(fieldName).GetValue(container);
+        }
+
+        public static void SetFieldValue(this object container, string fieldName, object value)
+        {
+            container.GetType().GetField(fieldName).SetValue(container, value);
         }
     }
 }

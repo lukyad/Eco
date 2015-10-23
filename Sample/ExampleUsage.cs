@@ -43,10 +43,10 @@ namespace Sample
 
         /// <summary>
         /// Here we instuct the Eco library to load this element from an external file.
-        /// In the config file externalFlees field is replaced with element of type 'Eco.Elemens.include'.
+        /// In the config file externalFlees field is replaced with an element of type 'Eco.Elemens.include'.
         /// </summary>
-        [External, Doc("Fleets defined in a external configuration file.")]
-        public externalFleets externalFleets;
+        [Doc("Fleets defined in a external configuration file.")]
+        public include<externalFleets> externalFleets;
     }
 
     
@@ -120,15 +120,15 @@ namespace Sample
         /// <summary>
         /// 'drive' is an abstract base class. All derived classes are automatically becomes known to serializer.
         /// </summary>
-        [Required, Choice, Doc("Drive affects mobility of the ship during a combat.")]
-        public drive drive;
-    } 
+        [Required, Doc("Drive affects mobility of the ship during a combat.")]
+        public driveChoice drive;
+    }
 
-    //public class driveChoice
-    //{
-    //    [Required, Polymorphic]
-    //    public drive instance;
-    //}
+    public class driveChoice
+    {
+        [Required]
+        public drive choice;
+    }
 
     public abstract class drive    { }
 

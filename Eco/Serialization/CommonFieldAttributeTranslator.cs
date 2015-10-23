@@ -14,13 +14,12 @@ namespace Eco.Serialization.Xml
     {
         public static string Translate(Attribute a, CustomAttributeData d, FieldInfo context)
         {
-            var mutator = a as FieldMutatorAttribute;
-            if (mutator != null)
-                return mutator.GetRawSettingsFieldAttributeText(context);
-            else if (a is OptionalAttribute || a is RequiredAttribute)
+            if (a is OptionalAttribute || a is RequiredAttribute)
                 return d.ToString();
             else if (a is KnownTypesAttribute)
                 return TranslateKnownTypesAttribute((KnownTypesAttribute)a, context);
+            else if (a is DocAttribute)
+                return d.ToString();
             else if (a is EcoAttribute)
                 return null;
             else

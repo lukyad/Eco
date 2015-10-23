@@ -9,8 +9,8 @@ using Eco.Extensions;
 namespace Eco
 {
     /// <summary>
-    /// Instructs the IRawFieldVisitors to skip any processing of the given field.
-    /// (e.g. EnvironmnetVariableExpander would skip any fields marked as Sealed)
+    /// Instructs the ISerializer to skip serialization of this field.
+    /// It also won't appear in the schema (if any)
     /// 
     /// Usage:
     /// Can be applied to a field of any type.
@@ -19,7 +19,7 @@ namespace Eco
     /// Compatible with all Eco attributes.
     /// </summary>
     [AttributeUsage(AttributeTargets.Field)]
-    public class SealedAttribute : EcoFieldAttribute
+    public class IgnoreAttribute : EcoFieldAttribute
     {
         public override void ValidateContext(FieldInfo context)
         {

@@ -7,17 +7,27 @@ using System.Threading.Tasks;
 namespace Eco
 {
     /// <summary>
-    /// This class is used internally by the Eco library.
-    /// In order to instruct Eco serializer to load a value of a cirtain field from an external file,
-    /// mark the field with the External attribute.
+    /// Instructs serializer to include the specified configuration file.
+    /// The include element can be used inly with conjunction with the KnownTypes attribute.
     /// </summary>
+    [IncludeElement, RequiredAttributes(typeof(KnownTypesAttribute))]
     [Doc("Specifies an external file to be included.")]
-    public class include
+    public abstract class include
     {
         [Required, Doc("Path (relative or absolute) to the file to be included.")]
         public string file;
 
         [Optional, Doc("Format of the file to be included. By default Eco library uses format defined by Settings.DefaultManager.")]
         public string format;
+    }
+
+    /// <summary>
+    /// Instructs serializer to include the specified configuration file.
+    /// </summary>
+    [IncludeElement, Doc("Specifies an external file to be included.")]
+    public sealed class include<T> : include
+    {
+        [Ignore]
+        public T data;
     }
 }

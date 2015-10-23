@@ -36,9 +36,7 @@ namespace Eco
         readonly Type[] _ctorTypes;
         static readonly HashSet<Type> _incompatibleAttributeTypes = new HashSet<Type>
         {
-            typeof(ChoiceAttribute),
             typeof(ConverterAttribute),
-            typeof(ExternalAttribute),
             typeof(IdAttribute),
             typeof(ParserAttribute),
             typeof(RefAttribute),
@@ -58,8 +56,10 @@ namespace Eco
 
         public IEnumerable<Type> GetKnownTypes(FieldInfo context)
         {
+            bool isIncludeElement = context.FieldType == typeof(include[]);
+            Func<Type, Type> KnownType = t=> isIncludeElement ? typeof(include<>).MakeGenericType(t) : t;
             foreach (var t in _ctorTypes) 
-                yield return t;
+                yield return KnownType(t);
 
             if (!String.IsNullOrEmpty(this.Wildcard))
             {
@@ -67,7 +67,7 @@ namespace Eco
                 Func<Type, bool> MatchesWildcard = t => regexp.Match(t.FullName).Success;
                 var knownSettingsTypes = context.DeclaringType.Assembly.GetTypes().Where(t => MatchesWildcard(t) && t.IsSettingsType()).ToArray() ;
                 foreach (var t in knownSettingsTypes)
-                    yield return t;
+                    yield return KnownType(t);
             }
         }
 
@@ -76,7 +76,7 @@ namespace Eco
             if (!context.IsPolymorphic())
             {
                 throw new ConfigurationException(
-                    "{0} cannot be applied to {1}.{2}. Expected either a field of a settings array type or a field of a settings type marked with the ChoiceAttribute",
+                    "{0} cannot be applied to {1}.{2}. Expected a polimorphic field (please check IsPolimorphic() for details).",
                     this.GetType().Name,
                     context.DeclaringType.Name,
                     context.Name

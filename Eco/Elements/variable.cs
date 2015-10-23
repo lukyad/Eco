@@ -16,7 +16,7 @@ namespace Eco
     /// Eco library throws an exception if a circular variable dendency is detected.
     /// </summary>
     [Doc("Represents a configuration variable of the string type. Can be referenced anywhere in a configuration file by the following syntax: ${name}.")]
-    public class variable
+    public sealed class variable
     {
         [Required, Doc("Name of the varible. Can contain 'word' characters only (ie [A-Za-z0-9_]).")]
         public string name;

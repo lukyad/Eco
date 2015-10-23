@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Eco.Extensions;
 
-namespace Eco.FieldVisitors
+namespace Eco.SettingsVisitors
 {
     /// <summary>
     /// Used by the Eco library to expand variables in the configuration file.

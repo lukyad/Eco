@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Eco.Extensions;
 
-namespace Eco.FieldVisitors
+namespace Eco.SettingsVisitors
 {
     /// <summary>
     /// Used by the Eco library when writing settings to a stream.
@@ -47,15 +47,7 @@ namespace Eco.FieldVisitors
                 {
                     rawValue = refinedSettingsField.GetValue(refinedSettings);
                 }
-
-                if (refinedSettingsField.IsDefined<FieldMutatorAttribute>())
-                {
-                    refinedSettingsField.GetCustomAttribute<FieldMutatorAttribute>().SetRawSettingsFieldValue(rawSettingsField, rawSettings, rawValue);
-                }
-                else
-                {
-                    rawSettingsField.SetValue(rawSettings, rawValue);
-                }
+                rawSettingsField.SetValue(rawSettings, rawValue);
             }
         }
 

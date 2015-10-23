@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Xunit;
 using NHamcrest.Core;
 using Eco;
-using Eco.FieldVisitors;
+using Eco.SettingsVisitors;
 
 namespace Tests.SettingsVisitors
 {

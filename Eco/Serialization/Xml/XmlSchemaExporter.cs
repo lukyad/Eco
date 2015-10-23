@@ -180,7 +180,7 @@ namespace Eco.Serialization.Xml
             foreach (var t in type.GetReferencedSettingsTypesRecursive())
             {
                 AddTypeAttributes(t, map);
-                var publicFields = t.GetOwnFields();
+                var publicFields = t.OwnFields();
                 foreach (var field in publicFields)
                     AddFieldAttributes(field, map);
             }

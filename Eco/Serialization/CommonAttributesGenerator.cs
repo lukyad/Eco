@@ -14,7 +14,7 @@ namespace Eco.Serialization.Xml
     {
         public virtual IEnumerable<string> GetAttributesTextFor(Type settingsType)
         {
-            return Enumerable.Empty<string>();
+            return settingsType.GetCustomAttributesData().Select(d => d.ToString());
         }
 
         public virtual IEnumerable<string> GetAttributesTextFor(FieldInfo field, Usage defaultUsage, ParsingPolicyAttribute[] parsingPolicies)
