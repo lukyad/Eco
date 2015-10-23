@@ -113,7 +113,7 @@ namespace Eco.Serialization
             if (results.Errors.Count > 0)
             {
                 throw new ConfigurationException(
-                    "Could not emit xml serialization classes for the '{0}' settings type: {1}{2}", 
+                    "Could not emit xml serialization classes for the '{0}' settings type: {1}{2}.", 
                     rootSettingsType.Name, 
                     Environment.NewLine,
                     GetCompilationErrorsDescription(results.Errors));

@@ -28,7 +28,7 @@ namespace Eco.SettingsVisitors
                 string id = (string)rawSettingsField.GetValue(rawSettings);
                 if (id != null)
                 {
-                    if (_settingsById.ContainsKey(id)) throw new ConfigurationException("Duplicated settings ID: '{0}'", id);
+                    if (_settingsById.ContainsKey(id)) throw new ConfigurationException("Duplicated settings ID: '{0}'.", id);
                     _settingsById.Add(id, refinedSettings);
                 }
             }

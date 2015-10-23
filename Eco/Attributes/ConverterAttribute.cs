@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Reflection;
+using Eco.Extensions;
 
 namespace Eco
 {
@@ -17,7 +18,7 @@ namespace Eco
     ///        public static object FromString(string format, string source);
     /// 
     /// Usage: 
-    /// Can be applied to a field of any type apart from String.
+    /// Can be applied to a field of any type apart from System.String and Eco.include
     /// 
     /// Compatibility: 
     /// Incompatible with the Id, Inline, ItemName, KnownTypes and Ref attributes and compatible with all others.
@@ -64,8 +65,10 @@ namespace Eco
 
         public override void ValidateContext(FieldInfo context)
         {
+            if (context.FieldType.IsIncludeElementType())
+                ThrowExpectedFieldOf("any type apart from System.String and Eco.include.", context);
             if (!CanParse(context.FieldType))
-                new ConfigurationException("Invalid Converter type for the {0}.{1} field", context.DeclaringType.Name, context.Name);
+                new ConfigurationException("Invalid Converter type for the {0}.{1} field.", context.DeclaringType.Name, context.Name);
 
             CheckAttributesCompatibility(context, _incompatibleAttributeTypes);
         }

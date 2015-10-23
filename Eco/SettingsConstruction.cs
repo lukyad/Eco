@@ -42,7 +42,7 @@ namespace Eco
                 targetType = targetField.DeclaringType
                     .GetReferencedSettingsTypesRecursive()
                     .FirstOrDefault(t => t.NonGenericName() == sourceType.NonGenericName());
-                if (targetType == null) throw new ConfigurationException("Could not find corresponding target type for '{0}'", sourceType.Name);
+                if (targetType == null) throw new ConfigurationException("Could not find corresponding target type for '{0}'.", sourceType.Name);
                 typeMappings.Add(sourceType, targetType);
             }
             return targetType;

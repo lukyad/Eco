@@ -38,7 +38,7 @@ namespace Eco
                 object settings = GetSettings(id, throwIfMissing: !refinedSettingsField.GetCustomAttribute<RefAttribute>().Weak);
                 if (settings != null && !refinedSettingsField.FieldType.IsAssignableFrom(settings.GetType()))
                 {
-                    throw new ConfigurationException("Could not assign object with ID='{0}' of type '{1}' to the '{2}' field of type '{3}'",
+                    throw new ConfigurationException("Could not assign object with ID='{0}' of type '{1}' to the '{2}' field of type '{3}'.",
                         id, settings.GetType().Name, refinedSettingsField.Name, refinedSettingsField.FieldType.Name);
                 }
                 refinedSettingsField.SetValue(refinedSettings, settings);
@@ -57,7 +57,7 @@ namespace Eco
                 {
                     var matchedIds = _settingsById.Keys.Where(id => new Wildcard(wildcard.Trim()).IsMatch(id)).ToArray();
                     if (matchedIds.Length == 0 && !refinedSettingsField.GetCustomAttribute<RefAttribute>().Weak)
-                        throw new ConfigurationException("Could not find any settings matching '{0}' id", wildcard);
+                        throw new ConfigurationException("Could not find any settings matching '{0}' id.", wildcard);
 
                     for (int i = 0; i < matchedIds.Length; i++)
                     {
@@ -67,7 +67,7 @@ namespace Eco
                         {
                             if (!elementType.IsAssignableFrom(settings.GetType()))
                             {
-                                throw new ConfigurationException("Could not assign object with ID='{0}' of type '{1}' to an element of the array '{2}.{3}' of type '{4}'",
+                                throw new ConfigurationException("Could not assign object with ID='{0}' of type '{1}' to an element of the array '{2}.{3}' of type '{4}'.",
                                     matchedIds[i], settings.GetType().Name, refinedSettingsField.DeclaringType.Name, refinedSettingsField.Name, elementType.Name);
                             }
                             settingsList.Add(settings);
@@ -85,7 +85,7 @@ namespace Eco
         object GetSettings(string id, bool throwIfMissing = false)
         {
             object settings;
-            if (!_settingsById.TryGetValue(id, out settings) && throwIfMissing) throw new ConfigurationException("Missing configuration ID: {0}", id);
+            if (!_settingsById.TryGetValue(id, out settings) && throwIfMissing) throw new ConfigurationException("Missing configuration ID: '{0}'.", id);
             return settings;
         }
 

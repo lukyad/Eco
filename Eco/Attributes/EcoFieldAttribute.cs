@@ -18,7 +18,7 @@ namespace Eco
         protected void ThrowExpectedFieldOf(string type, FieldInfo context)
         {
             throw new ConfigurationException(
-                "{0} cannot be applied to {1}.{2}. Expected field of the {3} type",
+                "{0} cannot be applied to {1}.{2}. Expected field of the {3} type.",
                 this.GetType().Name,
                 context.DeclaringType.Name,
                 context.Name,
@@ -27,7 +27,7 @@ namespace Eco
         }
         protected static void ThrowMissingMethodException(Type methodContainer, string methodSignature)
         {
-            throw new ConfigurationException("{0} type doesn't have required method: {1}", methodContainer.Name, methodSignature);
+            throw new ConfigurationException("{0} type doesn't have required method: {1}.", methodContainer.Name, methodSignature);
         }
     }
 }

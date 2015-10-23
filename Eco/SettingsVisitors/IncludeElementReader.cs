@@ -18,7 +18,7 @@ namespace Eco.SettingsVisitors
         {
             include<object> includeElemPrototype;
             string fileName = (string)includeElem.GetFieldValue(nameof(includeElemPrototype.file));
-            if (!File.Exists(fileName)) throw new ConfigurationException("Configuration file '{0}' doesn't exist", fileName);
+            if (!File.Exists(fileName)) throw new ConfigurationException("Configuration file '{0}' doesn't exist.", fileName);
 
             string settingsFieldName = nameof(includeElemPrototype.data);
             Type includedSettingsType = (Type)includeElem.GetType().GetField(settingsFieldName).FieldType;

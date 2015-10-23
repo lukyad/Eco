@@ -81,7 +81,7 @@ namespace Eco.SettingsVisitors
                 {
                     string varName = m.Groups["varName"].Value;
                     // Make sure we do not go into a circular dependency.
-                    if (expandedVars.Contains(varName)) throw new ConfigurationException("Circular configuration variable dependency detected in '{0}'", source);
+                    if (expandedVars.Contains(varName)) throw new ConfigurationException("Circular configuration variable dependency detected in '{0}'.", source);
 
                     string varValue;
                     // skip unknown variables

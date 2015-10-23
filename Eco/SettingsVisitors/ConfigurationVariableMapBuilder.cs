@@ -55,9 +55,9 @@ namespace Eco.SettingsVisitors
         {
             string varName = (string)variable.GetFieldValue("name");
             string varValue = (string)variable.GetFieldValue("value");
-            if (String.IsNullOrWhiteSpace(varName)) throw new ConfigurationException("Detected null or empty configuration variable name: path = '{0}'", fieldPath);
-            if (_invalidVarChars.IsMatch(varName)) throw new ConfigurationException("Invalid configuration variable name: '{0}', path = '{1}'", varName, fieldPath);
-            if (_vars.ContainsKey(varName)) throw new ConfigurationException("Duplicated configuration variable: '{0}', path = '{1}'", varName, fieldPath);
+            if (String.IsNullOrWhiteSpace(varName)) throw new ConfigurationException("Detected null or empty configuration variable name: path = '{0}'.", fieldPath);
+            if (_invalidVarChars.IsMatch(varName)) throw new ConfigurationException("Invalid configuration variable name: '{0}', path = '{1}'.", varName, fieldPath);
+            if (_vars.ContainsKey(varName)) throw new ConfigurationException("Duplicated configuration variable: '{0}', path = '{1}'.", varName, fieldPath);
             _vars.Add(varName, varValue);
         }
     }

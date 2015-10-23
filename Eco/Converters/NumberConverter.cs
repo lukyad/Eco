@@ -43,7 +43,7 @@ namespace Eco.Converters
         public static string ToString(object number, string multiplier)
         {
             decimal value = (decimal)number;
-            if (!_multipliers.ContainsKey(multiplier.ToLower())) throw new ConfigurationException("Unsupported number multiplier: '{0}'", multiplier);
+            if (!_multipliers.ContainsKey(multiplier.ToLower())) throw new ConfigurationException("Unsupported number multiplier: '{0}'.", multiplier);
             return String.Format("{0}{1}", value * _multipliers[multiplier], multiplier);
         }
 
@@ -61,7 +61,7 @@ namespace Eco.Converters
             decimal result;
             bool succeed = TryParseDecimal(number, out result);
             if (!succeed)
-                throw new ConfigurationException("Unsupported number multiplier: '{0}'", number);
+                throw new ConfigurationException("Unsupported number multiplier: '{0}'.", number);
 
             return result;
         }

@@ -19,7 +19,7 @@ namespace Eco.SettingsVisitors
             include<object> includeElemPrototype;
             string fileName = (string)includeElem.GetFieldValue(nameof(includeElemPrototype.file));
             string dir = Path.GetDirectoryName(fileName);
-            if (!Directory.Exists(dir)) throw new ConfigurationException("Directory '{0}' doesn't exist", dir);
+            if (!Directory.Exists(dir)) throw new ConfigurationException("Directory '{0}' doesn't exist.", dir);
 
             string settingsFieldName = nameof(includeElemPrototype.data);
             Type includedSettingsType = (Type)includeElem.GetType().GetField(settingsFieldName).FieldType;

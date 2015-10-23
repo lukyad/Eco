@@ -20,7 +20,7 @@ namespace Eco
             {
                 if (refinedSettingsField.FieldType.IsSettingsOrObjectType()) PackReference(fieldPath, refinedSettingsField, refinedSettings, rawSettingsField, rawSettings);
                 else if (refinedSettingsField.FieldType.IsSettingsOrObjectArrayType()) PackReferenceArray(fieldPath, refinedSettingsField, refinedSettings, rawSettingsField, rawSettings);
-                else throw new ConfigurationException("Did not expect to get here");
+                else throw new ConfigurationException("Did not expect to get here.");
             }
         }
 
@@ -53,10 +53,10 @@ namespace Eco
         {
             FieldInfo idField = settings.GetType().GetFields().SingleOrDefault(f => f.IsDefined<IdAttribute>());
             if (idField == null)
-                throw new ConfigurationException("Expected an object with one of the fields marked with {0}, but got an instance of type {1}", typeof(IdAttribute).Name, settings.GetType().Name);
+                throw new ConfigurationException("Expected an object with one of the fields marked with {0}, but got an instance of type {1}.", typeof(IdAttribute).Name, settings.GetType().Name);
 
             string id = (string)idField.GetValue(settings);
-            if (id == null) throw new ConfigurationException("Detected null object ID: path={0}", settingsPath);
+            if (id == null) throw new ConfigurationException("Detected null object ID: path='{0}'.", settingsPath);
 
             return id;
         }

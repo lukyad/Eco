@@ -18,7 +18,7 @@ namespace Eco
             if (attributeContext.GetCustomAttributes().Any(a => incompatibleAttributeTypes.Contains(a.GetType())))
             {
                 throw new ConfigurationException(
-                    "Incomatible attributes detected: type={0}, field={1}, attributes={2}",
+                    "Incomatible attributes detected: type={0}, field={1}, attributes={2}.",
                     attributeContext.DeclaringType.Name,
                     attributeContext.Name,
                     attributeContext.GetCustomAttributes()

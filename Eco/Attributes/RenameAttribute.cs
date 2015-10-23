@@ -38,7 +38,7 @@ namespace Eco
 
         static void EnsureNonEmptyArgument(string arg, string argName)
         {
-            if (String.IsNullOrEmpty(arg)) throw new ConfigurationException($"Invalid {argName} argument. Expected non-empty string");
+            if (String.IsNullOrEmpty(arg)) throw new ConfigurationException($"Invalid {argName} argument. Expected non-empty string.");
         }
 
         /// <summary>
@@ -67,7 +67,7 @@ namespace Eco
 
         public string Rename(string input)
         {
-            if (String.IsNullOrEmpty(input)) throw new ConfigurationException("Expected non-empty string");
+            if (String.IsNullOrEmpty(input)) throw new ConfigurationException("Expected non-empty string.");
 
             string result = Regex.Replace(input, this.Pattern, this.Replacement);
             if (this.KeepOriginalCamelCase)

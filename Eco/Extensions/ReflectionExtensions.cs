@@ -65,7 +65,10 @@ namespace Eco.Extensions
                 fieldType.IsSettingsArrayType() && (fieldType.GetElementType().IsAbstract || field.IsDefined<PolymorphicAttribute>());
         }
 
-        
+        public static bool IsIncludeElementType(this Type t)
+        {
+            return t == typeof(include) || t.GetGenericTypeDefinition() == typeof(include<>);
+        }
 
         public static IEnumerable<Type> DerivedTypes(this Type type)
         {

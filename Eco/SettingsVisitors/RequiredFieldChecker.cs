@@ -18,7 +18,7 @@ namespace Eco.SettingsVisitors
         {
             bool isRequiredField = refinedSettingsField.IsDefined<RequiredAttribute>() || refinedSettingsField.IsDefined<RequiredAttribute>();
             if (isRequiredField && refinedSettingsField.GetValue(refinedSettings) == null)
-                throw new ConfigurationException("Missing required field '{0}'", fieldPath);
+                throw new ConfigurationException("Missing required field '{0}'.", fieldPath);
         }
     }
 }

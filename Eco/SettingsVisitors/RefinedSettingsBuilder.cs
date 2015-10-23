@@ -88,10 +88,10 @@ namespace Eco.SettingsVisitors
                     else if (underlyingNullableType != null && underlyingNullableType.IsEnum) tryParseMethod = GetEnumTryParseMethod(underlyingNullableType);
                     else tryParseMethod = GetNativeTryParseMethod(targetType);
 
-                    if (tryParseMethod == null) throw new ConfigurationException("Not able to parse {0}.{1}", targetField.DeclaringType.Name, targetField.FieldType);
+                    if (tryParseMethod == null) throw new ConfigurationException("Not able to parse '{0}.{1}'.", targetField.DeclaringType.Name, targetField.FieldType);
                     var args = new object[] { sourceStr, Activator.CreateInstance(targetType) };
                     bool parsed = (bool)tryParseMethod.Invoke(null, args);
-                    if (!parsed) throw new ConfigurationException("Failed to parse '{0}' from '{1}'", targetType.Name, sourceStr);
+                    if (!parsed) throw new ConfigurationException("Failed to parse '{0}' from '{1}'.", targetType.Name, sourceStr);
                     result = args[1];
                 }
                 

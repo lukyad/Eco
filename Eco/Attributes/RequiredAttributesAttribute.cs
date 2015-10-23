@@ -11,7 +11,7 @@ namespace Eco
         public RequiredAttributesAttribute(params Type[] attributeTypes)
         {
             if (!attributeTypes.All(t => t.IsSubclassOf(typeof(Attribute))))
-                throw new ConfigurationException("'{0}' is not an attribute type", attributeTypes.First(t => !t.IsSubclassOf(typeof(Attribute))).FullName);
+                throw new ConfigurationException("'{0}' is not an attribute type.", attributeTypes.First(t => !t.IsSubclassOf(typeof(Attribute))).FullName);
             AttributeTypes = attributeTypes;
         }
 
