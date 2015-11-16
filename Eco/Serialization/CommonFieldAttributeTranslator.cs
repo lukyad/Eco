@@ -33,7 +33,7 @@ namespace Eco.Serialization.Xml
             {
                 string attrText = 
                     new AttributeBuilder(typeof(KnownTypesAttribute).FullName)
-                    .AddTypeParam(type.Name)
+                    .AddTypeParam(type.NonGenericName())
                     .ToString();
                 translation.AppendLine(attrText);
             }
