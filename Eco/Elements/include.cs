@@ -17,6 +17,9 @@ namespace Eco
         [Required, Doc("Path (relative or absolute) to the file to be included.")]
         public string file;
 
+        [Optional, Doc("Namespace to be applied to all object IDs included from the referenced file. If specified, an object from the file should be referenced as '<Namesapce>.<ObjectId>'")]
+        public string namesapce;
+
         [Optional, Doc("Format of the file to be included. By default Eco library uses format defined by Settings.DefaultManager.")]
         public string format;
     }
