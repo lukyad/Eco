@@ -24,7 +24,7 @@ namespace Eco
     /// Can be applied to any field of a settings or settings array type (any type from the assembly marked with SettingsAssembly attribute)
     /// 
     /// Compatibility:
-    /// Incompatible with the Id, Inline, ItemName, Converter and Ref attributes and compatible with all others.
+    /// Incompatible with the Id, Converter, Parser, Rename and Ref attributes and compatible with all others.
     /// </summary>
     [AttributeUsage(AttributeTargets.Field)]
     public class PolymorphicAttribute : EcoFieldAttribute

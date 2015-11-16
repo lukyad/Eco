@@ -51,7 +51,7 @@ namespace Eco
     /// Can be applied to a field of an array type only.
     /// 
     /// Compatibility:
-    /// Incompatible with the Ref attribute and compatible with all others.
+    /// Incompatible with the Ref, Converter and Parser attributes and compatible with all others.
     /// </summary>
     [AttributeUsage(AttributeTargets.Field)]
     public class InlineAttribute : EcoFieldAttribute
@@ -61,7 +61,6 @@ namespace Eco
             typeof(ConverterAttribute),
             typeof(IdAttribute),
             typeof(ParserAttribute),
-            typeof(PolymorphicAttribute),
             typeof(RefAttribute),
         };
 
