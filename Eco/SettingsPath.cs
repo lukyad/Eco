@@ -14,7 +14,7 @@ namespace Eco
 
 		public static string Combine(string left, string right)
 		{
-			return left + Separator + right;
+            return (left + Separator + right).Trim(Separator);
         }
 
 		public static string Combine(string left, string right, int index)
