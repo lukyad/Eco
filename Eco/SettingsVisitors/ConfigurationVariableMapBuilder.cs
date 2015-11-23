@@ -40,13 +40,16 @@ namespace Eco.SettingsVisitors
             {
                 this.RegisterVariable(rawSettingsField.GetValue(rawSettings), fieldPath);
             }
-            else if (rawSettingsField.FieldType.GetElementType()?.Name == typeof(variable).Name)
+            else if (rawSettingsField.FieldType.IsArray)
             {
                 var arr = (Array)rawSettingsField.GetValue(rawSettings);
                 if (arr != null)
                 {
-                    foreach (object variable in arr)
-                        this.RegisterVariable(variable, fieldPath);
+                    foreach (object item in arr)
+                    {
+                        if (item.GetType().Name == typeof(variable).Name)
+                            this.RegisterVariable(item, fieldPath);
+                    }
                 }
             }
         }
