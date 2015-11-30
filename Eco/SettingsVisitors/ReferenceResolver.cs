@@ -21,21 +21,22 @@ namespace Eco
 
         public void Initialize(Type rootSettingsType) { }
 
-        public void Visit(string fieldPath, FieldInfo refinedSettingsField, object refinedSettings, FieldInfo rawSettingsField, object rawSettings)
+        public void Visit(string fieldPath, string fieldNamesapce, FieldInfo refinedSettingsField, object refinedSettings, FieldInfo rawSettingsField, object rawSettings)
         {
             if (refinedSettingsField.IsDefined<RefAttribute>())
             {
                 if (refinedSettingsField.FieldType.IsArray) ResolveReferenceArray(rawSettingsField, rawSettings, refinedSettingsField, refinedSettings); 
-                else ResolveReference(rawSettingsField, rawSettings, refinedSettingsField, refinedSettings);
+                else ResolveReference(fieldNamesapce, rawSettingsField, rawSettings, refinedSettingsField, refinedSettings);
             }
         }
 
-        void ResolveReference(FieldInfo rawSettingsField, object rawSettings, FieldInfo refinedSettingsField, object refinedSettings)
+        void ResolveReference(string fieldNamesapce, FieldInfo rawSettingsField, object rawSettings, FieldInfo refinedSettingsField, object refinedSettings)
         {
             string id = (string)rawSettingsField.GetValue(rawSettings);
             if (id != null)
             {
-                object settings = GetSettings(id, throwIfMissing: !refinedSettingsField.GetCustomAttribute<RefAttribute>().Weak);
+                string fullId = SettingsPath.Combine(fieldNamesapce, id);
+                object settings = GetSettings(fullId, throwIfMissing: !refinedSettingsField.GetCustomAttribute<RefAttribute>().IsWeak);
                 if (settings != null && !refinedSettingsField.FieldType.IsAssignableFrom(settings.GetType()))
                 {
                     throw new ConfigurationException("Could not assign object with ID='{0}' of type '{1}' to the '{2}' field of type '{3}'.",
@@ -56,7 +57,7 @@ namespace Eco
                 foreach (var wildcard in idWildcards.Split(','))
                 {
                     var matchedIds = _settingsById.Keys.Where(id => new Wildcard(wildcard.Trim()).IsMatch(id)).ToArray();
-                    if (matchedIds.Length == 0 && !refinedSettingsField.GetCustomAttribute<RefAttribute>().Weak)
+                    if (matchedIds.Length == 0 && !refinedSettingsField.GetCustomAttribute<RefAttribute>().IsWeak)
                         throw new ConfigurationException("Could not find any settings matching '{0}' id.", wildcard);
 
                     for (int i = 0; i < matchedIds.Length; i++)

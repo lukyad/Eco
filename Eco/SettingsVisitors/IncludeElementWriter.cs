@@ -14,6 +14,11 @@ namespace Eco.SettingsVisitors
     /// </summary>
     public class IncludeElementWriter : IncludeElementProcessor
     {
+        public IncludeElementWriter(SettingsManager context)
+            : base(context)
+        {
+        }
+
         protected override void ProcessIncludeElement(include includeElem)
         {
             string fileName = includeElem.file;
@@ -25,7 +30,7 @@ namespace Eco.SettingsVisitors
             using (var writer = new StreamWriter(fileStream))
             {
                 object settings = GetIncludedData(includeElem);
-                Settings.DefaultManager.Serializer.Serialize(settings, writer);
+                this.Context.Serializer.Serialize(settings, writer);
             }
         }
     }

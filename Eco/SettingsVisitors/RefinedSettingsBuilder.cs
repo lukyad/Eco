@@ -19,7 +19,7 @@ namespace Eco.SettingsVisitors
             _parsingPolicies = rootSettingsType.GetCustomAttributes<ParsingPolicyAttribute>().ToArray();
         }
 
-        public void Visit(string fieldPath, FieldInfo refinedSettingsField, object refinedSettings, FieldInfo rawSettingsField, object rawSettings)
+        public void Visit(string fieldPath, string fieldNamesapce, FieldInfo refinedSettingsField, object refinedSettings, FieldInfo rawSettingsField, object rawSettings)
         {
             if (refinedSettingsField.IsDefined<RefAttribute>()) return;
             object rawValue = rawSettingsField.GetValue(rawSettings);

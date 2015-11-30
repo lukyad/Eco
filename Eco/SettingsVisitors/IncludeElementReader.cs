@@ -14,6 +14,11 @@ namespace Eco.SettingsVisitors
     /// </summary>
     public class IncludeElementReader : IncludeElementProcessor
     {
+        public IncludeElementReader(SettingsManager context)
+            : base(context)
+        {
+        }
+
         protected override void ProcessIncludeElement(include includeElem)
         {
             string fileName = includeElem.file;
@@ -23,7 +28,7 @@ namespace Eco.SettingsVisitors
             using (var fileStream = File.Open(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
             using (var reader = new StreamReader(fileStream))
             {
-                object includedSettings = Settings.DefaultManager.Serializer.Deserialize(includedSettingsType, reader);
+                object includedSettings = this.Context.ReadRawSettings(includedSettingsType, reader);
                 SetIncludedData(includeElem, includedSettings);
             }
         }

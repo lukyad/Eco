@@ -14,7 +14,7 @@ namespace Eco.SettingsVisitors
 
         public void Initialize(Type rootSettingsType) { }
 
-        public void Visit(string fieldPath, FieldInfo refinedSettingsField, object refinedSettings, FieldInfo rawSettingsField, object rawSettings)
+        public void Visit(string fieldPath, string fieldNamesapce, FieldInfo refinedSettingsField, object refinedSettings, FieldInfo rawSettingsField, object rawSettings)
         {
             bool isRequiredField = refinedSettingsField.IsDefined<RequiredAttribute>() || refinedSettingsField.IsDefined<RequiredAttribute>();
             if (isRequiredField && refinedSettingsField.GetValue(refinedSettings) == null)

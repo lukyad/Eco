@@ -41,6 +41,6 @@ namespace Eco
         /// <summary>
         /// Gets called ones for each field for all objects of a settings type in the raw settings object graph.
         /// </summary>
-        void Visit(string fieldPath, FieldInfo refinedSettingsField, object refinedSettings, FieldInfo rawSettingsField, object rawSettings);
+        void Visit(string fieldPath, string fieldNamespace, FieldInfo refinedSettingsField, object refinedSettings, FieldInfo rawSettingsField, object rawSettings);
     }
 }

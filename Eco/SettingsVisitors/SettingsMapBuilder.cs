@@ -23,34 +23,18 @@ namespace Eco.SettingsVisitors
             _namespaces.Clear();
         }
 
-        public void Visit(string fieldPath, FieldInfo refinedSettingsField, object refinedSettings, FieldInfo rawSettingsField, object rawSettings)
+        public void Visit(string fieldPath, string fieldNamesapce, FieldInfo refinedSettingsField, object refinedSettings, FieldInfo rawSettingsField, object rawSettings)
         {
-            if (refinedSettingsField.DeclaringType.IsSubclassOf(typeof(include)))
-            {
-                string currentNs = GetNamesapceFor(fieldPath);
-                string includedDataPath = SettingsPath.Combine(fieldPath, IncludeElementProcessor.GetDataFieldName());
-                string includedDataNs = SettingsPath.Combine(currentNs, (refinedSettings as include).namesapce);
-                _namespaces.Add(includedDataPath, includedDataNs);
-            }
             if (refinedSettingsField.IsDefined<IdAttribute>())
             {
                 string id = (string)rawSettingsField.GetValue(rawSettings);
                 if (id != null)
                 {
-                    string fullId = SettingsPath.Combine(GetNamesapceFor(fieldPath), id);
+                    string fullId = SettingsPath.Combine(fieldNamesapce, id);
                     if (_settingsById.ContainsKey(fullId)) throw new ConfigurationException("Duplicate settings ID: '{0}'.", id);
                     _settingsById.Add(fullId, refinedSettings);
                 }
             }
-        }
-
-        string GetNamesapceFor(string fieldPath)
-        {
-            return _namespaces
-                .Where(n => fieldPath.StartsWith(n.Key))
-                .OrderBy(n => n.Key.Length)
-                .FirstOrDefault()
-                .Value;
         }
     }
 }

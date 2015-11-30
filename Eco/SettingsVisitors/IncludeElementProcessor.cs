@@ -13,6 +13,16 @@ namespace Eco.SettingsVisitors
     /// </summary>
     public abstract class IncludeElementProcessor  : IRawSettingsVisitor
     {
+        readonly SettingsManager _context;
+
+        public IncludeElementProcessor(SettingsManager context)
+        {
+            if (context == null) throw new ArgumentNullException(nameof(context));
+            _context = context;
+        }
+
+        public SettingsManager Context { get { return _context; } }
+
         public bool IsReversable { get { return true; } }
 
         public void Initialize(Type rootSettingsType) { }
