@@ -41,10 +41,10 @@ namespace Eco
 
         public RefAttribute()
         {
-            this.Weak = false;
+            this.IsWeak = false;
         }
 
-        public bool Weak { get; set; }
+        public bool IsWeak { get; set; }
 
         public override void ValidateContext(FieldInfo context)
         {
