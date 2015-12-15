@@ -14,9 +14,6 @@ namespace Eco
     /// 
     /// Usage: 
     /// Can be applied to a class or to a field of any type.
-    /// 
-    /// Comatibility: 
-    /// Compatible with all attributes.
     /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Field)]
     public class DocAttribute : EcoFieldAttribute

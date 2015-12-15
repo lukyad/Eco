@@ -16,9 +16,6 @@ namespace Eco
     /// Can not be applied to fields of a value type and Nullable'1 type as during serialization/deserialization
     /// all fields of a value type are automaticvally marked with Required attribute and
     /// all fields of Nullable'1 type are automatically marked with Optional attribue.
-    /// 
-    /// Compatibility:
-    /// Incompatible with Required attribute and compatible with all others.
     /// </summary>
     [AttributeUsage(AttributeTargets.Field)]
     public class OptionalAttribute : EcoFieldAttribute
@@ -31,7 +28,7 @@ namespace Eco
         public override void ValidateContext(FieldInfo context)
         {
             if (context.FieldType.IsValueType || Nullable.GetUnderlyingType(context.FieldType) != null)
-                ThrowExpectedFieldOf("a reference non-Nullable type. For value types field usage is controlled by the ? mark", context);
+                ThrowExpectedFieldOf("a reference non-Nullable type. For value types please use a Nullable<> wrapper in place of the Eco usage attributes.", context);
 
             CheckAttributesCompatibility(context, _incompatibleAttributeTypes);
         }

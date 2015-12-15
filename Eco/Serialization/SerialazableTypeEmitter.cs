@@ -141,8 +141,8 @@ namespace Eco.Serialization
             codeBuilder.AddAssemblyAttribute(typeof(SettingsAssemblyAttribute).FullName);
             foreach (var type in settingsType.GetReferencedSettingsTypesRecursive())
             {
-                string baseTypeName = type.BaseType.IsSettingsType() ? type.BaseType.NonGenericName() : null;
-                var classBuilder = codeBuilder.AddClass(type.NonGenericName(), baseTypeName);
+                string baseTypeName = type.BaseType.IsSettingsType() ? type.BaseType.GetNonGenericName() : null;
+                var classBuilder = codeBuilder.AddClass(type.GetNonGenericName(), baseTypeName);
                 classBuilder.AddAttributes(attributesGenerator.GetAttributesTextFor(type));
                 foreach (var field in type.OwnFields())
                 {
@@ -157,7 +157,7 @@ namespace Eco.Serialization
 
         static string GetUnivocalTypeName(Type type)
         {
-            if (type.IsSettingsType() || type.IsSettingsArrayType()) return type.NonGenericName();
+            if (type.IsSettingsType() || type.IsSettingsArrayType()) return type.GetNonGenericName();
             else return type.FullName;
         }
 
@@ -167,22 +167,21 @@ namespace Eco.Serialization
             foreach (var a in ecoAttributes)
                 a.ValidateContext(field);
 
-            var requiredAttrTypes = field.FieldType.GetCustomAttribute<RequiredAttributesAttribute>(inherit: false)?.AttributeTypes;
-            if (requiredAttrTypes != null)
-            {
-                var fieldAttributes = field.GetCustomAttributes();
-                foreach (var requiredAttrType in requiredAttrTypes)
-                {
-                    if (!fieldAttributes.Any(a => a.GetType() == requiredAttrType))
-                    {
-                        throw new ConfigurationException(
-                            "Field of type '{0}' requires an attribute(s) of type '{1}'.", 
-                            field.FieldType, 
-                            requiredAttrTypes.Select(a => a.FullName).CommaWhiteSpaceSeparated());
-                    }
-                }
-            }
-            
+            //var requiredAttrTypes = field.FieldType.GetCustomAttribute<RequiredAttributesAttribute>(inherit: false)?.AttributeTypes;
+            //if (requiredAttrTypes != null)
+            //{
+            //    var fieldAttributes = field.GetCustomAttributes();
+            //    foreach (var requiredAttrType in requiredAttrTypes)
+            //    {
+            //        if (!fieldAttributes.Any(a => a.GetType() == requiredAttrType))
+            //        {
+            //            throw new ConfigurationException(
+            //                "Field of type '{0}' requires an attribute(s) of type '{1}'.", 
+            //                field.FieldType, 
+            //                requiredAttrTypes.Select(a => a.FullName).CommaWhiteSpaceSeparated());
+            //        }
+            //    }
+            //}
         }
     }
 }

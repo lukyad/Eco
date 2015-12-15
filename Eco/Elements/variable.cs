@@ -15,9 +15,10 @@ namespace Eco
     /// Variable's value can reference another variable. In this case variable value is expanded recursively. 
     /// Eco library throws an exception if a circular variable dendency is detected.
     /// 
-    /// All variables are visible only in the configuration file where they are defined and have the global scope (i.e. can be referenced anywhere in the file) 
-    /// If one configuration file is included by another one, then variables defined in the first file are not vivible in the second one.
+    /// Variables have a global scope, i.e. visible at any place in the configuration file where they are defined
+    /// as well as in any included configuration file.
     /// </summary>
+    [EcoElement(typeof(variable))]
     [Doc("Represents a configuration variable of the string type. Can be referenced anywhere in a configuration file by the following syntax: ${name}.")]
     public sealed class variable
     {
@@ -26,5 +27,9 @@ namespace Eco
 
         [Required, Doc("Variable's value.")]
         public string value;
+
+        public static string GetValue(object twin) => (string)twin.GetType().GetField(nameof(value)).GetValue(twin);
+
+        public static string GetName(object twin) => (string)twin.GetType().GetField(nameof(name)).GetValue(twin);
     }
 }

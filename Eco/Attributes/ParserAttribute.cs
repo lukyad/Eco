@@ -22,9 +22,6 @@ namespace Eco
     /// Usage: 
     /// Can be applied to a field of a 'simple' type apart from String.
     /// Eco library allows usage of multiple Parser attributes for the same field.
-    /// 
-    /// Compatibility: 
-    /// Incompatible with the Id, Inline, ItemName, KnownTypes and Ref attributes and compatible with all others.
     /// </summary>
     [AttributeUsage(AttributeTargets.Field, AllowMultiple = true)]
     public class ParserAttribute : EcoFieldAttribute

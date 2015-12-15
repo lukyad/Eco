@@ -19,9 +19,6 @@ namespace Eco
     /// 
     /// Usage: 
     /// Can be applied to a field of any type apart from System.String and Eco.include
-    /// 
-    /// Compatibility: 
-    /// Incompatible with the Id, Inline, ItemName, KnownTypes and Ref attributes and compatible with all others.
     /// </summary>
     [AttributeUsage(AttributeTargets.Field)]
     public class ConverterAttribute : EcoFieldAttribute
@@ -65,8 +62,8 @@ namespace Eco
 
         public override void ValidateContext(FieldInfo context)
         {
-            if (context.FieldType.IsIncludeElementType())
-                ThrowExpectedFieldOf("any type apart from System.String and Eco.include.", context);
+            if (context.FieldType.IsDefined<EcoElementAttribute>())
+                ThrowExpectedFieldOf("any type apart from System.String and any of the Eco configuration element types.", context);
             if (!CanParse(context.FieldType))
                 new ConfigurationException("Invalid Converter type for the {0}.{1} field.", context.DeclaringType.Name, context.Name);
 

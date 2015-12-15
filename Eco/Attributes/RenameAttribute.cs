@@ -11,9 +11,6 @@ namespace Eco
     /// 
     /// Usage:
     /// Can be applied to a field of a polymorphic type only.
-    /// 
-    /// Compatibility:
-    /// Incomaptible with KnownTypes and Ref attributes and compatible with all others.
     /// </summary>
     [AttributeUsage(AttributeTargets.Field)]
     public class RenameAttribute : EcoFieldAttribute

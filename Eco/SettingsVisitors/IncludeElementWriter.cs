@@ -19,17 +19,21 @@ namespace Eco.SettingsVisitors
         {
         }
 
-        protected override void ProcessIncludeElement(include includeElem)
+        protected override void ProcessIncludeElement(object includeElem)
         {
-            string fileName = includeElem.file;
-            string dir = Path.GetDirectoryName(fileName);
-            if (!Directory.Exists(dir)) throw new ConfigurationException("Directory '{0}' doesn't exist.", dir);
-
-            Type includedSettingsType = GetIncludedDataType(includeElem);
-            using (var fileStream = File.Open(fileName, FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
+            // Skip readonly files.
+            if (include.IsReadOnly(includeElem)) return;
+            // Create full path to the file (if doesn't exist)
+            // If configuration file specifies a relative file path, then it's combined with the current working dir.
+            string filePath = include.GetFile(includeElem);
+            string dir = Path.GetDirectoryName(filePath);
+            Directory.CreateDirectory(dir);
+            // Write settings to the file.
+            Type includedSettingsType = include.GetDataType(includeElem);
+            using (var fileStream = File.Open(filePath, FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
             using (var writer = new StreamWriter(fileStream))
             {
-                object settings = GetIncludedData(includeElem);
+                object settings = include.GetDataType(includeElem);
                 this.Context.Serializer.Serialize(settings, writer);
             }
         }

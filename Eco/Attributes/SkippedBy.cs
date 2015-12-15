@@ -9,15 +9,21 @@ using Eco.Extensions;
 namespace Eco
 {
     /// <summary>
-    /// Instructs the IRawFieldVisitors to skip any processing of the given field.
-    /// (e.g. EnvironmnetVariableExpander would skip any fields marked as Sealed)
+    /// Instructs specified visitors to skip processing of the target field.
     /// 
     /// Usage:
     /// Can be applied to a field of any type.
     /// </summary>
     [AttributeUsage(AttributeTargets.Field)]
-    public class SealedAttribute : EcoFieldAttribute
+    public class SkippedByAttribute : EcoFieldAttribute
     {
+        public SkippedByAttribute(params Type[] visitors)
+        {
+            this.Visitors = new HashSet<Type>(visitors);
+        }
+
+        public HashSet<Type> Visitors { get; }
+
         public override void ValidateContext(FieldInfo context)
         {
             // do nothing. can be applied to field of any type and is compatible with all Eco attributes.

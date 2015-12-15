@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Reflection;
+using System.IO;
 using Eco.Extensions;
 
 namespace Eco.SettingsVisitors
@@ -11,7 +12,7 @@ namespace Eco.SettingsVisitors
     /// <summary>
     /// Common base for IncludeElementReader and IncludeElementWriter.
     /// </summary>
-    public abstract class IncludeElementProcessor  : IRawSettingsVisitor
+    public abstract class IncludeElementProcessor  : ISettingsVisitor
     {
         readonly SettingsManager _context;
 
@@ -25,45 +26,16 @@ namespace Eco.SettingsVisitors
 
         public bool IsReversable { get { return true; } }
 
-        public void Initialize(Type rootSettingsType) { }
+        public void Initialize(Type rootRawSettingsType) { }
 
-        public void Visit(string fieldPath, FieldInfo rawSettingsField, object rawSettings)
+        public void Visit(string settingsNamesapce, string settingsPath, object rawSettings)
         {
-            var fieldType = rawSettingsField.FieldType;
-            if (fieldType.IsDefined<IncludeElementAttribute>())
-            {
-                object includeElem = rawSettingsField.GetValue(rawSettings);
-                ProcessIncludeElement((include)includeElem);
-            }
-            else if (fieldType.IsArray && fieldType.GetElementType().IsDefined<IncludeElementAttribute>())
-            {
-                object includeElemArray = (Array)rawSettingsField.GetValue(rawSettings);
-                foreach (var item in (Array)includeElemArray)
-                    ProcessIncludeElement((include)item);
-            }
+            if (rawSettings.IsEcoElementOfGenericType(typeof(include<>)))
+                ProcessIncludeElement(rawSettings);
         }
 
-        protected abstract void ProcessIncludeElement(include includeElem);
+        public void Visit(string settingsNamespace, string fieldPath, FieldInfo settingsField, object settings) { }
 
-        public static Type GetIncludedDataType(include includeElem)
-        {
-            return (Type)includeElem.GetType().GetField(GetDataFieldName()).FieldType;
-        }
-
-        public static object GetIncludedData(include includeElem)
-        {
-            return includeElem.GetFieldValue(GetDataFieldName());
-        }
-
-        public static void SetIncludedData(include includeElem, object data)
-        {
-            includeElem.SetFieldValue(GetDataFieldName(), data);
-        }
-
-        public static string GetDataFieldName()
-        {
-            include<object> includeElemPrototype;
-            return nameof(includeElemPrototype.data);
-        }
+        protected abstract void ProcessIncludeElement(object includeElem);
     }
 }

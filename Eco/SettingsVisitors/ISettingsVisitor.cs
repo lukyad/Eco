@@ -18,7 +18,7 @@ namespace Eco
     /// By this stage the raw settings graph is already initialized and ready for the serialization.
     /// The raw settings visitors can make some additional data transformations (if required).
     /// </summary>
-    public interface IRawSettingsVisitor
+    public interface ISettingsVisitor
     {
         /// <summary>
         /// A visitor is considered to be reversable if the changes it makes can be 
@@ -37,11 +37,16 @@ namespace Eco
         /// Gets called by the Eco library ones on each Load/Save operation.
         /// Allows to initialize visitor before the fields processing start.
         /// </summary>
-        void Initialize(Type rootRefinedSettingsType);
+        void Initialize(Type rootSettingsType);
 
         /// <summary>
-        /// Gets called ones for each field for all objects of a settings type in the raw settings object graph.
+        /// Gets called ones for all objects of a settings type in the settings tree.
         /// </summary>
-        void Visit(string fieldPath, FieldInfo rawSettingsField, object rawSettings);
+        void Visit(string settingsNamespace, string settingsPath, object settings);
+
+        /// <summary>
+        /// Gets called ones for each field for all objects of a settings type in the settings tree.
+        /// </summary>
+        void Visit(string settingsNamespace, string fieldPath, FieldInfo settingsField, object settings);
     }
 }

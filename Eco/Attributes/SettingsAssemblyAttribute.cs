@@ -12,9 +12,6 @@ namespace Eco
     /// 
     /// Usage:
     /// Can be applied to any assembly.
-    /// 
-    /// Compatibility:
-    /// Compatible with all other attributes.
     /// </summary>
     [AttributeUsage(AttributeTargets.Assembly)]
     public class SettingsAssemblyAttribute : EcoAttribute

@@ -22,7 +22,7 @@ namespace Eco
     /// Should be applied to a root settings type. The rool is propogated to all referenced settings types recursively.
     /// Eco library allows usage of multiple ParsingPolicy attributes for the same source type.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Class)]
+    [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
     public class ParsingPolicyAttribute : EcoAttribute
     {
         public ParsingPolicyAttribute(Type parserType)

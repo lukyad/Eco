@@ -19,17 +19,19 @@ namespace Eco.SettingsVisitors
         {
         }
 
-        protected override void ProcessIncludeElement(include includeElem)
+        protected override void ProcessIncludeElement(object includeElem)
         {
-            string fileName = includeElem.file;
-            if (!File.Exists(fileName)) throw new ConfigurationException("Configuration file '{0}' doesn't exist.", fileName);
+            string filePath = include.GetFile(includeElem);
+            if (!File.Exists(filePath)) throw new ConfigurationException("Configuration file '{0}' doesn't exist.", filePath);
 
-            Type includedSettingsType = GetIncludedDataType(includeElem);
-            using (var fileStream = File.Open(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+            Type includedSettingsType = include.GetDataType(includeElem);
+            using (var fileStream = File.Open(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
             using (var reader = new StreamReader(fileStream))
             {
-                object includedSettings = this.Context.ReadRawSettings(includedSettingsType, reader);
-                SetIncludedData(includeElem, includedSettings);
+                // Note, that we skip visitor initialization here, as this should be done
+                // only one per the root configuration file. (i.e. by this moment, all visitors have been initialized already)
+                object includedSettings = this.Context.ReadRawSettings(includedSettingsType, reader, initializeVisitors: false);
+                include.SetData(includeElem, includedSettings);
             }
         }
     }

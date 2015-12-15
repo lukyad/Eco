@@ -9,21 +9,21 @@ using Eco.Extensions;
 namespace Eco
 {
     /// <summary>
-    /// Indicates that the field provides an unique configuration object name
-    /// that can be used to reference the object in other places of a configuration file.
+    /// Instructs Eco library to apply the namespace provided by the field value
+    /// to all other fields of a Non-Simple types.
     /// 
     /// Usage:
     /// Can be applied to a field of the 'String' type only. 
-    /// Only one field in a class can be marked with the Id attribute.
-    /// If Eco library detects more than one field marked with the Id attribute, 
+    /// Only one field in a class can be marked with the Namespace attribute.
+    /// If Eco library detects more than one field marked with the Namespace attribute, 
     /// it throws an exception.
     /// </summary>
     [AttributeUsage(AttributeTargets.Field)]
-    public class IdAttribute : EcoFieldAttribute
+    public class NamespaceAttribute : EcoFieldAttribute
     {
         static readonly HashSet<Type> _incompatibleAttributeTypes = new HashSet<Type>
         {
-            typeof(NamespaceAttribute)
+            typeof(IdAttribute)
         };
 
         public override void ValidateContext(FieldInfo context)
@@ -31,8 +31,8 @@ namespace Eco
             if (context.FieldType != typeof(string))
                 ThrowExpectedFieldOf("the String type.", context);
 
-            if (context.DeclaringType.GetFields().Count(f => f.IsDefined<IdAttribute>()) > 1)
-                throw new ConfigurationException($"Type {context.DeclaringType.Name} contains more than one field marked with the {nameof(IdAttribute)}.");
+            if (context.DeclaringType.GetFields().Count(f => f.IsDefined<NamespaceAttribute>()) > 1)
+                throw new ConfigurationException($"Type {context.DeclaringType.Name} contains more than one field marked with the {nameof(NamespaceAttribute)}.");
 
             CheckAttributesCompatibility(context, _incompatibleAttributeTypes);
         }

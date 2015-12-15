@@ -8,13 +8,23 @@ using Eco.Extensions;
 
 namespace Eco
 {
-    public class ReferencePacker : IRefinedSettingsVisitor
+    public class ReferencePacker : ITwinSettingsVisitor
     {
+        readonly Dictionary<object, string> _namespaceMap;
+
+        public ReferencePacker(Dictionary<object, string> namespaceMap)
+        {
+            if (namespaceMap == null) throw new ArgumentNullException(nameof(namespaceMap));
+            _namespaceMap = namespaceMap;
+        }
+
         public bool IsReversable { get { return true; } }
 
-        public void Initialize(Type rootSettingsType) { }
+        public void Initialize(Type rootRefinedSettingsType, Type rootRawSettingsType) { }
 
-        public void Visit(string fieldPath, string fieldNamesapce, FieldInfo refinedSettingsField, object refinedSettings, FieldInfo rawSettingsField, object rawSettings)
+        public void Visit(string settingsNamespace, string settingsPath, object refinedSettings, object rawSettings) { }
+
+        public void Visit(string settingsNamesapce, string fieldPath, FieldInfo refinedSettingsField, object refinedSettings, FieldInfo rawSettingsField, object rawSettings)
         {
             if (refinedSettingsField.IsDefined<RefAttribute>())
             {
@@ -24,14 +34,14 @@ namespace Eco
             }
         }
 
-        static void PackReference(string settingsPath, FieldInfo refinedSettingsField, object refinedSettings, FieldInfo rawSettingsField, object rawSettings)
+        void PackReference(string settingsPath, FieldInfo refinedSettingsField, object refinedSettings, FieldInfo rawSettingsField, object rawSettings)
         {
             object settings = refinedSettingsField.GetValue(refinedSettings);
             if (settings == null) return;
             rawSettingsField.SetValue(rawSettings, GetSettingsId(settingsPath, settings));
         }
 
-        static void PackReferenceArray(string settingsPath, FieldInfo refinedSettingsField, object refinedSettings, FieldInfo rawSettingsField, object rawSettings)
+        void PackReferenceArray(string settingsPath, FieldInfo refinedSettingsField, object refinedSettings, FieldInfo rawSettingsField, object rawSettings)
         {
             Array settingsArray = (Array)refinedSettingsField.GetValue(refinedSettings);
             if (settingsArray == null) return;
@@ -49,7 +59,7 @@ namespace Eco
             rawSettingsField.SetValue(rawSettings, String.IsNullOrEmpty(referenceList) ? null : referenceList);
         }
 
-        static string GetSettingsId(string settingsPath, object settings)
+        string GetSettingsId(string settingsPath, object settings)
         {
             FieldInfo idField = settings.GetType().GetFields().SingleOrDefault(f => f.IsDefined<IdAttribute>());
             if (idField == null)
@@ -58,7 +68,7 @@ namespace Eco
             string id = (string)idField.GetValue(settings);
             if (id == null) throw new ConfigurationException("Detected null object ID: path='{0}'.", settingsPath);
 
-            return id;
+            return SettingsPath.Combine(_namespaceMap[settings],  id);
         }
     }
 }

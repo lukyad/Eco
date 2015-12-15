@@ -17,7 +17,7 @@ namespace Eco.SettingsVisitors
     /// 
     /// Throws an exception if a circular variable dependency is detected.
     /// </summary>
-    public class ConfigurationVariableExpander : IRawSettingsVisitor
+    public class ConfigurationVariableExpander : ISettingsVisitor
     {
         // Mathes variable reference in a string.
         static readonly Regex _variableReferenceRegex = new Regex(@"\$\{(?<varName>\w)\}");
@@ -31,11 +31,13 @@ namespace Eco.SettingsVisitors
 
         // Changes made by the ConfigurationVariableExpander are not revocable.
         // i.e. it's not possible to pack expanded strings back to variables.
-        public bool IsReversable { get { return false; } }
+        public bool IsReversable { get { return true; } }
 
-        public void Initialize(Type rootRefinedSettingsType) { }
+        public void Initialize(Type rootRawSettingsType) { }
 
-        public void Visit(string fieldPath, FieldInfo rawSettingsField, object rawSettings)
+        public void Visit(string settingsNamespace, string fieldPath, object rawSettings) { }
+
+        public void Visit(string settingsNamesapce, string fieldPath, FieldInfo rawSettingsField, object rawSettings)
         {
             // Skip 'sealed' fields.
             if (rawSettingsField.IsDefined<SealedAttribute>()) return;
@@ -71,7 +73,7 @@ namespace Eco.SettingsVisitors
             while (true)
             {
                 // Match all variables referenced in the current string.
-                MatchCollection varMatches = Regex.Matches(result, @"\$\{(?<varName>\w+)\}");
+                MatchCollection varMatches = Regex.Matches(result, @"\$\{(?<varName>[\w\.]+)\}");
                 if (varMatches.Count == 0) break;
 
                 // Expand matched variables and remember them in a HashSet.
@@ -79,7 +81,8 @@ namespace Eco.SettingsVisitors
                 var localExpandedVars = new List<string>();
                 foreach (Match m in varMatches)
                 {
-                    string varName = m.Groups["varName"].Value;
+                    // Fully qualified variable name.
+                    string varName = m.Groups["varName"].Value;// FullVariableName(currentNamespace, m.Groups["varName"].Value);
                     // Make sure we do not go into a circular dependency.
                     if (expandedVars.Contains(varName)) throw new ConfigurationException("Circular configuration variable dependency detected in '{0}'.", source);
 
@@ -94,9 +97,19 @@ namespace Eco.SettingsVisitors
                 // Remember variables expanded during this run. 
                 // They should not appear in the next run as that would lead to a circular dependency.
                 expandedVars.UnionWith(localExpandedVars.Distinct());
+                // Break the loop, if we can not expand anythif else.
+                if (localExpandedVars.Count == 0) break;
             }
 
             return result;
         }
+
+        //static string FullVariableName(string currentNamespace, string varName)
+        //{
+        //    if (varName.StartsWith(SettingsPath.Separator.ToString()))
+        //        return varName.Trim(SettingsPath.Separator);
+        //    else
+        //        return SettingsPath.Combine(currentNamespace, varName);
+        //}
     }
 }

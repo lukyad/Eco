@@ -45,5 +45,7 @@ namespace Eco
              Replace("\\*", ".*").
              Replace("\\?", ".") + "$";
         }
+
+        public static readonly string Everything = "*";
     }
 }

@@ -17,6 +17,10 @@ namespace Eco
         // Character used to separate IDs in the reference fields (ie string fields marked with the Ref attribute).
         public const char IdSeparator = ',';
 
+        public readonly static object Null = new object();
+
+        public const string NullId = "null";
+
         // Default SettingsManager used to load/save settings.
         public static SettingsManager DefaultManager = new SettingsManager(new XmlSerializer(), new XmlAttributesGenerator());
 
@@ -84,6 +88,14 @@ namespace Eco
         public static void Write(object settings, TextWriter stream)
         {
             DefaultManager.Write(settings, stream);
+        }
+
+        /// <summary>
+        /// Given a root settings object, enumerate all child settings objects recursive.
+        /// </summary>
+        public static IEnumerable<object> Enumerate(object root)
+        {
+            return SettingsManager.EnumerateSettings(root);
         }
     }
 }

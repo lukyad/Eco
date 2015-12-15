@@ -18,7 +18,7 @@ namespace Eco
         protected void ThrowExpectedFieldOf(string type, FieldInfo context)
         {
             throw new ConfigurationException(
-                "{0} cannot be applied to {1}.{2}. Expected field of the {3} type.",
+                "{0} cannot be applied to {1}.{2}. Expected field of {3}",
                 this.GetType().Name,
                 context.DeclaringType.Name,
                 context.Name,

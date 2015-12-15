@@ -6,22 +6,26 @@ using Eco.Extensions;
 
 namespace Eco.SettingsVisitors
 {
-    public class RefinedSettingsBuilder : IRefinedSettingsVisitor
+    public class RefinedSettingsBuilder : ITwinSettingsVisitor
     {
         readonly Dictionary<Type, Type> _typeMappings = new Dictionary<Type, Type>();
         ParsingPolicyAttribute[] _parsingPolicies;
 
         public bool IsReversable { get { return true; } }
 
-        public void Initialize(Type rootSettingsType)
+        public void Initialize(Type rootRefinedSettingsType, Type rootRawSettingsType)
         {
+            _typeMappings.Clear();
             // Capture parsing policies that applies to all fields.
-            _parsingPolicies = rootSettingsType.GetCustomAttributes<ParsingPolicyAttribute>().ToArray();
+            _parsingPolicies = rootRefinedSettingsType.GetCustomAttributes<ParsingPolicyAttribute>().ToArray();
         }
 
-        public void Visit(string fieldPath, string fieldNamesapce, FieldInfo refinedSettingsField, object refinedSettings, FieldInfo rawSettingsField, object rawSettings)
+        public void Visit(string settingsNamespace, string settingsPath, object refinedSettings, object rawSettings) { }
+
+        public void Visit(string settingsNamesapce, string fieldPath, FieldInfo refinedSettingsField, object refinedSettings, FieldInfo rawSettingsField, object rawSettings)
         {
             if (refinedSettingsField.IsDefined<RefAttribute>()) return;
+
             object rawValue = rawSettingsField.GetValue(rawSettings);
             object refinedValue = null;
             if (rawValue != null)
@@ -72,8 +76,9 @@ namespace Eco.SettingsVisitors
                 // If result is still null, try to use parsingPolicies.
                 if (result == null)
                 {
+                    Type typeToParse = targetField.FieldType.IsNullable() ? Nullable.GetUnderlyingType(targetField.FieldType) : targetField.FieldType;
                     result = _parsingPolicies
-                        .Where(p => p.CanParse(targetField.FieldType))
+                        .Where(p => p.CanParse(typeToParse))
                         .Select(p => p.Parse(sourceStr, p.Format))
                         .FirstOrDefault(o => o != null);
                 }

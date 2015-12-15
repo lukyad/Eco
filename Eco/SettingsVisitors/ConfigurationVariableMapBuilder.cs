@@ -16,7 +16,7 @@ namespace Eco.SettingsVisitors
     /// * an invalid variable name is detected (valid name contains 'word' charcters only)
     /// * a duplicated variable is detected.
     /// </summary>
-    public class ConfigurationVariableMapBuilder : IRawSettingsVisitor
+    public class ConfigurationVariableMapBuilder : ISettingsVisitor
     {
         static readonly Regex _invalidVarChars = new Regex(@"\W");
         readonly Dictionary<string, string> _vars = new Dictionary<string, string>();
@@ -26,38 +26,24 @@ namespace Eco.SettingsVisitors
         // ConfigurationVariableMapBuilder doesn't make any changes per se.
         public bool IsReversable { get { return true; } }
 
-        public void Initialize(Type rootRefinedSettingsType)
+        public void Initialize(Type rootRawSettingsType)
         {
             _vars.Clear();
         }
 
-        public void Visit(string fieldPath, FieldInfo rawSettingsField, object rawSettings)
+        public void Visit(string settingsNamespace, string settingsPath, object rawSettings)
         {
-            // Raw settings type is generated at runtime. Thus, we do not have a static variable type to use here,
-            // so we match variable settings type by name.
-            // This might be refactored to leverage attributes in the future.
-            if (rawSettingsField.FieldType.Name == typeof(variable).Name)
-            {
-                this.RegisterVariable(rawSettingsField.GetValue(rawSettings), fieldPath);
-            }
-            else if (rawSettingsField.FieldType.IsArray)
-            {
-                var arr = (Array)rawSettingsField.GetValue(rawSettings);
-                if (arr != null)
-                {
-                    foreach (object item in arr)
-                    {
-                        if (item.GetType().Name == typeof(variable).Name)
-                            this.RegisterVariable(item, fieldPath);
-                    }
-                }
-            }
+            if (rawSettings.IsEcoElementOfType<variable>())
+                this.RegisterVariable(settingsPath, rawSettings);
         }
 
-        void RegisterVariable(object variable, string fieldPath)
+        public void Visit(string settingsNamespace, string fieldPath, FieldInfo rawSettingsField, object rawSettings) { }
+
+
+        void RegisterVariable(string fieldPath, object variable)
         {
-            string varName = (string)variable.GetFieldValue("name");
-            string varValue = (string)variable.GetFieldValue("value");
+            string varName = Eco.variable.GetName(variable);
+            string varValue = Eco.variable.GetValue(variable);
             if (String.IsNullOrWhiteSpace(varName)) throw new ConfigurationException("Detected null or empty configuration variable name: path = '{0}'.", fieldPath);
             if (_invalidVarChars.IsMatch(varName)) throw new ConfigurationException("Invalid configuration variable name: '{0}', path = '{1}'.", varName, fieldPath);
             if (_vars.ContainsKey(varName)) throw new ConfigurationException("Duplicated configuration variable: '{0}', path = '{1}'.", varName, fieldPath);

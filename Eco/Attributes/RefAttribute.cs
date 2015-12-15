@@ -21,9 +21,6 @@ namespace Eco
     /// Usage:
     /// Can be applied to a field of a settings type or a settings array type only. The referenced type (underlying field type)
     /// must have a field marked with IdAttribute.
-    /// 
-    /// Compatibility:
-    /// Incomaptible with the Id, Inline, ItemName, KnownTypes and Converter attributes and compatible with all others.
     /// </summary>
     [AttributeUsage(AttributeTargets.Field)]
     public class RefAttribute : EcoFieldAttribute

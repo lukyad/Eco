@@ -38,13 +38,13 @@ namespace Eco.Serialization.Xml
 
             var fieldType = field.FieldType;
             var renameRule = field.GetCustomAttribute<RenameAttribute>();
+            string fieldName = field.GetCustomAttribute<NameAttribute>()?.Name ?? field.Name;
 
             if (!field.IsDefined<RefAttribute>())
             {
                 if (field.IsPolymorphic())
                 {
                     Type attributeType = !fieldType.IsArray || field.IsDefined<InlineAttribute>() ? typeof(XmlElementAttribute) : typeof(XmlArrayItemAttribute);
-
                     foreach (var t in field.GetKnownSerializableTypes())
                         res.Add(GetItemAttributeText(attributeType, t, renameRule));
                 }
@@ -56,10 +56,22 @@ namespace Eco.Serialization.Xml
                 }
             }
 
-            if (field.GetRawFieldType(parsingPolicies).IsSimple())
-                res.Add(AttributeBuilder.GetTextFor<XmlAttributeAttribute>());
+            var rawFieldType = field.GetRawFieldType(parsingPolicies);
+            if (rawFieldType.IsSimple())
+            {
+                res.Add(AttributeBuilder.GetTextFor<XmlAttributeAttribute>(fieldName));
+            }
+            else if (!res.Any(a => a.Contains(nameof(XmlElementAttribute))))
+            {
+                 if (rawFieldType.IsArray)
+                    res.Add(AttributeBuilder.GetTextFor<XmlArrayAttribute>(fieldName));
+                 else
+                    res.Add(AttributeBuilder.GetTextFor<XmlElementAttribute>(fieldName));
+            }
+            
 
-            if (field.IsDefined<IgnoreAttribute>())
+
+            if (field.IsDefined<HiddenAttribute>())
                 res.Add(AttributeBuilder.GetTextFor<XmlIgnoreAttribute>());
 
             return res.Where(a => a != null);
@@ -67,7 +79,7 @@ namespace Eco.Serialization.Xml
 
         static string GetItemAttributeText(Type attributeType, Type itemType, RenameAttribute renameRule)
         {
-            string originalItemTypeName = itemType.NonGenericName();
+            string originalItemTypeName = itemType.GetNonGenericName();
             string xmlItemTypeName = renameRule != null ? renameRule.Rename(originalItemTypeName) : originalItemTypeName;
             return 
                 new AttributeBuilder(attributeType.FullName)

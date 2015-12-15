@@ -14,12 +14,9 @@ namespace Eco
     /// 
     /// Usage:
     /// Can be applied to a field of any type.
-    /// 
-    /// Compatibility:
-    /// Compatible with all Eco attributes.
     /// </summary>
     [AttributeUsage(AttributeTargets.Field)]
-    public class IgnoreAttribute : EcoFieldAttribute
+    public class HiddenAttribute : EcoFieldAttribute
     {
         public override void ValidateContext(FieldInfo context)
         {

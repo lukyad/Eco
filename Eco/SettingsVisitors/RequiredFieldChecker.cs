@@ -8,13 +8,9 @@ using Eco.Extensions;
 
 namespace Eco.SettingsVisitors
 {
-    public class RequiredFieldChecker : IRefinedSettingsVisitor
+    public class RequiredFieldChecker : TwinSettingsVisitorBase
     {
-        public bool IsReversable { get { return true; } }
-
-        public void Initialize(Type rootSettingsType) { }
-
-        public void Visit(string fieldPath, string fieldNamesapce, FieldInfo refinedSettingsField, object refinedSettings, FieldInfo rawSettingsField, object rawSettings)
+        public  override void Visit(string settingsNamesapce, string fieldPath, FieldInfo refinedSettingsField, object refinedSettings, FieldInfo rawSettingsField, object rawSettings)
         {
             bool isRequiredField = refinedSettingsField.IsDefined<RequiredAttribute>() || refinedSettingsField.IsDefined<RequiredAttribute>();
             if (isRequiredField && refinedSettingsField.GetValue(refinedSettings) == null)

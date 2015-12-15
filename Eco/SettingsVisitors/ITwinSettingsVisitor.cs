@@ -11,14 +11,14 @@ namespace Eco
     /// Refined settings visitors get invoked by the Eco library in the following cases:
     /// 
     /// 1. On settings load, right after the raw settings visitors.
-    /// Ones raw settings visitors complete thier operations the raw settins graph is fully initialized.
-    /// Refined settings visitors initialize the parallel refined settings graph before it get returned to a user.
+    /// When raw settings visitors complete thier operations the raw settins graph is fully initialized.
+    /// Refined settings visitors initialize the parallel refined settings graph.
     /// 
     /// 2. On settings save, as the very first operation on the refined settings graph.
     /// The purpose of the refined settins visitors here is to initialize the raw settings graph
     /// and prepare it for the serialization.
     /// </summary>
-    public interface IRefinedSettingsVisitor
+    public interface ITwinSettingsVisitor
     {
         /// <summary>
         /// A visitor is considered to be reversable if the changes it makes can be 
@@ -36,11 +36,16 @@ namespace Eco
         /// Gets called by the Eco library ones on each Load/Save operation.
         /// Allows to initialize visitor before the fields processing start.
         /// </summary>
-        void Initialize(Type rootRefinedSettingsType);
+        void Initialize(Type rootMasterSettingsType, Type rootSlaveSettingsType);
 
         /// <summary>
-        /// Gets called ones for each field for all objects of a settings type in the raw settings object graph.
+        /// Gets called ones for all objects of a settings type in two twin settings trees.
         /// </summary>
-        void Visit(string fieldPath, string fieldNamespace, FieldInfo refinedSettingsField, object refinedSettings, FieldInfo rawSettingsField, object rawSettings);
+        void Visit(string settingsNamespace, string settingsPath, object masterSettings, object slaveSettings);
+
+        /// <summary>
+        /// Gets called ones for each field for all objects of a settings type in the two twin setting trees.
+        /// </summary>
+        void Visit(string settingsNamespace, string fieldPath, FieldInfo masterSettingsField, object masterSettings, FieldInfo slaveSettingsField, object slaveSettings);
     }
 }

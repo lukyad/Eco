@@ -12,7 +12,7 @@ namespace Eco.SettingsVisitors
     /// Used by the Eco library when writing settings to a stream.
     /// Given an object graph of refined settings initialize parallel graph of the corresponding raw settings.
     /// </summary>
-    public class RawSettingsBuilder : IRefinedSettingsVisitor
+    public class RawSettingsBuilder : ITwinSettingsVisitor
     {
         readonly Dictionary<Type, Type> _typeMappings = new Dictionary<Type, Type>();
 
@@ -20,9 +20,15 @@ namespace Eco.SettingsVisitors
         // the refined settings by the RefinedSettingsBuilder. Thus, it considered to be a revocable visitor.
         public bool IsReversable { get { return true; } }
 
-        public void Initialize(Type rootSettingsType) { }
+        public void Initialize(Type rootRefinedSettingsType, Type rootRawSettingsType)
+        {
+            _typeMappings.Clear();
+            _typeMappings.Add(rootRefinedSettingsType, rootRawSettingsType);
+        }
 
-        public void Visit(string fieldPath, string fieldNamesapce, FieldInfo refinedSettingsField, object refinedSettings, FieldInfo rawSettingsField, object rawSettings)
+        public void Visit(string settingsNamespace, string settingsPath, object refinedSettings, object rawSettings) { }
+
+        public void Visit(string settingsNamesapce, string fieldPath, FieldInfo refinedSettingsField, object refinedSettings, FieldInfo rawSettingsField, object rawSettings)
         {
             if (refinedSettingsField.IsDefined<RefAttribute>()) return;
 

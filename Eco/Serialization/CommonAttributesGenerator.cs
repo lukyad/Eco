@@ -14,13 +14,21 @@ namespace Eco.Serialization.Xml
     {
         public virtual IEnumerable<string> GetAttributesTextFor(Type settingsType)
         {
-            return settingsType.GetCustomAttributesData().Select(d => d.ToString());
+            var result = new List<string>();
+            var attributes = settingsType.GetCustomAttributes().ToArray();
+            var attributesData = settingsType.GetCustomAttributesData();
+            for (int i = 0; i < attributes.Length; i++)
+            {
+                string attributeText = CommonAttributeTranslator.Translate(attributes[i], attributesData[i], settingsType);
+                if (attributeText != null)
+                    result.Add(attributeText);
+            }
+            return result;
         }
 
         public virtual IEnumerable<string> GetAttributesTextFor(FieldInfo field, Usage defaultUsage, ParsingPolicyAttribute[] parsingPolicies)
         {
-            var res = new List<string>();
-
+            var result = new List<string>();
             var fieldType = field.FieldType;
             string usageAttribute = null;
             if (fieldType.IsSimple() && fieldType != typeof(string))
@@ -38,18 +46,17 @@ namespace Eco.Serialization.Xml
                     AttributeBuilder.GetTextFor<OptionalAttribute>();
             }
             if (usageAttribute != null)
-                res.Add(usageAttribute);
+                result.Add(usageAttribute);
 
             var attributes = field.GetCustomAttributes().ToArray();
             var attributesData = field.GetCustomAttributesData();
             for (int i = 0; i < attributes.Length; i++)
             {
-                string attributeText = CommonFieldAttributeTranslator.Translate(attributes[i], attributesData[i], field);
+                string attributeText = CommonAttributeTranslator.Translate(attributes[i], attributesData[i], field);
                 if (attributeText != null)
-                    res.Add(attributeText);
+                    result.Add(attributeText);
             }
-
-            return res;
+            return result;
         }
     }
 }

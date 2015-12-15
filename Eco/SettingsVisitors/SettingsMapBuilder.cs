@@ -8,33 +8,31 @@ using Eco.Extensions;
 
 namespace Eco.SettingsVisitors
 {
-    public class SettingsMapBuilder : IRefinedSettingsVisitor
+    public class SettingsMapBuilder : TwinSettingsVisitorBase
     {
-        readonly Dictionary<string, object> _settingsById = new Dictionary<string, object>();
-        readonly SortedList<string, string> _namespaces = new SortedList<string, string>();
+        public Dictionary<string, object> SettingsById { get; } = new Dictionary<string, object>();
 
-        public bool IsReversable { get { return true; } }
-
-        public Dictionary<string, object> SettingsById{ get { return _settingsById; } }
-
-        public void Initialize(Type rootSettingsType)
+       public override void Initialize(Type rootRefinedSettingsType, Type rootRawSettingsType)
         {
-            _settingsById.Clear();
-            _namespaces.Clear();
+            this.SettingsById.Clear();
+            this.SettingsById.Add(Settings.NullId, Settings.Null);
         }
 
-        public void Visit(string fieldPath, string fieldNamesapce, FieldInfo refinedSettingsField, object refinedSettings, FieldInfo rawSettingsField, object rawSettings)
+        public override void Visit(string settingsNamespace, string settingsPath, object refinedSettings, object rawSettings)
         {
-            if (refinedSettingsField.IsDefined<IdAttribute>())
-            {
-                string id = (string)rawSettingsField.GetValue(rawSettings);
-                if (id != null)
-                {
-                    string fullId = SettingsPath.Combine(fieldNamesapce, id);
-                    if (_settingsById.ContainsKey(fullId)) throw new ConfigurationException("Duplicate settings ID: '{0}'.", id);
-                    _settingsById.Add(fullId, refinedSettings);
-                }
-            }
+            string id = GetSettingsId(settingsNamespace, settingsPath, refinedSettings);
+            if (id == Settings.NullId) throw new ConfigurationException("'null' settins id is reserved by the Eco library. Please use another id.", id);
+            if (this.SettingsById.ContainsKey(id)) throw new ConfigurationException("Duplicate settings ID: '{0}'.", id);
+            this.SettingsById.Add(id, refinedSettings);
+        }
+
+        string GetSettingsId(string settingsNamesapce, string fieldPath, object refinedSettings)
+        {
+            string id = null;
+            FieldInfo idField = refinedSettings.GetType().GetFields().FirstOrDefault(f => f.IsDefined<IdAttribute>());
+            if (idField != null) id = (string)idField.GetValue(refinedSettings);
+            if (id == null) id = fieldPath;
+            return SettingsPath.Combine(settingsNamesapce, id);
         }
     }
 }
