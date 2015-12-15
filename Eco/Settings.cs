@@ -14,14 +14,31 @@ namespace Eco
     /// </summary>
     public static class Settings
     {
-        // Character used to separate IDs in the reference fields (ie string fields marked with the Ref attribute).
+        /// Character used to separate IDs in the reference fields (ie string fields marked with the Ref attribute).
         public const char IdSeparator = ',';
 
+        /// Corresponds to a settings object with the NullId.
         public readonly static object Null = new object();
 
+        /// Id of the Null settings object. 
+        /// Can be used in a config file to instruct Eco library to do not throw an exception
+        /// if referenced object can not be found. Equivalent to Ref(IsWeak = true).
+        ///
+        /// Example:
+        ///
+        /// -.cs-----------
+        /// ...
+        /// [Ref]
+        /// public myType reference;
+        /// 
+        /// -.config-------
+        /// reference = "MyObject | null"
+        /// 
+        /// Here if settings with id MyObject is not present in configuration file,
+        /// Eco would normally raise an excetion, but if you pipe id with 'null', exception would not be thrown.
         public const string NullId = "null";
 
-        // Default SettingsManager used to load/save settings.
+        /// Default SettingsManager used to load/save settings.
         public static SettingsManager DefaultManager = new SettingsManager(new XmlSerializer(), new XmlAttributesGenerator());
 
         /// <summary>

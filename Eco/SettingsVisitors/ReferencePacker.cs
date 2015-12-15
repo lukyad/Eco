@@ -6,9 +6,9 @@ using System.Text;
 using System.Threading.Tasks;
 using Eco.Extensions;
 
-namespace Eco
+namespace Eco.SettingsVisitors
 {
-    public class ReferencePacker : ITwinSettingsVisitor
+    public class ReferencePacker : TwinSettingsVisitorBase
     {
         readonly Dictionary<object, string> _namespaceMap;
 
@@ -18,13 +18,7 @@ namespace Eco
             _namespaceMap = namespaceMap;
         }
 
-        public bool IsReversable { get { return true; } }
-
-        public void Initialize(Type rootRefinedSettingsType, Type rootRawSettingsType) { }
-
-        public void Visit(string settingsNamespace, string settingsPath, object refinedSettings, object rawSettings) { }
-
-        public void Visit(string settingsNamesapce, string fieldPath, FieldInfo refinedSettingsField, object refinedSettings, FieldInfo rawSettingsField, object rawSettings)
+        public override void Visit(string settingsNamesapce, string fieldPath, FieldInfo refinedSettingsField, object refinedSettings, FieldInfo rawSettingsField, object rawSettings)
         {
             if (refinedSettingsField.IsDefined<RefAttribute>())
             {
@@ -37,38 +31,37 @@ namespace Eco
         void PackReference(string settingsPath, FieldInfo refinedSettingsField, object refinedSettings, FieldInfo rawSettingsField, object rawSettings)
         {
             object settings = refinedSettingsField.GetValue(refinedSettings);
-            if (settings == null) return;
-            rawSettingsField.SetValue(rawSettings, GetSettingsId(settingsPath, settings));
+            rawSettingsField.SetValue(rawSettings, GetSettingsWildcard(settings));
         }
 
         void PackReferenceArray(string settingsPath, FieldInfo refinedSettingsField, object refinedSettings, FieldInfo rawSettingsField, object rawSettings)
         {
             Array settingsArray = (Array)refinedSettingsField.GetValue(refinedSettings);
-            if (settingsArray == null) return;
-            var referenceListBuilder = new StringBuilder();
-            for (int i = 0; i < settingsArray.Length; i++)
+            string references = null;
+            if (settingsArray != null)
             {
-                var settings = settingsArray.GetValue(i);
-                if (settings != null)
+                var wildcards = new HashSet<string>();
+                for (int i = 0; i < settingsArray.Length; i++)
                 {
-                    string id = GetSettingsId(settingsPath, settings);
-                    referenceListBuilder.Append(id + Settings.IdSeparator);
+                    var settings = settingsArray.GetValue(i);
+                    if (settings != null)
+                        wildcards.Add(GetSettingsWildcard(settings));
                 }
+                references = String.Join(Settings.IdSeparator.ToString(), wildcards.ToArray()).TrimEnd(Settings.IdSeparator);
             }
-            string referenceList = referenceListBuilder.ToString().TrimEnd(Settings.IdSeparator);
-            rawSettingsField.SetValue(rawSettings, String.IsNullOrEmpty(referenceList) ? null : referenceList);
+            rawSettingsField.SetValue(rawSettings, references);
         }
 
-        string GetSettingsId(string settingsPath, object settings)
+        string GetSettingsWildcard(object settings)
         {
-            FieldInfo idField = settings.GetType().GetFields().SingleOrDefault(f => f.IsDefined<IdAttribute>());
-            if (idField == null)
-                throw new ConfigurationException("Expected an object with one of the fields marked with {0}, but got an instance of type {1}.", typeof(IdAttribute).Name, settings.GetType().Name);
-
-            string id = (string)idField.GetValue(settings);
-            if (id == null) throw new ConfigurationException("Detected null object ID: path='{0}'.", settingsPath);
-
-            return SettingsPath.Combine(_namespaceMap[settings],  id);
+            if (settings == null) return null;
+            string id = (string)settings.GetType().GetFields().SingleOrDefault(f => f.IsDefined<IdAttribute>())?.GetValue(settings) ?? Wildcard.Everything;
+            string type = settings.GetType().Name;
+            return 
+                // Namespace combined with id.
+                SettingsPath.Combine(_namespaceMap[settings], id) + 
+                // Type filter.
+                ReferenceResolver.ControlChars.WildcardPartsSeparator + type;
         }
     }
 }

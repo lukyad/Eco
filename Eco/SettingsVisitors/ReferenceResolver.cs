@@ -16,10 +16,17 @@ namespace Eco
         {
             _settingsById = settingsById;
         }
+        public static class ControlChars
+        {
+            public const string NonExactMatch = "~";
 
-        public const string NonExactMatchControlCharacter = "~";
+            public const string FieldNameAlias = "$";
 
-        public const string FieldNameControlCharacter = "$";
+            public const char WildcardJoiner = '|';
+
+            public const char WildcardPartsSeparator = ':';
+        }
+        
 
         public bool IsReversable { get { return true; } }
 
@@ -92,7 +99,7 @@ namespace Eco
         {
             var elementType = context.FieldType.GetElementType();
             var settings = new HashSet<object>();
-            foreach (string jointWildcard in wildcards.Split(','))
+            foreach (string jointWildcard in wildcards.Split(Settings.IdSeparator))
                 settings.UnionWith(MatchJointWildcard(currentNamespace, fieldPath, jointWildcard, context));
 
             return settings.ToArray();
@@ -101,7 +108,7 @@ namespace Eco
         IEnumerable<object> MatchJointWildcard(string currentNamespace, string fieldPath, string jointWildcard, FieldInfo context)
         {
             var settings = new HashSet<object>();
-            string[] joints = jointWildcard.Split('|');
+            string[] joints = jointWildcard.Split(ControlChars.WildcardJoiner);
             for (int i = 0; i < joints.Length; i++)
             {
                 settings.UnionWith(MatchWildcard(currentNamespace, joints[i].Trim(), context));
@@ -118,7 +125,7 @@ namespace Eco
         IEnumerable<object> MatchWildcard(string currentNamespace, string wildcard, FieldInfo context)
         {
             var settings = new HashSet<object>();
-            var parts = wildcard.Split(':');
+            var parts = wildcard.Split(ControlChars.WildcardPartsSeparator);
             bool hasTypeWildcard = parts.Length > 1;
             Wildcard idWildcard = IdWildcard(currentNamespace, parts[0], hasTypeWildcard, context);
             Wildcard typeWildcard = parts.Length > 1 ? TypeWildcard(parts[1], context) : null;
@@ -156,10 +163,10 @@ namespace Eco
         static Wildcard TypeWildcard(string pattern, FieldInfo context)
         {
             pattern = pattern.Trim();
-            pattern = pattern.Replace(FieldNameControlCharacter, context.Name);
+            pattern = pattern.Replace(ControlChars.FieldNameAlias, context.Name);
             // ~ at the start of the string means that non-exact type match is allowed
-            if (pattern.StartsWith(NonExactMatchControlCharacter))
-                pattern = Wildcard.Everything + pattern.Trim(NonExactMatchControlCharacter[0]) + Wildcard.Everything;
+            if (pattern.StartsWith(ControlChars.NonExactMatch))
+                pattern = Wildcard.Everything + pattern.Trim(ControlChars.NonExactMatch[0]) + Wildcard.Everything;
 
             return new Wildcard(pattern.ToLower());
         }
