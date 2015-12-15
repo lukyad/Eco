@@ -315,20 +315,15 @@ namespace Eco
         object CreateRawSettings(Type rawSettingsType, object refinedSettings)
         {
             object rawSettings = Activator.CreateInstance(rawSettingsType);
-            Func<FieldInfo, object, bool> IsReadOnlyIncludeElem = (f, o) =>
-                f.DeclaringType.IsGenericType &&
-                f.DeclaringType.GetGenericTypeDefinition() == typeof(include<>) &&
-                include.IsReadOnly(o);
-
             if (this.RefinedSettingsWriteVisitors != null)
             {
                 foreach (var v in this.RefinedSettingsWriteVisitors)
-                    TraverseTwinSeetingsTrees(refinedSettings, rawSettings, v, initVisitor: true, SkipBranch: IsReadOnlyIncludeElem);
+                    TraverseTwinSeetingsTrees(refinedSettings, rawSettings, v, initVisitor: true);
             }
             if (this.RawSettingsWriteVisitors != null)
             {
                 foreach (var v in this.RawSettingsWriteVisitors)
-                    TraverseSeetingsTree(rawSettings, v, initVisitor: true, SkipBranch: IsReadOnlyIncludeElem);
+                    TraverseSeetingsTree(rawSettings, v, initVisitor: true);
             }
            
             return rawSettings;
