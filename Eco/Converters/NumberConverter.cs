@@ -69,21 +69,23 @@ namespace Eco.Converters
         public static bool TryParseDecimal(this string number, out decimal value)
         {
             value = default(decimal);
-
             if (String.IsNullOrEmpty(number))
                 return false;
-
+            // First try the native parsing method.
+            if (Decimal.TryParse(number, out value))
+                return true;
+            // Try custom parsing rules.
+            // Get number multiplier (ie, k, Mb, etc)
             var multiplierInfo = _multipliers.FirstOrDefault(pair => number.ToLower().EndsWith(pair.Key));
             if (String.IsNullOrEmpty(multiplierInfo.Key))
                 return false;
-
+            // Try parse the rest of the string using the native method.
             string multiplier = multiplierInfo.Key;
             string valueStr = number.Substring(0, number.Length - multiplier.Length);
             if (!Decimal.TryParse(valueStr, out value))
                 return false;
-
+            // Final result.
             value *= _multipliers[multiplier];
-
             return true;
         }
     }
