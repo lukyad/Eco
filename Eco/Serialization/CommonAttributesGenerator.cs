@@ -31,7 +31,13 @@ namespace Eco.Serialization.Xml
             var result = new List<string>();
             var fieldType = field.FieldType;
             string usageAttribute = null;
-            if (fieldType.IsSimple() && fieldType != typeof(string))
+            bool isForcedUsage = defaultUsage == Usage.ForceRequired || defaultUsage == Usage.ForceOptional;
+            if (isForcedUsage)
+            {
+                if (defaultUsage == Usage.ForceRequired) usageAttribute = AttributeBuilder.GetTextFor<RequiredAttribute>();
+                else if (defaultUsage == Usage.ForceOptional) usageAttribute = AttributeBuilder.GetTextFor<OptionalAttribute>();
+            }
+            else if (fieldType.IsSimple() && fieldType != typeof(string))
             {
                 usageAttribute = AttributeBuilder.GetTextFor<RequiredAttribute>();
             }
@@ -41,9 +47,8 @@ namespace Eco.Serialization.Xml
             }
             else if (!field.IsDefined<RequiredAttribute>() && !field.IsDefined<OptionalAttribute>())
             {
-                usageAttribute = defaultUsage == Usage.Required ?
-                    AttributeBuilder.GetTextFor<RequiredAttribute>() :
-                    AttributeBuilder.GetTextFor<OptionalAttribute>();
+                if (defaultUsage == Usage.Required) usageAttribute = AttributeBuilder.GetTextFor<RequiredAttribute>();
+                else if (defaultUsage == Usage.Optional) usageAttribute = AttributeBuilder.GetTextFor<OptionalAttribute>();
             }
             if (usageAttribute != null)
                 result.Add(usageAttribute);
@@ -52,6 +57,10 @@ namespace Eco.Serialization.Xml
             var attributesData = field.GetCustomAttributesData();
             for (int i = 0; i < attributes.Length; i++)
             {
+                // Skip any usage attributes, if field usage is forced by the calling method.
+                bool isUsageAttribute = attributes[i] is OptionalAttribute || attributes[i] is RequiredAttribute;
+                if (isForcedUsage && isUsageAttribute) continue;
+                // Get c# compatible attribute text.
                 string attributeText = CommonAttributeTranslator.Translate(attributes[i], attributesData[i], field);
                 if (attributeText != null)
                     result.Add(attributeText);
