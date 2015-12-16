@@ -17,7 +17,7 @@ namespace Eco.SettingsVisitors
         {
             _typeMappings.Clear();
             // Capture parsing policies that applies to all fields.
-            _parsingPolicies = rootRefinedSettingsType.GetCustomAttributes<ParsingPolicyAttribute>().ToArray();
+            _parsingPolicies = ParsingPolicyAttribute.GetPolicies(rootRefinedSettingsType);
         }
 
         public void Visit(string settingsNamespace, string settingsPath, object refinedSettings, object rawSettings) { }

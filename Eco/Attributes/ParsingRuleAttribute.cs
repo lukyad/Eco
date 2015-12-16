@@ -44,5 +44,14 @@ namespace Eco
 
         // Can converter parse the given Type?
         public Func<Type, bool> CanParse { get; private set; }
+
+        public static ParsingPolicyAttribute[] GetPolicies(Type settingsType)
+        {
+            var parsingPolicies = settingsType.GetCustomAttributes<ParsingPolicyAttribute>();
+            var rootAttr = settingsType.GetCustomAttribute<RootAttribute>();
+            if (rootAttr != null)
+                parsingPolicies = parsingPolicies.Union(rootAttr.ParsingPolicies);
+            return parsingPolicies.ToArray();
+        }
     }
 }

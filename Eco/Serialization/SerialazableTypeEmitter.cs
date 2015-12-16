@@ -102,7 +102,7 @@ namespace Eco.Serialization
             GetRawFieldTypeDelegate GetRawFieldType, 
             Usage defaultUsage)
         {
-            var parsingPolicies = rootSettingsType.GetCustomAttributes<ParsingPolicyAttribute>().ToArray(); ;
+            var parsingPolicies = ParsingPolicyAttribute.GetPolicies(rootSettingsType);
             string compilationUnit = GenerateClassDefinitionRecursive(rootSettingsType, attributesGenerator, GetRawFieldType, defaultUsage, parsingPolicies);
             string[] referencedAssemblies = AppDomain.CurrentDomain.GetAssemblies()
                 .Where(a => !a.IsDynamic)
