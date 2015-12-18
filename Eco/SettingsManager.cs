@@ -237,7 +237,7 @@ namespace Eco
                 var visitors = this.SkipNonReversableOperations ? this.RawSettingsReadVisitors.Where(v => v.IsReversable) : this.RawSettingsReadVisitors;
                 Func<FieldInfo, object, bool> IsInsideIncludeElement = (f, o) => f.DeclaringType.IsGenericType && f.DeclaringType.GetGenericTypeDefinition() == typeof(include<>);
                 foreach (var v in visitors)
-                    TraverseSeetingsTree(rawSettings, v, initVisitor: false,  SkipBranch: IsInsideIncludeElement);
+                    TraverseSeetingsTree(rawSettings, v, initializeVisitors,  SkipBranch: IsInsideIncludeElement);
             }
             return rawSettings;
         }
