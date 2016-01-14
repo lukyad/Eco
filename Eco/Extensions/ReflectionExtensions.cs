@@ -85,6 +85,9 @@ namespace Eco.Extensions
 
         public static string GetNonGenericName(this Type type)
         {
+            if (type.IsArray && type.GetElementType().IsGenericType)
+                return GetNonGenericName(type.GetElementType()) + "[]";
+
             string nonGenericName = type.Name;
             if (type.IsGenericType)
             {
