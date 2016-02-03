@@ -69,9 +69,12 @@
     <Compile Include="Attributes\KnownTypesAttribute.cs" />
     <Compile Include="Attributes\ItemNameAttribute.cs" />
     <Compile Include="Attributes\NamespaceAttribute.cs" />
+    <Compile Include="Attributes\NonSettingsTypeAttribute.cs" />
     <Compile Include="Attributes\SkippedBy.cs" />
+    <Compile Include="Elements\import.cs" />
     <Compile Include="Elements\applyOverrides.cs" />
     <Compile Include="Elements\applyDefaults.cs" />
+    <Compile Include="Serialization\Csv\CsvSerializer.cs" />
     <Compile Include="SettingsVisitors\ApplyDefaultsProcessor.cs" />
     <Compile Include="SettingsVisitors\ApplyOverridesProcessor.cs" />
     <Compile Include="Attributes\EcoElementAttribute.cs" />
@@ -100,7 +103,10 @@
     <Compile Include="SettingsVisitors\ConfigurationVariableMapBuilder.cs" />
     <Compile Include="SettingsVisitors\DefaultValueSetter.cs" />
     <Compile Include="SettingsVisitors\EnvironmentVariableExpander.cs" />
+    <Compile Include="SettingsVisitors\ImportElementProcessor.cs" />
     <Compile Include="SettingsVisitors\IncludeElementProcessor.cs" />
+    <Compile Include="SettingsVisitors\ImportElementReader.cs" />
+    <Compile Include="SettingsVisitors\ImportElementWriter.cs" />
     <Compile Include="SettingsVisitors\IncludeElementWriter.cs" />
     <Compile Include="SettingsVisitors\ISettingsVisitor.cs" />
     <Compile Include="SettingsVisitors\ReferencePacker.cs" />

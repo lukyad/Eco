@@ -144,7 +144,7 @@ namespace Eco.Serialization
                 string baseTypeName = type.BaseType.IsSettingsType() ? type.BaseType.GetNonGenericName() : null;
                 var classBuilder = codeBuilder.AddClass(type.GetNonGenericName(), baseTypeName);
                 classBuilder.AddAttributes(attributesGenerator.GetAttributesTextFor(type));
-                foreach (var field in type.OwnFields())
+                foreach (var field in type.GetOwnFields())
                 {
                     ValidateFieldAttributes(field);
                     var serializableFieldType = GetRawFieldType(field, parsingPolicies);

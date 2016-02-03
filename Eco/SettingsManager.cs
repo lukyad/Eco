@@ -42,6 +42,7 @@ namespace Eco
                 variableExpander,
                 new EnvironmentVariableExpander(),
                 new IncludeElementReader(this),
+                new ImportElementReader(),
                 // We run ConfigurationVariableExpander twice to expand variables from the included files (if any).
                 variableExpander
             };
@@ -65,7 +66,8 @@ namespace Eco
         {
             this.RawSettingsWriteVisitors = new List<ISettingsVisitor>
             {
-                new IncludeElementWriter(this)
+                new IncludeElementWriter(this),
+                new ImportElementWriter()
             };
         }
 

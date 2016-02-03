@@ -20,7 +20,7 @@ namespace Eco
         [Doc("Namespace to be applied to all object IDs included from the referenced file. If specified, an object from the file should be referenced as '<Namesapce>.<ObjectId>'")]
         public string ns;
 
-        [Optional, Doc("Format of the file to be included. By default Eco library uses format defined by Settings.DefaultManager.")]
+        [Optional, Doc("[Not supported yet] Format of the file to be included (xml, json etc). By default Eco library uses format defined by Settings.DefaultManager.")]
         public string format;
 
         [Default("true")]

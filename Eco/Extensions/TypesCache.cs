@@ -58,7 +58,7 @@ namespace Eco.Extensions
         {
             yield return type.BaseType;
 
-            foreach (var field in type.OwnFields())
+            foreach (var field in type.GetOwnFields())
             {
                 foreach (var t in field.GetKnownSerializableTypes())
                     yield return t;
@@ -80,7 +80,7 @@ namespace Eco.Extensions
                 if (field.FieldType.IsArray) baseType = field.FieldType.GetElementType();
                 else baseType = field.FieldType;
 
-                knownTypes = baseType.DerivedTypes().Append(baseType);
+                knownTypes = baseType.GetDerivedTypes().Append(baseType);
             }
 
             var serializableKnownTypes = knownTypes.Where(t => !t.IsAbstract && !t.IsGenericTypeDefinition);

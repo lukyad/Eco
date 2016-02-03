@@ -16,7 +16,8 @@ namespace Eco.Serialization.Xml
         {
             var result = new List<string>();
             var attributes = settingsType.GetCustomAttributes().ToArray();
-            var attributesData = settingsType.GetCustomAttributesData();
+            var inheritedAttributesData = settingsType.GetBaseSettingsTypes().SelectMany(t => t.GetCustomAttributesData());
+            var attributesData = settingsType.GetCustomAttributesData().Concat(inheritedAttributesData).ToArray();
             for (int i = 0; i < attributes.Length; i++)
             {
                 string attributeText = CommonAttributeTranslator.Translate(attributes[i], attributesData[i], settingsType);

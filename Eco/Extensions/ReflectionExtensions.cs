@@ -67,12 +67,22 @@ namespace Eco.Extensions
                 elementType == genericTypeDefinition;
         }
 
-        public static IEnumerable<Type> DerivedTypes(this Type type)
+        public static IEnumerable<Type> GetDerivedTypes(this Type type)
         {
              return TypesCache.GetAssemblyTypes(type.Assembly).Where(t => t.IsSubclassOf(type));
         }
 
-        public static IEnumerable<FieldInfo> OwnFields(this Type type)
+        public static IEnumerable<Type> GetBaseSettingsTypes(this Type type)
+        {
+            Type super = type.BaseType;
+            while (super.IsSettingsType())
+            {
+                yield return super;
+                super = super.BaseType;
+            }
+        }
+
+        public static IEnumerable<FieldInfo> GetOwnFields(this Type type)
         {
             IEnumerable<FieldInfo> ownFields = type.GetFields(BindingFlags.Public | BindingFlags.Instance);
             if (type.BaseType != null)
@@ -104,7 +114,8 @@ namespace Eco.Extensions
                     string typeParamName = typeParam.IsSettingsType() || typeParam.IsSettingsArrayType() ?
                         GetNonGenericName(typeParameters[i]) :
                         typeParam.FullName;
-                    nonGenericName += i == 0 ? typeParamName : "__" + typeParamName.Replace('.', '_');
+                    string normalizedTypeName = typeParamName.Replace('.', '_').Replace("[]", "Array");
+                    nonGenericName += i == 0 ? normalizedTypeName : "__" + normalizedTypeName;
                 }
             }
 
