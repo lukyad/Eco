@@ -42,6 +42,7 @@ namespace Eco
         {
             if (list == null) throw new ArgumentNullException(nameof(list));
             this.KnownTypes = list;
+            this.ApplyToGeneratedClass = true;
         }
 
         public KnownTypesAttribute(string wildcard, Type context)
@@ -49,6 +50,7 @@ namespace Eco
             if (wildcard == null) throw new ArgumentNullException(nameof(wildcard));
             if (context == null) throw new ArgumentNullException(nameof(context));
             this.KnownTypes = MatchTypes(wildcard, context.Assembly).ToArray();
+            this.ApplyToGeneratedClass = true;
         }
 
 

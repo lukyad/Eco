@@ -25,6 +25,11 @@ namespace Eco
             typeof(RequiredAttribute),
         };
 
+        public OptionalAttribute()
+        {
+            this.ApplyToGeneratedClass = true;
+        }
+
         public override void ValidateContext(FieldInfo context)
         {
             if (context.FieldType.IsValueType || Nullable.GetUnderlyingType(context.FieldType) != null)

@@ -20,6 +20,7 @@ namespace Eco
         public DefaultAttribute(object value)
         {
             this.Value = value;
+            this.ApplyToGeneratedClass = true;
         }
 
         public object Value { get; }

@@ -18,6 +18,11 @@ namespace Eco
     [AttributeUsage(AttributeTargets.Field)]
     public class SealedAttribute : EcoFieldAttribute
     {
+        public SealedAttribute()
+        {
+            this.ApplyToGeneratedClass = true;
+        }
+
         public override void ValidateContext(FieldInfo context)
         {
             // do nothing. can be applied to field of any type and is compatible with all Eco attributes.

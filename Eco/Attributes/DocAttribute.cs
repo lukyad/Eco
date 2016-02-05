@@ -21,6 +21,7 @@ namespace Eco
         public DocAttribute(string annotation)
         {
             this.Annotation = annotation;
+            this.ApplyToGeneratedClass = true;
         }
 
         public string Annotation { get; }
