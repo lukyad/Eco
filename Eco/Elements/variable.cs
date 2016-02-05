@@ -25,7 +25,7 @@ namespace Eco
         [Required, Doc("Name of the varible. Can contain 'word' characters only (ie [A-Za-z0-9_]).")]
         public string name;
 
-        [Required, Doc("Variable's value.")]
+        [Required, Sealed, Doc("Variable's value.")]
         public string value;
 
         public static string GetValue(object twin) => (string)twin.GetType().GetField(nameof(value)).GetValue(twin);
