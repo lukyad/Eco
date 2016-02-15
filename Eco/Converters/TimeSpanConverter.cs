@@ -35,6 +35,9 @@ namespace Eco.Converters
         const double DaysPerWeek = 7;
         const double DaysPerYear = 365;
 
+        /// <summary>
+        /// CanParse() implementation of the ConverterAttribute contract.
+        /// </summary>
         public static bool CanParse(Type sourceType)
         {
             return sourceType == typeof(TimeSpan);

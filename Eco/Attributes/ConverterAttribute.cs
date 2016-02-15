@@ -14,6 +14,7 @@ namespace Eco
     /// Converter contract:
     /// The Converter type that is passed as an argument to the attribute's constructor
     /// should define the following two methods:
+    ///        public static bool CanParse(Type sourceType);
     ///        public static string ToString(string format, object source);
     ///        public static object FromString(string format, string source);
     /// 
