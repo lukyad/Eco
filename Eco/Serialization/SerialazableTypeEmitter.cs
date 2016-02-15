@@ -79,7 +79,8 @@ namespace Eco.Serialization
             var sourceType = field.FieldType;
             if (field.IsDefined(typeof(RefAttribute)) || 
                 field.IsDefined(typeof(ConverterAttribute)) ||
-                parsingPolicies.Any(p => p.CanParse(sourceType)))
+                parsingPolicies.Any(p => p.CanParse(sourceType)) ||
+                sourceType.IsNullable() && parsingPolicies.Any(p => p.CanParse(Nullable.GetUnderlyingType(sourceType))))
             {
                 return typeof(string);
             }
