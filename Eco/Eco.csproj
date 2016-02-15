@@ -71,6 +71,7 @@
     <Compile Include="Attributes\NamespaceAttribute.cs" />
     <Compile Include="Attributes\NonSettingsTypeAttribute.cs" />
     <Compile Include="Attributes\SkippedBy.cs" />
+    <Compile Include="Converters\DateTimeConverter.cs" />
     <Compile Include="Elements\import.cs" />
     <Compile Include="Elements\applyOverrides.cs" />
     <Compile Include="Elements\applyDefaults.cs" />
