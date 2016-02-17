@@ -54,7 +54,7 @@ namespace Eco.SettingsVisitors
         object FromString(string sourceStr, FieldInfo targetField)
         {
             // if source string is null, return null object.
-            if (sourceStr == null) return null;
+            if (String.IsNullOrEmpty(sourceStr)) return null;
 
             object result = null;
             // If field is marked with a Converter attribute, use the Converter.FromString method
