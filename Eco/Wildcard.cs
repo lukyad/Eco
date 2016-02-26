@@ -12,7 +12,7 @@ namespace Eco
     /// Represents a wildcard running on the
     /// <see cref="System.Text.RegularExpressions"/> engine.
     /// </summary>
-    class Wildcard : Regex
+    public class Wildcard : Regex
     {
         /// <summary>
         /// Initializes a wildcard with the given search pattern.
