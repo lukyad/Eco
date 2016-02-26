@@ -28,7 +28,9 @@ namespace Eco.SettingsVisitors
                 if (defaultAttr.Value != null && !rawSettingsField.FieldType.IsAssignableFrom(defaultAttr.Value.GetType()))
                     throw new ConfigurationException("Invalud default field value for {0}.{1}: '{2}'.", rawSettingsField.DeclaringType.Name, rawSettingsField.Name, defaultAttr.Value);
 
-                rawSettingsField.SetValue(rawSettings, defaultAttr.Value);
+                object targetValue = rawSettingsField.GetValue(rawSettings);
+                if (targetValue == null)
+                    rawSettingsField.SetValue(rawSettings, defaultAttr.Value);
             }
         }
     }
