@@ -50,20 +50,23 @@ namespace Eco.Serialization.Xml
         static string TranslateDefaultAttribute(DefaultAttribute a)
         {
             bool isBooleanDefault = a.Value != null && a.Value.GetType() == typeof(bool);
-            string defaultValue = a.Value.ToString();
             bool isStringDefault = a.Value != null && a.Value.GetType() == typeof(string);
+            bool isEnumDefault = a.Value != null && a.Value.GetType().IsEnum;
+            string defaultValue = a.Value.ToString();
+            if (isBooleanDefault) defaultValue = defaultValue.ToLower();
+            else if (isEnumDefault) defaultValue = $"{a.Value.GetType().Name}.{a.Value}";
             if (isStringDefault)
             {
                 return
                      new AttributeBuilder(typeof(DefaultAttribute).FullName)
-                     .AddStringParam(isBooleanDefault ? defaultValue.ToLower() : defaultValue)
+                     .AddStringParam(defaultValue)
                      .ToString();
             }
             else
             {
                 return
                     new AttributeBuilder(typeof(DefaultAttribute).FullName)
-                    .AddParam(isBooleanDefault ? defaultValue.ToLower() : defaultValue)
+                    .AddParam(defaultValue)
                     .ToString();
             }
         }
