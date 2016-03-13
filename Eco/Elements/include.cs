@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Eco.Extensions;
+using Eco.SettingsVisitors;
 
 namespace Eco
 {
@@ -27,7 +28,7 @@ namespace Eco
         [Doc("If set to true, then Eco library would skip this file when saving the parent configuration file. Default value is true.")]
         public bool? readOnly;
 
-        [Hidden]
+        [Hidden, SkippedBy(typeof(IncludeElementReader), typeof(IncludeElementWriter))]
         public T data;
 
         public static string GetFile(object twin) => (string)twin.GetFieldValue(nameof(file));
