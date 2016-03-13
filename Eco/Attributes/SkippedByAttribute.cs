@@ -20,6 +20,7 @@ namespace Eco
         public SkippedByAttribute(params Type[] visitors)
         {
             this.Visitors = new HashSet<Type>(visitors);
+            this.ApplyToGeneratedClass = true;
         }
 
         public HashSet<Type> Visitors { get; }

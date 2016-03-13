@@ -70,7 +70,7 @@
     <Compile Include="Attributes\ItemNameAttribute.cs" />
     <Compile Include="Attributes\NamespaceAttribute.cs" />
     <Compile Include="Attributes\NonSettingsTypeAttribute.cs" />
-    <Compile Include="Attributes\SkippedBy.cs" />
+    <Compile Include="Attributes\SkippedByAttribute.cs" />
     <Compile Include="Converters\DateTimeConverter.cs" />
     <Compile Include="Elements\import.cs" />
     <Compile Include="Elements\applyOverrides.cs" />
