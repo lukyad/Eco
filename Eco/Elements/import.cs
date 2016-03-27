@@ -20,7 +20,7 @@ namespace Eco
         [Required, Doc("Path (relative or absolute) to the file to be imported.")]
         public string file;
 
-        [Default("true")]
+        [Default(true)]
         [Doc("If set to true, then Eco library would skip this file when saving the parent configuration file. Default value is true.")]
         public bool? readOnly;
 

@@ -24,7 +24,7 @@ namespace Eco
         [Optional, Doc("[Not supported yet] Format of the file to be included (xml, json etc). By default Eco library uses format defined by Settings.DefaultManager.")]
         public string format;
 
-        [Default("true")]
+        [Default(true)]
         [Doc("If set to true, then Eco library would skip this file when saving the parent configuration file. Default value is true.")]
         public bool? readOnly;
 
