@@ -55,7 +55,7 @@ namespace Eco
         // Can converter parse the given Type?
         public Func<Type, bool> CanParse { get; private set; }
 
-        public override void ValidateContext(FieldInfo context)
+        public override void ValidateContext(FieldInfo context, Type rawFieldType)
         {
             if (!context.FieldType.IsSimple() || context.FieldType == typeof(string))
                 ThrowExpectedFieldOf("a simple non-String type", context);

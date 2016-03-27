@@ -18,7 +18,7 @@ namespace Eco
     [AttributeUsage(AttributeTargets.Field)]
     public class HiddenAttribute : EcoFieldAttribute
     {
-        public override void ValidateContext(FieldInfo context)
+        public override void ValidateContext(FieldInfo context, Type rawFieldType)
         {
             // do nothing. can be applied to field of any type and is compatible with all Eco attributes.
         }

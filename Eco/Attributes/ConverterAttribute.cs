@@ -61,7 +61,7 @@ namespace Eco
         // Can converter parse the given TYpe.
         public Func<Type, bool> CanParse { get; private set; }
 
-        public override void ValidateContext(FieldInfo context)
+        public override void ValidateContext(FieldInfo context, Type rawFieldType)
         {
             if (context.FieldType.IsDefined<EcoElementAttribute>())
                 ThrowExpectedFieldOf("any type apart from System.String and any of the Eco configuration element types.", context);

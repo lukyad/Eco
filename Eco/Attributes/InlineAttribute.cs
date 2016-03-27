@@ -64,7 +64,7 @@ namespace Eco
             typeof(RefAttribute),
         };
 
-        public override void ValidateContext(FieldInfo context)
+        public override void ValidateContext(FieldInfo context, Type rawFieldType)
         {
             if (!context.FieldType.IsArray)
                 ThrowExpectedFieldOf("an array type", context);

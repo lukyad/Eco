@@ -25,7 +25,7 @@ namespace Eco
 
         public HashSet<Type> Visitors { get; }
 
-        public override void ValidateContext(FieldInfo context)
+        public override void ValidateContext(FieldInfo context, Type rawFieldType)
         {
             // do nothing. can be applied to field of any type and is compatible with all Eco attributes.
         }

@@ -63,7 +63,7 @@ namespace Eco
             return assembly.GetTypes().Where(t => MatchesWildcard(t) && t.IsSettingsType());
         }
 
-        public override void ValidateContext(FieldInfo context)
+        public override void ValidateContext(FieldInfo context, Type rawFieldType)
         {
             if (!context.IsPolymorphic() && !context.FieldType.IsGenericType)
             {

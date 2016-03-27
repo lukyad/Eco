@@ -18,7 +18,7 @@ namespace Eco
         /// </summary>
         public bool ApplyToGeneratedClass { get; protected set; } = false;
 
-        public abstract void ValidateContext(FieldInfo context);
+        public abstract void ValidateContext(FieldInfo context, Type rawFieldType);
 
         protected void ThrowExpectedFieldOf(string type, FieldInfo context)
         {
