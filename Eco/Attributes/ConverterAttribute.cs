@@ -73,9 +73,9 @@ namespace Eco
 
         static Func<object, string> GetToStringMethod(Type converterType, string format)
         {
-            MethodInfo toStringMethod = converterType.GetMethod("ToString", new[] { typeof(string), typeof(object) });
+            MethodInfo toStringMethod = converterType.GetMethod("ToString", new[] { typeof(object), typeof(string) });
             if (toStringMethod == null || toStringMethod.ReturnType != typeof(string))
-                ThrowMissingMethodException(converterType, "string ToString(string format, object source)");
+                ThrowMissingMethodException(converterType, "string ToString(object source, string format)");
             
             return value => (string)toStringMethod.Invoke(null, new[] { value, format });
         }
