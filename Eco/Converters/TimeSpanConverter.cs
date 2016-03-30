@@ -56,7 +56,10 @@ namespace Eco.Converters
         /// </summary>
         public static string ToString(object timeSpan, string format)
         {
-            Func<TimeSpan, double> ToDouble = _toDoubleMethods[format];
+            Func<TimeSpan, double> ToDouble;
+            if (!_toDoubleMethods.TryGetValue(format, out ToDouble))
+                throw new ApplicationException(String.Format("Unsupported time unit: '{0}'. Expected one of the following:", timeSpan, String.Join(", ", _toDoubleMethods.Keys)));
+
             return String.Format("{0}{1}", ToDouble((TimeSpan)timeSpan), format);
         }
 
