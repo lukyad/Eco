@@ -113,7 +113,7 @@ namespace Sample
         /// <summary>
         /// We use KnownTypes attribute to specifiy schema types that can occure here.
         /// </summary>
-        [KnownTypes(Wildcard = "*Weapon"), Rename("sample(.+)Weapon", "$1")]
+        [KnownTypes(wildcard:"*Weapon", context: typeof(weapon)), Rename("sample(.+)Weapon", "$1")]
         [Doc("References to weapons to be used by the ship in a combat.")]
         public object[] weapons;
 
