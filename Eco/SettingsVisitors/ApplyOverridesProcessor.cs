@@ -14,12 +14,14 @@ namespace Eco.SettingsVisitors
     /// </summary>
     public class ApplyOverridesProcessor : TwinSettingsVisitorBase
     {
+        readonly HashSet<Tuple<object, FieldInfo>> _initializedFields;
         readonly Dictionary<string, object> _settingsById;
 
-        public ApplyOverridesProcessor(Dictionary<string, object> settingsById)
+        public ApplyOverridesProcessor(Dictionary<string, object> settingsById, /*out*/ HashSet<Tuple<object, FieldInfo>> initializedFields)
             : base(isReversable: true)
         {
             _settingsById = settingsById;
+            _initializedFields = initializedFields;
         }
 
         public override void Visit(string settingsNamespace, string settingsPath, object refinedSettings, object rawSettings)
@@ -39,7 +41,13 @@ namespace Eco.SettingsVisitors
                     .Where(s => refinedOverrides.GetType().IsAssignableFrom(s.GetType()));
 
                 foreach (object target in targets)
-                    SettingsManager.TraverseTwinSeetingsTrees(refinedOverrides, target, new OverridesSetter(overridenFieldCollector.PathsToOverride), SkipBranch: IsArrayField);
+                {
+                    SettingsManager.TraverseTwinSeetingsTrees(
+                        refinedOverrides, 
+                        target,
+                        new OverridesSetter(overridenFieldCollector.PathsToOverride, _initializedFields), 
+                        SkipBranch: IsArrayField);
+                }
             }
         }
 
@@ -58,10 +66,12 @@ namespace Eco.SettingsVisitors
         class OverridesSetter : TwinSettingsVisitorBase
         {
             readonly HashSet<string> _fieldsToOverride;
+            readonly HashSet<Tuple<object, FieldInfo>> _initializedFields;
 
-            public OverridesSetter(HashSet<string> fieldsToOverride)
+            public OverridesSetter(HashSet<string> fieldsToOverride, /*out*/ HashSet<Tuple<object, FieldInfo>> initializedFields)
             {
                 _fieldsToOverride = fieldsToOverride;
+                _initializedFields = initializedFields;
             }
 
             public override void Visit(string settingsNamespace, string fieldPath, FieldInfo overridesField, object overrides, FieldInfo targetField, object target)
@@ -71,6 +81,7 @@ namespace Eco.SettingsVisitors
                 {
                     object overridesValue = overridesField.GetValue(overrides);
                     targetField.SetValue(target, overridesValue);
+                    _initializedFields.Add(Tuple.Create(target, targetField));
                 }
             }
         }

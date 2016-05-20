@@ -14,11 +14,13 @@ namespace Eco.SettingsVisitors
     /// </summary>
     public class ApplyDefaultsProcessor : TwinSettingsVisitorBase
     {
+        readonly HashSet<Tuple<object, FieldInfo>> _initializedFields;
         readonly Dictionary<string, object> _settingsById;
 
-        public ApplyDefaultsProcessor(Dictionary<string, object> settingsById)
+        public ApplyDefaultsProcessor(Dictionary<string, object> settingsById, /*out*/ HashSet<Tuple<object, FieldInfo>> initializedFields)
         {
             _settingsById = settingsById;
+            _initializedFields = initializedFields;
         }
 
         public override void Visit(string settingsNamespace, string settingsPath, object refinedSettings, object rawSettings)
@@ -32,12 +34,22 @@ namespace Eco.SettingsVisitors
                     .Select(k => _settingsById[k])
                     .Where(s => defaults.GetType().IsAssignableFrom(s.GetType()));
                 foreach (object target in targets)
-                    SettingsManager.TraverseTwinSeetingsTrees(defaults, target, new DefaultsSetter(), SkipBranch: (f, o) => f.FieldType.IsArray);
+                {
+                    SettingsManager.TraverseTwinSeetingsTrees(
+                        defaults, target, new DefaultsSetter(_initializedFields), SkipBranch: (f, o) => f.FieldType.IsArray);
+                }
             }
         }
 
         class DefaultsSetter : TwinSettingsVisitorBase
         {
+            readonly HashSet<Tuple<object, FieldInfo>> _initializedFields;
+
+            public DefaultsSetter(/*out*/ HashSet<Tuple<object, FieldInfo>> initializedFields)
+            {
+                _initializedFields = initializedFields;
+            }
+
             public override void Visit(string settingsNamespace, string fieldPath, FieldInfo defaultsField, object defaults, FieldInfo targetField, object target)
             {
                 if (targetField.IsDefined<SealedAttribute>()) return;
@@ -45,7 +57,10 @@ namespace Eco.SettingsVisitors
                 object defaultValue = defaultsField.GetValue(defaults);
                 bool isFinalPath = targetField.IsDefined<RefAttribute>() || defaultValue == null || !defaultValue.GetType().IsSettingsType();
                 if (targetValue == null && defaultValue != null && isFinalPath)
+                {
                     targetField.SetValue(target, defaultsField.GetValue(defaults));
+                    _initializedFields.Add(Tuple.Create(target, targetField));
+                }
             }
         }
     }

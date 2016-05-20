@@ -38,7 +38,7 @@ namespace Eco.Serialization.Xml
                 if (defaultUsage == Usage.ForceRequired) usageAttribute = AttributeBuilder.GetTextFor<RequiredAttribute>();
                 else if (defaultUsage == Usage.ForceOptional) usageAttribute = AttributeBuilder.GetTextFor<OptionalAttribute>();
             }
-            else if (fieldType.IsSimple() && fieldType != typeof(string))
+            else if (fieldType.IsValueType && Nullable.GetUnderlyingType(field.FieldType) == null)
             {
                 usageAttribute = AttributeBuilder.GetTextFor<RequiredAttribute>();
             }

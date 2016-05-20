@@ -51,14 +51,15 @@ namespace Eco
         void InitializeRefinedSettingsLoadVisitors()
         {
             var settingsMapBuilder = new SettingsMapBuilder();
+            var defaultedAndOverridenFields = new HashSet<Tuple<object, FieldInfo>>();
             this.RefinedSettingsReadVisitors = new List<ITwinSettingsVisitor>
             {
                 new RefinedSettingsBuilder(),
                 settingsMapBuilder,
                 new ReferenceResolver(settingsMapBuilder.SettingsById),
-                new ApplyDefaultsProcessor(settingsMapBuilder.SettingsById),
-                new ApplyOverridesProcessor(settingsMapBuilder.SettingsById),
-                new RequiredFieldChecker()
+                new ApplyDefaultsProcessor(settingsMapBuilder.SettingsById, /*out*/ defaultedAndOverridenFields),
+                new ApplyOverridesProcessor(settingsMapBuilder.SettingsById, /*out*/ defaultedAndOverridenFields),
+                new RequiredFieldChecker(defaultedAndOverridenFields)
             };
         }
 

@@ -10,10 +10,23 @@ namespace Eco.SettingsVisitors
 {
     public class RequiredFieldChecker : TwinSettingsVisitorBase
     {
+        readonly HashSet<Tuple<object, FieldInfo>> _defaultedAndOverridenFields;
+
+        public RequiredFieldChecker(HashSet<Tuple<object, FieldInfo>> defaultedAndOverridenFields)
+        {
+            _defaultedAndOverridenFields = defaultedAndOverridenFields;
+        }
+
         public  override void Visit(string settingsNamesapce, string fieldPath, FieldInfo refinedSettingsField, object refinedSettings, FieldInfo rawSettingsField, object rawSettings)
         {
-            bool isRequiredField = refinedSettingsField.IsDefined<RequiredAttribute>() || refinedSettingsField.IsDefined<RequiredAttribute>();
-            if (isRequiredField && refinedSettingsField.GetValue(refinedSettings) == null)
+            if (!refinedSettingsField.IsDefined<RequiredAttribute>()) return;
+
+            bool fieldInitialized =
+                rawSettingsField != null && rawSettingsField.GetValue(rawSettings) != null ||
+                // Some refined fields could be initialized through applyDefaults or applyOverrides.
+                _defaultedAndOverridenFields.Contains(Tuple.Create(refinedSettings, refinedSettingsField));
+
+            if (!fieldInitialized)
                 throw new ConfigurationException("Missing required field '{0}'.", fieldPath);
         }
     }
