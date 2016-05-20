@@ -24,7 +24,7 @@ namespace Eco
         {
             _serializer = serializer;
             _serializationAttributesGenerator = serializationAttributesGenerator;
-            this.DefaultUsage = Usage.Required;
+            this.DefaultUsage = Usage.Optional;
             this.InitializeRawSettingsLoadVisitors();
             this.InitializeRefinedSettingsLoadVisitors();
             this.InitializeRefinedSettingsSaveVisitors();
@@ -77,7 +77,6 @@ namespace Eco
             var namespaceMapBuilder = new NamespaceMapBuilder();
             this.RefinedSettingsWriteVisitors = new List<ITwinSettingsVisitor>
             {
-                new RequiredFieldChecker(),
                 new RawSettingsBuilder(),
                 namespaceMapBuilder,
                 new ReferencePacker(namespaceMapBuilder.NamespaceMap),
