@@ -69,7 +69,7 @@ namespace Eco.SettingsVisitors
 
             ConverterAttribute converter = sourceField.GetCustomAttribute<ConverterAttribute>();
             if (converter != null)
-                return converter.ToString(value);
+                return converter.ToString(value, sourceField);
             else
                 return value?.ToString();
         }

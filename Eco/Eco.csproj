@@ -71,6 +71,7 @@
     <Compile Include="Attributes\NamespaceAttribute.cs" />
     <Compile Include="Attributes\NonSettingsTypeAttribute.cs" />
     <Compile Include="Attributes\SkippedByAttribute.cs" />
+    <Compile Include="Converters\Convert.cs" />
     <Compile Include="Converters\DateTimeConverter.cs" />
     <Compile Include="Elements\import.cs" />
     <Compile Include="Elements\applyOverrides.cs" />
@@ -80,7 +81,7 @@
     <Compile Include="SettingsVisitors\ApplyOverridesProcessor.cs" />
     <Compile Include="Attributes\EcoElementAttribute.cs" />
     <Compile Include="Attributes\ParserAttribute.cs" />
-    <Compile Include="Attributes\ParsingRuleAttribute.cs" />
+    <Compile Include="Attributes\ParsingPolicyAttribute.cs" />
     <Compile Include="Attributes\ConverterAttribute.cs" />
     <Compile Include="Attributes\EcoAttribute.cs" />
     <Compile Include="Attributes\EcoFieldAttribute.cs" />
@@ -93,7 +94,7 @@
     <Compile Include="CodeBuilder\AttributeBuilder.cs" />
     <Compile Include="CodeBuilder\AttributeParam.cs" />
     <Compile Include="ConfigurationException.cs" />
-    <Compile Include="Converters\NumberConverter.cs" />
+    <Compile Include="Converters\NumericConverter.cs" />
     <Compile Include="Converters\TimeSpanConverter.cs" />
     <Compile Include="Elements\include.cs" />
     <Compile Include="Elements\variable.cs" />

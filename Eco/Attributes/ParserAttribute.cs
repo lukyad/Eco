@@ -15,7 +15,7 @@ namespace Eco
     /// The Parser type that is passed as an argument to the attribute's constructor
     /// should define the following method:
     /// 
-    ///        public static string Parse(string format, object source);
+    ///        public static string Parse(string format, object source, FieldInfo context);
     /// 
     /// If parser fails, it should return null (ie do not throw).
     /// 
@@ -49,8 +49,9 @@ namespace Eco
 
         public string Format { get; set; }
 
+        // object Parse(string source, string format, FiledInfo context)
         // Returns null, if converter is not able to parse the specified string.
-        public Func<string, string, object> Parse { get; private set; }
+        public Func<string, string, FieldInfo, object> Parse { get; private set; }
 
         // Can converter parse the given Type?
         public Func<Type, bool> CanParse { get; private set; }
@@ -63,13 +64,13 @@ namespace Eco
             CheckAttributesCompatibility(context, _incompatibleAttributeTypes);
         }
 
-        public static Func<string, string, object> GetParseMethod(Type parserType)
+        public static Func<string, string, FieldInfo, object> GetParseMethod(Type parserType)
         {
-            MethodInfo parseMethod = parserType.GetMethod("Parse", new[] { typeof(string), typeof(string) });
+            MethodInfo parseMethod = parserType.GetMethod("Parse", new[] { typeof(string), typeof(string), typeof(FieldInfo) });
             if (parseMethod == null || parseMethod.ReturnType != typeof(object))
-                ThrowMissingMethodException(parserType, "object Parse(string source, string format)");
+                ThrowMissingMethodException(parserType, "object Parse(string source, string format, FieldInfo context )");
 
-            return (source, format) => parseMethod.Invoke(null, new[] { source, format });
+            return (source, format, context) => parseMethod.Invoke(null, new object[] { source, format, context });
         }
 
         public static Func<Type, bool> GetCanParseMethod(Type converterType)

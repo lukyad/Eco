@@ -14,7 +14,7 @@ namespace Eco
     /// The Parser class that is passed as an argument to the attribute's constructor
     /// should define the following method:
     /// 
-    ///        public static object Parse(string source, string format);
+    ///        public static object Parse(string source, string format, FieldInfo context);
     /// 
     /// If parser fails, it should return null (ie do not throw).
     /// 
@@ -40,7 +40,7 @@ namespace Eco
         public string Format { get; set; }
 
         // Returns null, if converter is not able to parse the specified string.
-        public Func<string, string, object> Parse { get; private set; }
+        public Func<string, string, FieldInfo, object> Parse { get; private set; }
 
         // Can converter parse the given Type?
         public Func<Type, bool> CanParse { get; private set; }

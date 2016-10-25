@@ -48,7 +48,11 @@ namespace Eco.Serialization.Xml
                     foreach (var t in field.GetKnownSerializableTypes())
                         res.Add(GetItemAttributeText(attributeType, t, renameRule));
                 }
-                else if (field.FieldType.IsArray)
+                else if (
+                    field.FieldType.IsArray && 
+                    !field.IsDefined<ConverterAttribute>() && 
+                    !field.IsDefined<ParserAttribute>() &&
+                    !parsingPolicies.Any(p => p.CanParse(field.FieldType)))
                 {
                     Type attributeType = field.IsDefined<InlineAttribute>() ? typeof(XmlElementAttribute) : typeof(XmlArrayItemAttribute);
                     Type itemTypeName = field.FieldType.GetElementType();
