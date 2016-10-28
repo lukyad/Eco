@@ -16,12 +16,12 @@ namespace Eco.Serialization.Xml
     {
         public Encoding Encoding { get; set; } = Encoding.ASCII;
 
-        public object Deserialize(Type rawSettingsType, TextReader reater)
+        public object Deserialize(Type rawSettingsType, TextReader reader)
         {
             var serializer = new SystemXmlSerializer(rawSettingsType);
             serializer.UnknownAttribute += new XmlAttributeEventHandler(serializer_UnknownAttribute);
             serializer.UnknownElement += new XmlElementEventHandler(serializer_UnknownElement);
-            return serializer.Deserialize(reater);
+            return serializer.Deserialize(reader);
         }
 
         public void Serialize(object rawSettings, TextWriter writer)

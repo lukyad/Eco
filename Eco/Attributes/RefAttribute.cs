@@ -43,7 +43,7 @@ namespace Eco
 
         public bool IsWeak { get; set; }
 
-        public override void ValidateContext(FieldInfo context)
+        public override void ValidateContext(FieldInfo context, Type rawFieldType)
         {
             Type fieldType = context.FieldType;
             if (!fieldType.IsSettingsOrObjectType() && !fieldType.IsSettingsOrObjectArrayType())

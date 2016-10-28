@@ -29,15 +29,15 @@ namespace Tests.Converters
         [Fact]
         public static void ParsingFails()
         {
-            Assert.That(NumberConverter.Parse("1sec", null), Is.Null());
-            Assert.That(NumberConverter.Parse("1H", null), Is.Null());
-            Assert.That(NumberConverter.Parse("Ams", null), Is.Null());
+            Assert.That(NumericConverter.Parse("1sec", null, null), Is.Null());
+            Assert.That(NumericConverter.Parse("1H", null, null), Is.Null());
+            Assert.That(NumericConverter.Parse("Ams", null, null), Is.Null());
         }
 
         [Fact]
         public static void ParsingThrows()
         {
-            Assert.That(() => NumberConverter.ParseDecimal("1us"), Throws.An<ConfigurationException>());
+            Assert.That(() => NumericConverter.ParseDecimal("1us"), Throws.An<ConfigurationException>());
         }
     }
 }

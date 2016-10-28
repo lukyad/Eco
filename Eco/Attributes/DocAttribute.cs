@@ -21,11 +21,12 @@ namespace Eco
         public DocAttribute(string annotation)
         {
             this.Annotation = annotation;
+            this.ApplyToGeneratedClass = true;
         }
 
         public string Annotation { get; }
 
-        public override void ValidateContext(FieldInfo context)
+        public override void ValidateContext(FieldInfo context, Type rawFieldType)
         {
             // Do nothing. Can be used in any context.
         }

@@ -2,15 +2,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+using System.Reflection;
 
 namespace Eco.Converters
 {
     /// <summary>
-    /// Defines String to TimeSpan conversion rules.
+    /// Defines String to Number conversion rules.
     /// Can be used in conjunction with the Converter, Parser and ParsingPolicy attributes.
     /// </summary>
-    public static class NumberConverter
+    public static class NumericConverter
     {
         static readonly Dictionary<string, decimal> _multipliers = new Dictionary<string, decimal> {
             { "k", 1000 },
@@ -26,34 +26,40 @@ namespace Eco.Converters
 
         public static bool CanParse(Type sourceType)
         {
-            return _supportedTypes.Contains(sourceType);
+            return sourceType.IsArray ?
+                _supportedTypes.Contains(sourceType.GetElementType()) :
+                _supportedTypes.Contains(sourceType);
         }
 
         /// <summary>
         /// FromString()  implementation of the ConverterAttribute contract.
         /// </summary>
-        public static object FromString(string number, string notUsed)
+        public static object FromString(string value, string format, FieldInfo context)
         {
-            return ParseDecimal(number);
+            return Convert.FromString(value, format, context, ParseDecimal);
         }
 
         /// <summary>
         /// ToString() implementation of the ConverterAttribute contract.
         /// </summary>
-        public static string ToString(object number, string multiplier)
+        public static string ToString(object value, string multiplier, FieldInfo context)
         {
-            decimal value = (decimal)number;
-            if (!_multipliers.ContainsKey(multiplier.ToLower())) throw new ConfigurationException("Unsupported number multiplier: '{0}'.", multiplier);
-            return String.Format("{0}{1}", value * _multipliers[multiplier], multiplier);
+            return Convert.ToString<decimal>(value, multiplier, context, NumericToString);
         }
 
         /// <summary>
         /// Parse() implementation of the ParserAttribute/ParsingPolicyAttribute contract.
         /// </summary>
-        public static object Parse(string number, string notUsed)
+        public static object Parse(string value, string format, FieldInfo context)
         {
             decimal result;
-            return TryParseDecimal(number, out result) ? (object)result : null;
+            return TryParseDecimal(value, out result) ? (object)result : null;
+        }
+
+        static string NumericToString(decimal value, string multiplier)
+        {
+            if (!_multipliers.ContainsKey(multiplier.ToLower())) throw new ConfigurationException("Unsupported number multiplier: '{0}'.", multiplier);
+            return String.Format("{0}{1}", value * _multipliers[multiplier], multiplier);
         }
 
         public static decimal ParseDecimal(this string number)
@@ -64,6 +70,11 @@ namespace Eco.Converters
                 throw new ConfigurationException("Unsupported number multiplier: '{0}'.", number);
 
             return result;
+        }
+
+        static decimal ParseDecimal(string number, string format)
+        {
+            return ParseDecimal(number);
         }
 
         public static bool TryParseDecimal(this string number, out decimal value)

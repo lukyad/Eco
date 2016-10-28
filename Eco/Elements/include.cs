@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Eco.Extensions;
+using Eco.SettingsVisitors;
 
 namespace Eco
 {
@@ -20,14 +21,14 @@ namespace Eco
         [Doc("Namespace to be applied to all object IDs included from the referenced file. If specified, an object from the file should be referenced as '<Namesapce>.<ObjectId>'")]
         public string ns;
 
-        [Optional, Doc("Format of the file to be included. By default Eco library uses format defined by Settings.DefaultManager.")]
+        [Optional, Doc("[Not supported yet] Format of the file to be included (xml, json etc). By default Eco library uses format defined by Settings.DefaultManager.")]
         public string format;
 
-        [Default("true")]
+        [Default(true)]
         [Doc("If set to true, then Eco library would skip this file when saving the parent configuration file. Default value is true.")]
         public bool? readOnly;
 
-        [Hidden]
+        [Hidden, SkippedBy(typeof(IncludeElementReader), typeof(IncludeElementWriter))]
         public T data;
 
         public static string GetFile(object twin) => (string)twin.GetFieldValue(nameof(file));

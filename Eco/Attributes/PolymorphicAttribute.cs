@@ -35,7 +35,7 @@ namespace Eco
             typeof(RefAttribute)
         };
 
-        public override void ValidateContext(FieldInfo context)
+        public override void ValidateContext(FieldInfo context, Type rawFieldType)
         {
             if (!context.FieldType.IsSettingsType() && !context.FieldType.IsSettingsArrayType())
                 ThrowExpectedFieldOf("a settings or settings array type", context);

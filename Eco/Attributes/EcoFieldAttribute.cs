@@ -13,7 +13,12 @@ namespace Eco
     /// </summary>
     public abstract class EcoFieldAttribute : EcoAttribute
     {
-        public abstract void ValidateContext(FieldInfo context);
+        /// <summary>
+        /// If set to true, the attribute will be applied to the raw settings type generated in runtime by the Eco librarary.
+        /// </summary>
+        public bool ApplyToGeneratedClass { get; protected set; } = false;
+
+        public abstract void ValidateContext(FieldInfo context, Type rawFieldType);
 
         protected void ThrowExpectedFieldOf(string type, FieldInfo context)
         {

@@ -18,10 +18,5 @@ namespace Tests.SettingsVisitors
         {
             visitor.Visit(null, null, settings);
         }
-
-        //public static void Visit<TObject, TField>(IRefinedSettingsVisitor visitor, Expression<Func<TObject, TField>> fieldGetter, object settings)
-        //{
-        //    visitor.Visit(null, Reflect<TObject>.Field(fieldGetter), settings);
-        //}
     }
 }

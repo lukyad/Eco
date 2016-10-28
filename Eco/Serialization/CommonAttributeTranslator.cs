@@ -22,14 +22,13 @@ namespace Eco.Serialization.Xml
 
         public static string Translate(Attribute a, CustomAttributeData d, FieldInfo context)
         {
-            if (a is OptionalAttribute || a is RequiredAttribute || a is DocAttribute)
-                return d.ToString();
-            else if (a is KnownTypesAttribute)
+            var ecoAttr = a as EcoFieldAttribute;
+            if (ecoAttr != null && !ecoAttr.ApplyToGeneratedClass) return null;
+
+            if (a is KnownTypesAttribute)
                 return TranslateKnownTypesAttribute((KnownTypesAttribute)a);
             else if (a is DefaultAttribute)
                 return TranslateDefaultAttribute((DefaultAttribute)a);
-            else if (a is EcoAttribute)
-                return null;
             else
                 return d.ToString();
         }
@@ -51,20 +50,23 @@ namespace Eco.Serialization.Xml
         static string TranslateDefaultAttribute(DefaultAttribute a)
         {
             bool isBooleanDefault = a.Value != null && a.Value.GetType() == typeof(bool);
-            string defaultValue = a.Value.ToString();
             bool isStringDefault = a.Value != null && a.Value.GetType() == typeof(string);
+            bool isEnumDefault = a.Value != null && a.Value.GetType().IsEnum;
+            string defaultValue = a.Value.ToString();
+            if (isBooleanDefault) defaultValue = defaultValue.ToLower();
+            else if (isEnumDefault) defaultValue = $"{a.Value.GetType().Name}.{a.Value}";
             if (isStringDefault)
             {
                 return
                      new AttributeBuilder(typeof(DefaultAttribute).FullName)
-                     .AddStringParam(isBooleanDefault ? defaultValue.ToLower() : defaultValue)
+                     .AddStringParam(defaultValue)
                      .ToString();
             }
             else
             {
                 return
                     new AttributeBuilder(typeof(DefaultAttribute).FullName)
-                    .AddParam(isBooleanDefault ? defaultValue.ToLower() : defaultValue)
+                    .AddParam(defaultValue)
                     .ToString();
             }
         }

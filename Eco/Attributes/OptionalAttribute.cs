@@ -25,7 +25,12 @@ namespace Eco
             typeof(RequiredAttribute),
         };
 
-        public override void ValidateContext(FieldInfo context)
+        public OptionalAttribute()
+        {
+            this.ApplyToGeneratedClass = true;
+        }
+
+        public override void ValidateContext(FieldInfo context, Type rawFieldType)
         {
             if (context.FieldType.IsValueType || Nullable.GetUnderlyingType(context.FieldType) != null)
                 ThrowExpectedFieldOf("a reference non-Nullable type. For value types please use a Nullable<> wrapper in place of the Eco usage attributes.", context);

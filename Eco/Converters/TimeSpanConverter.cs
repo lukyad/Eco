@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+using System.Reflection;
+using Eco.Extensions;
 
 namespace Eco.Converters
 {
@@ -35,32 +36,45 @@ namespace Eco.Converters
         const double DaysPerWeek = 7;
         const double DaysPerYear = 365;
 
+        /// <summary>
+        /// CanParse() implementation of the ConverterAttribute contract.
+        /// </summary>
         public static bool CanParse(Type sourceType)
         {
-            return sourceType == typeof(TimeSpan);
+            return
+                sourceType == typeof(TimeSpan) ||
+                sourceType == typeof(TimeSpan[]);
         }
 
         /// <summary>
         /// FromString()  implementation of the ConverterAttribute contract.
         /// </summary>
-        public static object FromString(string timeSpan, string format)
+        public static object FromString(string source, string format, FieldInfo context)
         {
-            return ParseTimeSpan(timeSpan);
+            return Converters.Convert.FromString<TimeSpan>(source, format, context, ParseTimeSpan);
         }
 
         /// <summary>
         /// ToString() implementation of the ConverterAttribute contract.
         /// </summary>
-        public static string ToString(object timeSpan, string format)
+        public static string ToString(object source, string format, FieldInfo context)
         {
-            Func<TimeSpan, double> ToDouble = _toDoubleMethods[format];
-            return String.Format("{0}{1}", ToDouble((TimeSpan)timeSpan), format);
+            return Converters.Convert.ToString<TimeSpan>(source, format, context, TimeSpanToString);
+        }
+
+        static string TimeSpanToString(TimeSpan source, string format)
+        {
+            Func<TimeSpan, double> ToDouble;
+            if (!_toDoubleMethods.TryGetValue(format, out ToDouble))
+                throw new ApplicationException(String.Format("Unsupported time unit: '{0}'. Expected one of the following: '{1}'.", source, _toDoubleMethods.Keys.CommaWhiteSpaceSeparated()));
+
+            return String.Format("{0}{1}", ToDouble(source), format);
         }
 
         /// <summary>
         /// Parse() implementation of the ParserAttribute/ParsingPolicyAttribute contract.
         /// </summary>
-        public static object Parse(string timeSpan, string format)
+        public static object Parse(string timeSpan, string format, FieldInfo context)
         {
             TimeSpan result;
             return TryParseTimeSpan(timeSpan, out result) ? (object)result : null;
@@ -74,6 +88,11 @@ namespace Eco.Converters
                 throw new ApplicationException(String.Format("Unsupported TimeSpan format: '{0}'", timeSpan));
 
             return result;
+        }
+
+        static TimeSpan ParseTimeSpan(this string timeSpan, string format)
+        {
+            return ParseTimeSpan(timeSpan);
         }
 
         public static bool TryParseTimeSpan(this string timeSpanStr, out TimeSpan timeSpan)

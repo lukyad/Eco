@@ -14,8 +14,9 @@ namespace Eco
     /// Converter contract:
     /// The Converter type that is passed as an argument to the attribute's constructor
     /// should define the following two methods:
-    ///        public static string ToString(string format, object source);
-    ///        public static object FromString(string format, string source);
+    ///        public static bool CanParse(Type sourceType);
+    ///        public static string ToString(object source, string format, FieldInfo context);
+    ///        public static object FromString(string source, string format,  FieldInfo context);
     /// 
     /// Usage: 
     /// Can be applied to a field of any type apart from System.String and Eco.include
@@ -51,16 +52,18 @@ namespace Eco
 
         public string Format { get; set; }
 
+        // string ToString(object source, FieldInfo context)
         // Returns string representation of the specified object.
-        public new Func<object, string> ToString { get; private set; }
+        public new Func<object, FieldInfo, string> ToString { get; private set; }
 
+        // object FromString(object source, FieldInfo context)
         // Should return null, if converter is not able to parse the specified string.
-        public Func<string, object> FromString { get; private set; }
+        public Func<string, FieldInfo, object> FromString { get; private set; }
 
         // Can converter parse the given TYpe.
         public Func<Type, bool> CanParse { get; private set; }
 
-        public override void ValidateContext(FieldInfo context)
+        public override void ValidateContext(FieldInfo context, Type rawFieldType)
         {
             if (context.FieldType.IsDefined<EcoElementAttribute>())
                 ThrowExpectedFieldOf("any type apart from System.String and any of the Eco configuration element types.", context);
@@ -70,22 +73,22 @@ namespace Eco
             CheckAttributesCompatibility(context, _incompatibleAttributeTypes);
         }
 
-        static Func<object, string> GetToStringMethod(Type converterType, string format)
+        static Func<object, FieldInfo, string> GetToStringMethod(Type converterType, string format)
         {
-            MethodInfo toStringMethod = converterType.GetMethod("ToString", new[] { typeof(string), typeof(object) });
+            MethodInfo toStringMethod = converterType.GetMethod("ToString", new[] { typeof(object), typeof(string), typeof(FieldInfo) });
             if (toStringMethod == null || toStringMethod.ReturnType != typeof(string))
-                ThrowMissingMethodException(converterType, "string ToString(string format, object source)");
+                ThrowMissingMethodException(converterType, "string ToString(object source, string format, FieldInfo context)");
             
-            return value => (string)toStringMethod.Invoke(null, new[] { value, format });
+            return (value, context) => (string)toStringMethod.Invoke(null, new[] { value, format, context });
         }
 
-        static Func<string, object> GetFromStringMethod(Type converterType, string format)
+        static Func<string, FieldInfo, object> GetFromStringMethod(Type converterType, string format)
         {
-            MethodInfo fromStringMethod = converterType.GetMethod("FromString", new[] { typeof(string), typeof(string) });
+            MethodInfo fromStringMethod = converterType.GetMethod("FromString", new[] { typeof(string), typeof(string), typeof(FieldInfo) });
             if (fromStringMethod == null || fromStringMethod.ReturnType != typeof(object))
-                ThrowMissingMethodException(converterType, "object FromString(string format, string source)");
+                ThrowMissingMethodException(converterType, "object FromString(string format, string source, FieldInfo context)");
 
-            return str => fromStringMethod.Invoke(null, new[] { str, format });
+            return (str, context) => fromStringMethod.Invoke(null, new object[] { str, format, context });
         }
     }
 }

@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Eco</RootNamespace>
     <AssemblyName>Eco</AssemblyName>
-    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -69,14 +69,19 @@
     <Compile Include="Attributes\KnownTypesAttribute.cs" />
     <Compile Include="Attributes\ItemNameAttribute.cs" />
     <Compile Include="Attributes\NamespaceAttribute.cs" />
-    <Compile Include="Attributes\SkippedBy.cs" />
+    <Compile Include="Attributes\NonSettingsTypeAttribute.cs" />
+    <Compile Include="Attributes\SkippedByAttribute.cs" />
+    <Compile Include="Converters\Convert.cs" />
+    <Compile Include="Converters\DateTimeConverter.cs" />
+    <Compile Include="Elements\import.cs" />
     <Compile Include="Elements\applyOverrides.cs" />
     <Compile Include="Elements\applyDefaults.cs" />
+    <Compile Include="Serialization\Csv\CsvSerializer.cs" />
     <Compile Include="SettingsVisitors\ApplyDefaultsProcessor.cs" />
     <Compile Include="SettingsVisitors\ApplyOverridesProcessor.cs" />
     <Compile Include="Attributes\EcoElementAttribute.cs" />
     <Compile Include="Attributes\ParserAttribute.cs" />
-    <Compile Include="Attributes\ParsingRuleAttribute.cs" />
+    <Compile Include="Attributes\ParsingPolicyAttribute.cs" />
     <Compile Include="Attributes\ConverterAttribute.cs" />
     <Compile Include="Attributes\EcoAttribute.cs" />
     <Compile Include="Attributes\EcoFieldAttribute.cs" />
@@ -89,7 +94,7 @@
     <Compile Include="CodeBuilder\AttributeBuilder.cs" />
     <Compile Include="CodeBuilder\AttributeParam.cs" />
     <Compile Include="ConfigurationException.cs" />
-    <Compile Include="Converters\NumberConverter.cs" />
+    <Compile Include="Converters\NumericConverter.cs" />
     <Compile Include="Converters\TimeSpanConverter.cs" />
     <Compile Include="Elements\include.cs" />
     <Compile Include="Elements\variable.cs" />
@@ -100,7 +105,10 @@
     <Compile Include="SettingsVisitors\ConfigurationVariableMapBuilder.cs" />
     <Compile Include="SettingsVisitors\DefaultValueSetter.cs" />
     <Compile Include="SettingsVisitors\EnvironmentVariableExpander.cs" />
+    <Compile Include="SettingsVisitors\ImportElementProcessor.cs" />
     <Compile Include="SettingsVisitors\IncludeElementProcessor.cs" />
+    <Compile Include="SettingsVisitors\ImportElementReader.cs" />
+    <Compile Include="SettingsVisitors\ImportElementWriter.cs" />
     <Compile Include="SettingsVisitors\IncludeElementWriter.cs" />
     <Compile Include="SettingsVisitors\ISettingsVisitor.cs" />
     <Compile Include="SettingsVisitors\ReferencePacker.cs" />

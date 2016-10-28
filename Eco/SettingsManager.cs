@@ -24,7 +24,7 @@ namespace Eco
         {
             _serializer = serializer;
             _serializationAttributesGenerator = serializationAttributesGenerator;
-            this.DefaultUsage = Usage.Required;
+            this.DefaultUsage = Usage.Optional;
             this.InitializeRawSettingsLoadVisitors();
             this.InitializeRefinedSettingsLoadVisitors();
             this.InitializeRefinedSettingsSaveVisitors();
@@ -42,6 +42,7 @@ namespace Eco
                 variableExpander,
                 new EnvironmentVariableExpander(),
                 new IncludeElementReader(this),
+                new ImportElementReader(),
                 // We run ConfigurationVariableExpander twice to expand variables from the included files (if any).
                 variableExpander
             };
@@ -50,14 +51,15 @@ namespace Eco
         void InitializeRefinedSettingsLoadVisitors()
         {
             var settingsMapBuilder = new SettingsMapBuilder();
+            var defaultedAndOverridenFields = new HashSet<Tuple<object, FieldInfo>>();
             this.RefinedSettingsReadVisitors = new List<ITwinSettingsVisitor>
             {
                 new RefinedSettingsBuilder(),
                 settingsMapBuilder,
                 new ReferenceResolver(settingsMapBuilder.SettingsById),
-                new ApplyDefaultsProcessor(settingsMapBuilder.SettingsById),
-                new ApplyOverridesProcessor(settingsMapBuilder.SettingsById),
-                new RequiredFieldChecker()
+                new ApplyDefaultsProcessor(settingsMapBuilder.SettingsById, /*out*/ defaultedAndOverridenFields),
+                new ApplyOverridesProcessor(settingsMapBuilder.SettingsById, /*out*/ defaultedAndOverridenFields),
+                new RequiredFieldChecker(defaultedAndOverridenFields)
             };
         }
 
@@ -65,7 +67,8 @@ namespace Eco
         {
             this.RawSettingsWriteVisitors = new List<ISettingsVisitor>
             {
-                new IncludeElementWriter(this)
+                new IncludeElementWriter(this),
+                new ImportElementWriter()
             };
         }
 
@@ -74,7 +77,6 @@ namespace Eco
             var namespaceMapBuilder = new NamespaceMapBuilder();
             this.RefinedSettingsWriteVisitors = new List<ITwinSettingsVisitor>
             {
-                new RequiredFieldChecker(),
                 new RawSettingsBuilder(),
                 namespaceMapBuilder,
                 new ReferencePacker(namespaceMapBuilder.NamespaceMap),

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Runtime.CompilerServices;
 using System.Reflection;
 
 namespace Eco.Extensions
@@ -11,7 +12,7 @@ namespace Eco.Extensions
 
         public static bool IsSettingsType(Type t)
         {
-            if (String.IsNullOrEmpty(t.Namespace) || t.IsArray || !t.IsClass) return false;
+            if (String.IsNullOrEmpty(t.Namespace) || t.IsArray || !t.IsClass || t.IsDefined<NonSettingsTypeAttribute>() || t.IsDefined<CompilerGeneratedAttribute>()) return false;
             if (_knownSettingNamesapces.ContainsKey(t.Namespace)) return true;
             if (_knownNonSettingNamesapces.ContainsKey(t.Namespace)) return false;
             

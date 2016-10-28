@@ -22,7 +22,7 @@ namespace Eco
 
         public string Name { get; }
 
-        public override void ValidateContext(FieldInfo context)
+        public override void ValidateContext(FieldInfo context, Type rawFieldType)
         {
         }
     }

@@ -26,7 +26,7 @@ namespace Eco
             typeof(IdAttribute)
         };
 
-        public override void ValidateContext(FieldInfo context)
+        public override void ValidateContext(FieldInfo context, Type rawFieldType)
         {
             if (context.FieldType != typeof(string))
                 ThrowExpectedFieldOf("the String type.", context);

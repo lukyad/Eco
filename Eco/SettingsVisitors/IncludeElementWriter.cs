@@ -24,7 +24,6 @@ namespace Eco.SettingsVisitors
             // Skip readonly files.
             if (include.IsReadOnly(includeElem)) return;
             // Create full path to the file (if doesn't exist)
-            // If configuration file specifies a relative file path, then it's combined with the current working dir.
             string filePath = include.GetFile(includeElem);
             string dir = Path.GetDirectoryName(filePath);
             Directory.CreateDirectory(dir);
@@ -33,7 +32,7 @@ namespace Eco.SettingsVisitors
             using (var fileStream = File.Open(filePath, FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
             using (var writer = new StreamWriter(fileStream))
             {
-                object settings = include.GetDataType(includeElem);
+                object settings = include.GetData(includeElem);
                 this.Context.Serializer.Serialize(settings, writer);
             }
         }

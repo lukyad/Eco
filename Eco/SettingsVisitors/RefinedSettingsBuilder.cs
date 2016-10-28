@@ -54,7 +54,7 @@ namespace Eco.SettingsVisitors
         object FromString(string sourceStr, FieldInfo targetField)
         {
             // if source string is null, return null object.
-            if (sourceStr == null) return null;
+            if (String.IsNullOrEmpty(sourceStr)) return null;
 
             object result = null;
             // If field is marked with a Converter attribute, use the Converter.FromString method
@@ -62,7 +62,7 @@ namespace Eco.SettingsVisitors
             var converter = targetField.GetCustomAttribute<ConverterAttribute>();
             if (converter != null)
             {
-                result = converter.FromString(sourceStr);
+                result = converter.FromString(sourceStr, targetField);
             }
             else
             {
@@ -70,7 +70,7 @@ namespace Eco.SettingsVisitors
                 // Assign result to the first non-null object.
                 result =
                     targetField.GetCustomAttributes<ParserAttribute>()
-                    .Select(a => a.Parse(sourceStr, a.Format))
+                    .Select(a => a.Parse(sourceStr, a.Format, targetField))
                     .FirstOrDefault(r => r != null);
 
                 // If result is still null, try to use parsingPolicies.
@@ -79,7 +79,7 @@ namespace Eco.SettingsVisitors
                     Type typeToParse = targetField.FieldType.IsNullable() ? Nullable.GetUnderlyingType(targetField.FieldType) : targetField.FieldType;
                     result = _parsingPolicies
                         .Where(p => p.CanParse(typeToParse))
-                        .Select(p => p.Parse(sourceStr, p.Format))
+                        .Select(p => p.Parse(sourceStr, p.Format, targetField))
                         .FirstOrDefault(o => o != null);
                 }
                 // If there were no parsers or they have not been able to parse the string,

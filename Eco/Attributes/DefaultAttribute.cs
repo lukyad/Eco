@@ -12,7 +12,7 @@ namespace Eco
     /// Provides default value for the raw field.
     /// 
     /// Usage:
-    /// Can be applied to a field of any type.
+    /// Can be applied to a field that has one of the following corresponding raw types: non-simple or string type.
     /// </summary>
     [AttributeUsage(AttributeTargets.Field)]
     public class DefaultAttribute : EcoFieldAttribute
@@ -20,13 +20,15 @@ namespace Eco
         public DefaultAttribute(object value)
         {
             this.Value = value;
+            this.ApplyToGeneratedClass = true;
         }
 
         public object Value { get; }
 
-        public override void ValidateContext(FieldInfo context)
+        public override void ValidateContext(FieldInfo context, Type rawFieldType)
         {
-            // do nothing. can be applied to field of any type and is compatible with all Eco attributes.
+            if (rawFieldType != typeof(string) && rawFieldType.IsSimple())
+                ThrowExpectedFieldOf($"a type that has one of the following corresponding raw settings types: non-simple or string type. If orginal field is of a simple type, consider using of appropriate {nameof(ParsingPolicyAttribute)} attribute.", context);
         }
     }
 }
