@@ -9,9 +9,14 @@ namespace Tests.SettingsVisitors
 {
     public abstract class SettingsVisitorTestBase
     {
-        public static void Visit<TObject, TField>(IRawSettingsVisitor visitor, Expression<Func<TObject, TField>> fieldGetter, TObject settings)
+        public static void Visit<TObject, TField>(ISettingsVisitor visitor, Expression<Func<TObject, TField>> fieldGetter, TObject settings)
         {
-            visitor.Visit(null, Reflect<TObject>.Field(fieldGetter), settings);
+            visitor.Visit(null, null, Reflect<TObject>.Field(fieldGetter), settings);
+        }
+
+        public static void Visit<TObject>(ISettingsVisitor visitor, TObject settings)
+        {
+            visitor.Visit(null, null, settings);
         }
 
         //public static void Visit<TObject, TField>(IRefinedSettingsVisitor visitor, Expression<Func<TObject, TField>> fieldGetter, object settings)

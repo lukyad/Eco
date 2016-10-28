@@ -33,8 +33,7 @@ namespace Tests.SettingsVisitors
                 }
             };
             var fieldVisitor = new ConfigurationVariableMapBuilder();
-            Visit(fieldVisitor, s => s.var, settings);
-            Visit(fieldVisitor, s => s.varArray, settings);
+            SettingsManager.TraverseSeetingsTree(settings, fieldVisitor);
             Assert.That(fieldVisitor.Variables.Keys, Has.Items("var1", "Var2", "var_3", "444", "_"));
             Assert.That(fieldVisitor.Variables.Values, Has.Items("value1", "value2", "value3", "value4", "value5"));
         }
@@ -48,9 +47,8 @@ namespace Tests.SettingsVisitors
                 varArray = new[]{ new variable { name="var1", value="value2"} }
             };
             var fieldVisitor = new ConfigurationVariableMapBuilder();
-            Visit(fieldVisitor, s => s.var, settings);
             Assert.That(
-                () => Visit(fieldVisitor, s => s.varArray, settings), 
+                () => SettingsManager.TraverseSeetingsTree(settings, fieldVisitor), 
                 Throws.An<ConfigurationException>());
         }
 
@@ -63,7 +61,7 @@ namespace Tests.SettingsVisitors
             {
                 var settings = new settings { var = new variable { name = varName } };
                 Assert.That(
-                    () => Visit(fieldVisitor, s => s.var, settings),
+                    () => SettingsManager.TraverseSeetingsTree(settings, fieldVisitor),
                     Throws.An<ConfigurationException>());
             }
         }
