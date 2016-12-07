@@ -55,7 +55,11 @@ namespace Eco.SettingsVisitors
                 if (targetField.IsDefined<SealedAttribute>()) return;
                 object targetValue = targetField.GetValue(target);
                 object defaultValue = defaultsField.GetValue(defaults);
-                bool isFinalPath = targetField.IsDefined<RefAttribute>() || defaultValue == null || !defaultValue.GetType().IsSettingsType();
+                bool isFinalPath = 
+                    targetField.IsDefined<RefAttribute>() || 
+                    defaultValue == null ||
+                    targetValue == null ||
+                    !defaultValue.GetType().IsSettingsType();
                 if (targetValue == null && defaultValue != null && isFinalPath)
                 {
                     targetField.SetValue(target, defaultsField.GetValue(defaults));
