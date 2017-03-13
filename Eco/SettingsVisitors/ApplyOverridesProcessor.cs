@@ -15,12 +15,12 @@ namespace Eco.SettingsVisitors
     public class ApplyOverridesProcessor : TwinSettingsVisitorBase
     {
         readonly HashSet<Tuple<object, FieldInfo>> _initializedFields;
-        readonly Dictionary<string, object> _settingsById;
+        readonly Dictionary<string, object> _refinedSettingsById;
 
-        public ApplyOverridesProcessor(Dictionary<string, object> settingsById, /*out*/ HashSet<Tuple<object, FieldInfo>> initializedFields)
+        public ApplyOverridesProcessor(Dictionary<string, object> refinedSettingsById, /*out*/ HashSet<Tuple<object, FieldInfo>> initializedFields)
             : base(isReversable: true)
         {
-            _settingsById = settingsById;
+            _refinedSettingsById = refinedSettingsById;
             _initializedFields = initializedFields;
         }
 
@@ -35,9 +35,9 @@ namespace Eco.SettingsVisitors
 
                 object refinedOverrides = applyOverrides.GetOverrides(refinedSettings);
                 var targets = applyOverrides.GetTargets(refinedSettings) ??
-                    _settingsById.Keys
+                    _refinedSettingsById.Keys
                     .Where(k => k.StartsWith(settingsNamespace ?? String.Empty))
-                    .Select(k => _settingsById[k])
+                    .Select(k => _refinedSettingsById[k])
                     .Where(s => refinedOverrides.GetType().IsAssignableFrom(s.GetType()));
 
                 foreach (object target in targets)

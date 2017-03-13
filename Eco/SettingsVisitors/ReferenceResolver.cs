@@ -6,15 +6,15 @@ using System.Text;
 using System.Threading.Tasks;
 using Eco.Extensions;
 
-namespace Eco
+namespace Eco.SettingsVisitors
 {
     public class ReferenceResolver : ITwinSettingsVisitor
     {
-        readonly Dictionary<string, object> _settingsById;
+        readonly Dictionary<string, object> _refinedSettingsById;
         
-        public ReferenceResolver(Dictionary<string, object> settingsById)
+        public ReferenceResolver(Dictionary<string, object> refinedSettingsById)
         {
-            _settingsById = settingsById;
+            _refinedSettingsById = refinedSettingsById;
         }
         public static class ControlChars
         {
@@ -129,10 +129,10 @@ namespace Eco
             bool hasTypeWildcard = parts.Length > 1;
             Wildcard idWildcard = IdWildcard(currentNamespace, parts[0], hasTypeWildcard, context);
             Wildcard typeWildcard = parts.Length > 1 ? TypeWildcard(parts[1], context) : null;
-            var matchedIds = _settingsById.Keys.Where(id => idWildcard.IsMatch(id)).ToArray();
+            var matchedIds = _refinedSettingsById.Keys.Where(id => idWildcard.IsMatch(id)).ToArray();
             for (int i = 0; i < matchedIds.Length; i++)
             {
-                object candidate = _settingsById[matchedIds[i]];
+                object candidate = _refinedSettingsById[matchedIds[i]];
                 if (typeWildcard == null || IsOfType(typeWildcard, candidate))
                     settings.Add(candidate);
             }
@@ -188,7 +188,7 @@ namespace Eco
 
         string IdOf(object settings)
         {
-            return _settingsById.First(p => p.Value == settings).Key;
+            return _refinedSettingsById.First(p => p.Value == settings).Key;
         }
 
         static string FieldDescription(FieldInfo field)
