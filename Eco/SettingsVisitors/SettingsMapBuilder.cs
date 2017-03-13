@@ -10,20 +10,23 @@ namespace Eco.SettingsVisitors
 {
     public class SettingsMapBuilder : TwinSettingsVisitorBase
     {
-        public Dictionary<string, object> SettingsById { get; } = new Dictionary<string, object>();
+        public Dictionary<string, object> RefinedSettingsById { get; } = new Dictionary<string, object>();
 
-       public override void Initialize(Type rootRefinedSettingsType, Type rootRawSettingsType)
+        public Dictionary<object, object> RefinedToRawMap { get; } = new Dictionary<object, object>();
+
+        public override void Initialize(Type rootRefinedSettingsType, Type rootRawSettingsType)
         {
-            this.SettingsById.Clear();
-            this.SettingsById.Add(Settings.NullId, Settings.Null);
+            this.RefinedSettingsById.Clear();
+            this.RefinedSettingsById.Add(Settings.NullId, Settings.Null);
         }
 
         public override void Visit(string settingsNamespace, string settingsPath, object refinedSettings, object rawSettings)
         {
             string id = GetSettingsId(settingsNamespace, settingsPath, refinedSettings);
             if (id == Settings.NullId) throw new ConfigurationException("'null' settins id is reserved by the Eco library. Please use another id.", id);
-            if (this.SettingsById.ContainsKey(id)) throw new ConfigurationException("Duplicate settings ID: '{0}'.", id);
-            this.SettingsById.Add(id, refinedSettings);
+            if (this.RefinedSettingsById.ContainsKey(id)) throw new ConfigurationException("Duplicate settings ID: '{0}'.", id);
+            this.RefinedSettingsById.Add(id, refinedSettings);
+            this.RefinedToRawMap.Add(refinedSettings, rawSettings);
         }
 
         string GetSettingsId(string settingsNamesapce, string fieldPath, object refinedSettings)

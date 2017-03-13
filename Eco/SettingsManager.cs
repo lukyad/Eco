@@ -56,9 +56,9 @@ namespace Eco
             {
                 new RefinedSettingsBuilder(),
                 settingsMapBuilder,
-                new ReferenceResolver(settingsMapBuilder.SettingsById),
-                new ApplyDefaultsProcessor(settingsMapBuilder.SettingsById, /*out*/ defaultedAndOverridenFields),
-                new ApplyOverridesProcessor(settingsMapBuilder.SettingsById, /*out*/ defaultedAndOverridenFields),
+                new ReferenceResolver(settingsMapBuilder.RefinedSettingsById),
+                new ApplyDefaultsProcessor(settingsMapBuilder.RefinedSettingsById, settingsMapBuilder.RefinedToRawMap, /*out*/ defaultedAndOverridenFields),
+                new ApplyOverridesProcessor(settingsMapBuilder.RefinedSettingsById, /*out*/ defaultedAndOverridenFields),
                 new RequiredFieldChecker(defaultedAndOverridenFields)
             };
         }
