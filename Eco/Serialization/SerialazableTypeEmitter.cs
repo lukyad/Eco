@@ -64,7 +64,7 @@ namespace Eco.Serialization
             if (field.IsDefined(typeof(RefAttribute)) ||
                 field.IsDefined(typeof(ConverterAttribute)) ||
                 parsingPolicies.Any(p => p.CanParse(sourceType)) ||
-                sourceType.IsNullable())
+                sourceType.IsValueType)
             {
                 return typeof(string);
             }
