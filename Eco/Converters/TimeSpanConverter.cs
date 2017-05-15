@@ -62,7 +62,7 @@ namespace Eco.Converters
             return Converters.Convert.ToString<TimeSpan>(source, format, context, TimeSpanToString);
         }
 
-        static string TimeSpanToString(TimeSpan source, string format)
+        public static string TimeSpanToString(TimeSpan source, string format)
         {
             Func<TimeSpan, double> ToDouble;
             if (!_toDoubleMethods.TryGetValue(format, out ToDouble))
@@ -109,8 +109,15 @@ namespace Eco.Converters
             string unitCode = parserInfo.Key;
             string valueStr = timeSpanStr.Substring(0, timeSpanStr.Length - unitCode.Length);
             double value;
-            if (!Double.TryParse(valueStr, out value))
-                return false;
+            if (valueStr.Length > 0)
+            {
+                if (!Double.TryParse(valueStr, out value))
+                    return false;
+            }
+            else
+            {
+                value = 1;
+            }
 
             timeSpan = _fromDoubleMethods[unitCode](value);
 
