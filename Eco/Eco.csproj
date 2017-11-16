@@ -149,6 +149,8 @@
     <Compile Include="SettingsVisitors\SettingsVisitorBase.cs" />
     <Compile Include="SettingsVisitors\TwinSettingsVisitorBase.cs" />
     <Compile Include="Usage.cs" />
+    <Compile Include="Variables\IVariableProvider.cs" />
+    <Compile Include="Variables\PublicIpVariable.cs" />
     <Compile Include="Wildcard.cs" />
     <Compile Include="Serialization\SerialazableTypeEmitter.cs" />
     <Compile Include="Serialization\Xml\XmlAttributesGenerator.cs" />
