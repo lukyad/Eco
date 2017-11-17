@@ -19,11 +19,10 @@ namespace Eco.SettingsVisitors
     /// </summary>
     public class ConfigurationVariableMapBuilder : ISettingsVisitor
     {
-        static readonly Regex _invalidVarChars = new Regex(@"\W");
         static readonly IVariableProvider[] _variableProviders = GetEcoVariableProviders();
-        readonly Dictionary<string, string> _vars = new Dictionary<string, string>();
+        readonly Dictionary<string, Func<string>> _vars = new Dictionary<string, Func<string>>();
 
-        public Dictionary<string, string> Variables { get { return _vars; } }
+        public Dictionary<string, Func<string>> Variables { get { return _vars; } }
 
         // ConfigurationVariableMapBuilder doesn't make any changes per se.
         public bool IsReversable { get { return true; } }
@@ -57,7 +56,10 @@ namespace Eco.SettingsVisitors
             foreach (var p in _variableProviders)
             {
                 foreach (var v in p.GetVariables())
-                    RegisterVariable(p.GetType().FullName, new variable { name = v.Key, value = v.Value });
+                {
+                    ValidateVariableName(v.Key, varDescription: p.GetType().FullName);
+                    _vars.Add(v.Key, v.Value);
+                }
             }
         }
 
@@ -65,10 +67,14 @@ namespace Eco.SettingsVisitors
         {
             string varName = Eco.variable.GetName(variable);
             string varValue = Eco.variable.GetValue(variable);
-            if (String.IsNullOrWhiteSpace(varName)) throw new ConfigurationException("Detected null or empty configuration variable name: path = '{0}'.", fieldPath);
-            //if (_invalidVarChars.IsMatch(varName)) throw new ConfigurationException("Invalid configuration variable name: '{0}', path = '{1}'.", varName, fieldPath);
-            if (_vars.ContainsKey(varName)) throw new ConfigurationException("Duplicated configuration variable: '{0}', path = '{1}'.", varName, fieldPath);
-            _vars.Add(varName, varValue);
+            ValidateVariableName(varName, varDescription: fieldPath);
+            _vars.Add(varName, () => varValue);
+        }
+
+        void ValidateVariableName(string varName, string varDescription)
+        {
+            if (String.IsNullOrWhiteSpace(varName)) throw new ConfigurationException("Detected null or empty configuration variable name: path = '{0}'.", varDescription);
+            if (_vars.ContainsKey(varName)) throw new ConfigurationException("Duplicated configuration variable: '{0}', path = '{1}'.", varName, varDescription);
         }
     }
 }

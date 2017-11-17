@@ -22,9 +22,9 @@ namespace Eco.SettingsVisitors
         // Mathes variable reference in a string.
         static readonly Regex _variableReferenceRegex = new Regex(@"\$\{(?<varName>\w)\}");
         // Name/value variable pairs.
-        readonly Dictionary<string, string> _variables;
+        readonly Dictionary<string, Func<string>> _variables;
 
-        public ConfigurationVariableExpander(Dictionary<string, string> variables)
+        public ConfigurationVariableExpander(Dictionary<string, Func<string>> variables)
         {
             _variables = variables;
         }
@@ -66,7 +66,7 @@ namespace Eco.SettingsVisitors
             }
         }
 
-        static string ExpandVariables(string source, Dictionary<string, string> variables)
+        static string ExpandVariables(string source, Dictionary<string, Func<string>> variables)
         {
             string result = source;
             var expandedVars = new HashSet<string>();
@@ -86,11 +86,11 @@ namespace Eco.SettingsVisitors
                     // Make sure we do not go into a circular dependency.
                     if (expandedVars.Contains(varName)) throw new ConfigurationException("Circular configuration variable dependency detected in '{0}'.", source);
 
-                    string varValue;
+                    Func<string> getValue;
                     // skip unknown variables
-                    if (variables.TryGetValue(varName, out varValue))
+                    if (variables.TryGetValue(varName, out getValue))
                     {
-                        result = result.Replace(m.Value, varValue);
+                        result = result.Replace(m.Value, getValue());
                         localExpandedVars.Add(varName);
                     }
                 }

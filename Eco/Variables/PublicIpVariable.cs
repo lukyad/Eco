@@ -9,11 +9,11 @@ namespace Eco.Variables
 {
     public class PublicIpVariable : IVariableProvider
     {
-        public Dictionary<string, string> GetVariables()
+        public Dictionary<string, Func<string>> GetVariables()
         {
-            return new Dictionary<string, string>()
+            return new Dictionary<string, Func<string>>()
             {
-                { "publicIp", new WebClient().DownloadString("http://icanhazip.com").Trim() }
+                { "publicIp", () => new WebClient().DownloadString("http://icanhazip.com").Trim() }
             }; 
         }
     }

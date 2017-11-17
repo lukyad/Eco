@@ -16,6 +16,6 @@ namespace Eco.Variables
         /// Invoked each time on configuration is loaded/saved.
         /// Returns dictionary of variable's name & value pairs actual for the current moment.
         /// </summary>
-        Dictionary<string, string> GetVariables();
+        Dictionary<string, Func<string>> GetVariables();
     }
 }
