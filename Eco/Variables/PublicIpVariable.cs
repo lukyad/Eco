@@ -14,15 +14,20 @@ namespace Eco.Variables
 
         public Dictionary<string, Func<string>> GetVariables()
         {
-            var now = DateTime.Now;
-            if (now -  _lastUpdate > TimeSpan.FromMinutes(1))
+            Func<string> getIp = () =>
             {
-                _lastIp = new WebClient().DownloadString("http://icanhazip.com").Trim();
-                _lastUpdate = now;
-            }
+                var now = DateTime.Now;
+                if (now - _lastUpdate > TimeSpan.FromMinutes(1))
+                {
+                    _lastIp = new WebClient().DownloadString("http://icanhazip.com").Trim();
+                    _lastUpdate = now;
+                }
+                return _lastIp;
+            };
             return new Dictionary<string, Func<string>>()
             {
-                { "publicIp", () => _lastIp }
+
+                { "publicIp", getIp }
             }; 
         }
     }
