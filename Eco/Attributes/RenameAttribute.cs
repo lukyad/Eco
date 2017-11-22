@@ -8,11 +8,12 @@ namespace Eco
     /// <summary>
     /// Applies to a field of a polymorphic type only.
     /// Instructs serializer to rename any known polymorphic type according to the specified rule.
+    /// If field has a few RenameAttributes all they are applied in the declaration order.
     /// 
     /// Usage:
     /// Can be applied to a field of a polymorphic type only.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Field)]
+    [AttributeUsage(AttributeTargets.Field, AllowMultiple = true)]
     public class RenameAttribute : EcoFieldAttribute
     {
         static readonly HashSet<Type> _incompatibleAttributeTypes = new HashSet<Type>

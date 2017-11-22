@@ -37,7 +37,7 @@ namespace Eco.Serialization.Xml
             var res = new List<string>(base.GetAttributesTextFor(field, defaultUsage, parsingPolicies));
 
             var fieldType = field.FieldType;
-            var renameRule = field.GetCustomAttribute<RenameAttribute>();
+            var renameRules = field.GetCustomAttributes<RenameAttribute>().ToArray();
             string fieldName = field.GetCustomAttribute<NameAttribute>()?.Name ?? field.Name;
 
             if (!field.IsDefined<RefAttribute>())
@@ -46,7 +46,7 @@ namespace Eco.Serialization.Xml
                 {
                     Type attributeType = !fieldType.IsArray || field.IsDefined<InlineAttribute>() ? typeof(XmlElementAttribute) : typeof(XmlArrayItemAttribute);
                     foreach (var t in field.GetKnownSerializableTypes())
-                        res.Add(GetItemAttributeText(attributeType, t, renameRule));
+                        res.Add(GetItemAttributeText(attributeType, t, renameRules));
                 }
                 else if (
                     field.FieldType.IsArray && 
@@ -56,7 +56,7 @@ namespace Eco.Serialization.Xml
                 {
                     Type attributeType = field.IsDefined<InlineAttribute>() ? typeof(XmlElementAttribute) : typeof(XmlArrayItemAttribute);
                     Type itemTypeName = field.FieldType.GetElementType();
-                    res.Add(GetItemAttributeText(attributeType, itemTypeName, renameRule));
+                    res.Add(GetItemAttributeText(attributeType, itemTypeName, renameRules));
                 }
             }
 
@@ -81,10 +81,13 @@ namespace Eco.Serialization.Xml
             return res.Where(a => a != null);
         }
 
-        static string GetItemAttributeText(Type attributeType, Type itemType, RenameAttribute renameRule)
+        static string GetItemAttributeText(Type attributeType, Type itemType, RenameAttribute[] renameRules)
         {
             string originalItemTypeName = itemType.GetNonGenericName();
-            string xmlItemTypeName = renameRule != null ? renameRule.Rename(originalItemTypeName) : originalItemTypeName;
+            string xmlItemTypeName = originalItemTypeName;
+            foreach (var renameRule in renameRules)
+                xmlItemTypeName = renameRule.Rename(xmlItemTypeName);
+
             return 
                 new AttributeBuilder(attributeType.FullName)
                 .AddStringParam(xmlItemTypeName)
