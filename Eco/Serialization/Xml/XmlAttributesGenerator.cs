@@ -29,6 +29,9 @@ namespace Eco.Serialization.Xml
                 attributesText = attributesText.Append(xmlRootAttribute);
             }
 
+            string typeName = settingsType.GetCustomAttribute<NameAttribute>()?.Name ?? settingsType.Name;
+            attributesText.Append(AttributeBuilder.GetTextFor<XmlTypeAttribute>(typeName));
+
             return attributesText;
         }
 

@@ -8,11 +8,11 @@ using System.Reflection;
 namespace Eco
 {
     /// <summary>
-    /// Instructs serializer to override field name.
+    /// Instructs serializer to override type or field name.
     /// Usage: 
-    /// Can be applied to any field.
+    /// Can be applied to any settings type or field.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Field)]
+    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Class)]
     public class NameAttribute : EcoFieldAttribute
     {
         public NameAttribute(string name)
