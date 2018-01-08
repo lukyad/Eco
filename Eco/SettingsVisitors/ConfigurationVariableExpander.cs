@@ -31,7 +31,7 @@ namespace Eco.SettingsVisitors
 
         // Changes made by the ConfigurationVariableExpander are not revocable.
         // i.e. it's not possible to pack expanded strings back to variables.
-        public bool IsReversable { get { return true; } }
+        public bool IsReversable { get { return false; } }
 
         public void Initialize(Type rootRawSettingsType) { }
 

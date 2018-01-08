@@ -35,12 +35,13 @@ namespace Eco.SettingsVisitors
             {
                 Func<FieldInfo, object, bool> IsArrayField = (f, o) => f.FieldType.IsArray;
 
-                object defaults = applyDefaults.GetDefaults(refinedSettings);
+                object refinedDefaults = applyDefaults.GetDefaults(refinedSettings);
+                object rawDefaults = applyDefaults.GetDefaults(rawSettings);
                 var targets = applyDefaults.GetTargets(refinedSettings) ??
                     _refinedSettingsById.Keys
                     .Where(k => k.StartsWith(settingsNamespace ?? String.Empty))
                     .Select(k => _refinedSettingsById[k])
-                    .Where(s => defaults.GetType().IsAssignableFrom(s.GetType()));
+                    .Where(s => refinedDefaults.GetType().IsAssignableFrom(s.GetType()));
 
                 foreach (object target in targets)
                 {
@@ -49,7 +50,13 @@ namespace Eco.SettingsVisitors
                     SettingsManager.TraverseSeetingsTree(rawTarget, toBeDefaultedFieldCollector, SkipBranch: IsArrayField);
 
                     SettingsManager.TraverseTwinSeetingsTrees(
-                        defaults, 
+                       rawDefaults,
+                       rawTarget,
+                       new DefaultsSetter(toBeDefaultedFieldCollector.PathsToDefault, new HashSet<Tuple<object, FieldInfo>>()),
+                       SkipBranch: IsArrayField);
+
+                    SettingsManager.TraverseTwinSeetingsTrees(
+                        refinedDefaults, 
                         target,
                         new DefaultsSetter(toBeDefaultedFieldCollector.PathsToDefault, _initializedFields),
                         SkipBranch: IsArrayField);

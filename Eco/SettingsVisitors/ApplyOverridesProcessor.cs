@@ -14,13 +14,17 @@ namespace Eco.SettingsVisitors
     /// </summary>
     public class ApplyOverridesProcessor : TwinSettingsVisitorBase
     {
-        readonly HashSet<Tuple<object, FieldInfo>> _initializedFields;
         readonly Dictionary<string, object> _refinedSettingsById;
+        readonly Dictionary<object, object> _refinedToRawMap;
+        readonly HashSet<Tuple<object, FieldInfo>> _initializedFields;
 
-        public ApplyOverridesProcessor(Dictionary<string, object> refinedSettingsById, /*out*/ HashSet<Tuple<object, FieldInfo>> initializedFields)
-            : base(isReversable: true)
+        public ApplyOverridesProcessor(
+            Dictionary<string, object> refinedSettingsById,
+            Dictionary<object, object> refinedToRawMap,
+            /*out*/ HashSet<Tuple<object, FieldInfo>> initializedFields)
         {
             _refinedSettingsById = refinedSettingsById;
+            _refinedToRawMap = refinedToRawMap;
             _initializedFields = initializedFields;
         }
 
@@ -42,6 +46,13 @@ namespace Eco.SettingsVisitors
 
                 foreach (object target in targets)
                 {
+                    object rawTarget = _refinedToRawMap[target];
+                    SettingsManager.TraverseTwinSeetingsTrees(
+                       rawOverrides,
+                       rawTarget,
+                       new OverridesSetter(overridenFieldCollector.PathsToOverride, new HashSet<Tuple<object, FieldInfo>>()),
+                       SkipBranch: IsArrayField);
+
                     SettingsManager.TraverseTwinSeetingsTrees(
                         refinedOverrides, 
                         target,

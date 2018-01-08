@@ -101,6 +101,7 @@
     <Compile Include="Extensions\TypesCache.cs" />
     <Compile Include="Extensions\SettingsTypeChecker.cs" />
     <Compile Include="Extensions\StringEnumerableExtensions.cs" />
+    <Compile Include="SettingsVisitors\FieldReferenceExpander.cs" />
     <Compile Include="SettingsVisitors\ConfigurationVariableExpander.cs" />
     <Compile Include="SettingsVisitors\ConfigurationVariableMapBuilder.cs" />
     <Compile Include="SettingsVisitors\DefaultValueSetter.cs" />
