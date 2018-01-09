@@ -84,13 +84,18 @@ namespace Eco.Extensions
 
         public static IEnumerable<FieldInfo> GetOwnFields(this Type type)
         {
-            IEnumerable<FieldInfo> ownFields = type.GetFields(BindingFlags.Public | BindingFlags.Instance);
+            IEnumerable<FieldInfo> ownFields = type.GetPublicInstanceFields();
             if (type.BaseType != null)
             {
                 var baseFields = type.BaseType.GetFields(BindingFlags.Public | BindingFlags.Instance);
                 ownFields = ownFields.Where(of => baseFields.All(bf => bf.Name != of.Name));
             }
             return ownFields;
+        }
+
+        public static IEnumerable<FieldInfo> GetPublicInstanceFields(this Type type)
+        {
+            return type.GetFields(BindingFlags.Public | BindingFlags.Instance);
         }
 
         public static string GetNonGenericName(this Type type)

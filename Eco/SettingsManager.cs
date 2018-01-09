@@ -383,7 +383,7 @@ namespace Eco
         {
             VisitTwinSettings(currentNamespace, settingsPath, masterSettings, slaveSettings);
             string localNamespace = GetLocalNamespace(masterSettings);
-            foreach (var masterField in masterSettings.GetType().GetFields())
+            foreach (var masterField in masterSettings.GetType().GetPublicInstanceFields())
             {
                 HashSet<Type> skippedByVisitors = masterField.GetCustomAttribute<SkippedByAttribute>()?.Visitors;
                 if (skippedByVisitors != null && skippedByVisitors.Contains(visitorType)) continue;
