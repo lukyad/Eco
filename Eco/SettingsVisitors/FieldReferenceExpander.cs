@@ -10,7 +10,7 @@ namespace Eco.SettingsVisitors
 {
     /// <summary>
     /// Used by the Eco library to expand referenced fileds in the configuration file.
-    /// Any field of a settings class can reference any other field of any type defined in the same class using the following syntax: {filedName}
+    /// Any field of a settings class can reference any other field of any type defined in the same class using the following syntax: @{filedName}
     /// 
     /// Example:
     /// 
@@ -74,7 +74,7 @@ namespace Eco.SettingsVisitors
             string result = sourceValue;
             var expandedVars = new HashSet<string>();
             // Match all fields referenced in the current string.
-            var regex = new Regex(@"\{(?<fieldName>[\w\.]+)\}");
+            var regex = new Regex(@"\@\{(?<fieldName>[\w\.]+)\}");
             MatchCollection fieldMatches = regex.Matches(result);
             if (fieldMatches.Count > 0)
             {
