@@ -76,8 +76,22 @@ namespace Eco.Converters
         /// </summary>
         public static object Parse(string timeSpan, string format, FieldInfo context)
         {
-            TimeSpan result;
-            return TryParseTimeSpan(timeSpan, out result) ? (object)result : null;
+            if (context.FieldType.IsArray)
+            {
+                var timeSpans = timeSpan.SplitAndTrim();
+                var result = new TimeSpan[timeSpans.Length];
+                for (int i = 0; i < timeSpans.Length; i++)
+                {
+                    if (!TryParseTimeSpan(timeSpans[i], out result[i]))
+                        return null;
+                }
+                return result;
+            }
+            else
+            {
+                TimeSpan result;
+                return TryParseTimeSpan(timeSpan, out result) ? (object)result : null;
+            }
         }
 
         public static TimeSpan ParseTimeSpan(this string timeSpan)
