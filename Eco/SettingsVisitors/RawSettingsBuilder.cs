@@ -57,7 +57,7 @@ namespace Eco.SettingsVisitors
             }
         }
 
-        static string ToString(FieldInfo sourceField, object container)
+        public static string ToString(FieldInfo sourceField, object container)
         {
             object value = sourceField.GetValue(container);
             // Handle nullable types here

@@ -41,7 +41,7 @@ namespace Eco.SettingsVisitors
                 }
                 else if (rawValueType == typeof(string) && refinedSettingsField.FieldType != typeof(string))
                 {
-                    refinedValue = FromString((string)rawSettingsField.GetValue(rawSettings), refinedSettingsField);
+                    refinedValue = FromString((string)rawSettingsField.GetValue(rawSettings), refinedSettingsField, _parsingPolicies);
                 }
                 else
                 {
@@ -51,7 +51,7 @@ namespace Eco.SettingsVisitors
             refinedSettingsField.SetValue(refinedSettings, refinedValue);
         }
 
-        object FromString(string sourceStr, FieldInfo targetField)
+        public static object FromString(string sourceStr, FieldInfo targetField, ParsingPolicyAttribute[] parsingPolicies)
         {
             // if source string is null, return null object.
             if (String.IsNullOrEmpty(sourceStr)) return null;
@@ -77,7 +77,7 @@ namespace Eco.SettingsVisitors
                 if (result == null)
                 {
                     Type typeToParse = targetField.FieldType.IsNullable() ? Nullable.GetUnderlyingType(targetField.FieldType) : targetField.FieldType;
-                    result = _parsingPolicies
+                    result = parsingPolicies
                         .Where(p => p.CanParse(typeToParse))
                         .Select(p => p.Parse(sourceStr, p.Format, targetField))
                         .FirstOrDefault(o => o != null);

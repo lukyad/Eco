@@ -57,6 +57,9 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.ValueTuple, Version=4.0.2.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.ValueTuple.4.4.0\lib\netstandard1.0\System.ValueTuple.dll</HintPath>
+    </Reference>
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -76,6 +79,7 @@
     <Compile Include="Elements\import.cs" />
     <Compile Include="Elements\applyOverrides.cs" />
     <Compile Include="Elements\applyDefaults.cs" />
+    <Compile Include="Infra\Cloner.cs" />
     <Compile Include="Serialization\Csv\CsvSerializer.cs" />
     <Compile Include="SettingsVisitors\ApplyDefaultsProcessor.cs" />
     <Compile Include="SettingsVisitors\ApplyOverridesProcessor.cs" />
@@ -93,7 +97,7 @@
     <Compile Include="Attributes\SealedAttribute.cs" />
     <Compile Include="CodeBuilder\AttributeBuilder.cs" />
     <Compile Include="CodeBuilder\AttributeParam.cs" />
-    <Compile Include="ConfigurationException.cs" />
+    <Compile Include="Infra\ConfigurationException.cs" />
     <Compile Include="Converters\NumericConverter.cs" />
     <Compile Include="Converters\TimeSpanConverter.cs" />
     <Compile Include="Elements\include.cs" />
@@ -120,7 +124,7 @@
     <Compile Include="SettingsVisitors\SettingsMapBuilder.cs" />
     <Compile Include="Serialization\CommonAttributesGenerator.cs" />
     <Compile Include="Serialization\CommonAttributeTranslator.cs" />
-    <Compile Include="SettingsConstruction.cs" />
+    <Compile Include="Infra\SettingsConstruction.cs" />
     <Compile Include="Serialization\ISerializationAttributesGenerator.cs" />
     <Compile Include="Serialization\ISerializer.cs" />
     <Compile Include="Extensions\CollectionExtensions.cs" />
@@ -152,13 +156,14 @@
     <Compile Include="Usage.cs" />
     <Compile Include="Variables\IVariableProvider.cs" />
     <Compile Include="Variables\PublicIpVariable.cs" />
-    <Compile Include="Wildcard.cs" />
+    <Compile Include="Infra\Wildcard.cs" />
     <Compile Include="Serialization\SerialazableTypeEmitter.cs" />
     <Compile Include="Serialization\Xml\XmlAttributesGenerator.cs" />
     <Compile Include="Serialization\Xml\XmlSchemaExporter.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Eco.nuspec" />
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

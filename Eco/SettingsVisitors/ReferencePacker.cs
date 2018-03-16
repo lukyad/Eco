@@ -61,7 +61,7 @@ namespace Eco.SettingsVisitors
                 // Namespace combined with id.
                 SettingsPath.Combine(_namespaceMap[settings], id) + 
                 // Type filter.
-                ReferenceResolver.ControlChars.WildcardPartsSeparator + type;
+                ReferenceResolver.ControlChars.WildcardTypeSeparator + type;
         }
     }
 }

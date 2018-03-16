@@ -2,19 +2,33 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 using Eco.Extensions;
 
 namespace Eco.SettingsVisitors
 {
+    // Resolves settings references.
+    //
+    // Could generate and extra settings that were not present in the raw settings graph to the refinedSettingsById map.
+    // This happens when reference is initialized with the prototype syntax, e.g. .*:myType { myValue = 0.1 }
+    // In the example above Eco finds the prototype settins object matched by the .*:myType
+    // and then creates a new instance of the myType object by making a shallow copy of the prototype
+    // and initializing the new instance fields as specified in the `{ }` inintialization list.
+    // The new instance is then added to the refinedSettingsById map with a normalized id.
+    // Normalized id means that two NOT EQUAL `generating` references that result in instantiation of two EQUAL objects
+    // would have the same id and would resolve to a single settings object (i.e. the first resolved reference would generate an extra object
+    // and the second one would be resolved to the already generated object).
     public class ReferenceResolver : ITwinSettingsVisitor
     {
         readonly Dictionary<string, object> _refinedSettingsById;
-        
-        public ReferenceResolver(Dictionary<string, object> refinedSettingsById)
+        readonly Dictionary<object, object> _refinedToRawMap;
+        Dictionary<object, string> _idByRefinedSettings;
+        ParsingPolicyAttribute[] _parsingPolicies;
+
+        public ReferenceResolver(Dictionary<string, object> refinedSettingsById, Dictionary<object, object> refinedToRawMap)
         {
             _refinedSettingsById = refinedSettingsById;
+            _refinedToRawMap = refinedToRawMap;
         }
         public static class ControlChars
         {
@@ -24,13 +38,22 @@ namespace Eco.SettingsVisitors
 
             public const char WildcardJoiner = '|';
 
-            public const char WildcardPartsSeparator = ':';
+            public const char WildcardTypeSeparator = ':';
+
+            public const char WildcardParamsSeparator = ',';
+
+            public const char WildcardParamValueSeparator = '=';
         }
-        
+
 
         public bool IsReversable { get { return true; } }
 
-        public void Initialize(Type rootRefinedSettingsType, Type rootRawSettingsType) { }
+        public void Initialize(Type rootRefinedSettingsType, Type rootRawSettingsType)
+        {
+            // Capture parsing policies that applies to all fields.
+            _parsingPolicies = ParsingPolicyAttribute.GetPolicies(rootRefinedSettingsType);
+            _idByRefinedSettings = _refinedSettingsById.ToDictionary(p => p.Value, p => p.Key);
+        }
 
         public void Visit(string settingsNamespace, string settingsPath, object refinedSettings, object rawSettings) { }
 
@@ -125,10 +148,14 @@ namespace Eco.SettingsVisitors
         IEnumerable<object> MatchWildcard(string currentNamespace, string wildcard, FieldInfo context)
         {
             var settings = new HashSet<object>();
-            var parts = wildcard.Split(ControlChars.WildcardPartsSeparator);
-            bool hasTypeWildcard = parts.Length > 1;
-            Wildcard idWildcard = IdWildcard(currentNamespace, parts[0], hasTypeWildcard, context);
-            Wildcard typeWildcard = parts.Length > 1 ? TypeWildcard(parts[1], context) : null;
+
+            var match = Regex.Match(wildcard, @"(?<id>[^\:]*)?(?:\s*\" + ControlChars.WildcardTypeSeparator + @"\s*(?<type>[^\{]+))?(?:\s*\{(?<params>.*)\})?");
+            if (!match.Success)
+                throw new ConfigurationException($"Invalid reference: {wildcard}.");
+
+            bool hasTypeWildcard = !String.IsNullOrWhiteSpace(match.Groups["type"].Value);
+            Wildcard idWildcard = IdWildcard(currentNamespace, match.Groups["id"].Value, hasTypeWildcard, context);
+            Wildcard typeWildcard = hasTypeWildcard ? TypeWildcard(match.Groups["type"].Value, context) : null;
             var matchedIds = _refinedSettingsById.Keys.Where(id => idWildcard.IsMatch(id)).ToArray();
             for (int i = 0; i < matchedIds.Length; i++)
             {
@@ -136,12 +163,38 @@ namespace Eco.SettingsVisitors
                 if (typeWildcard == null || IsOfType(typeWildcard, candidate))
                     settings.Add(candidate);
             }
+
+            // If params are specified, then the result object is instantiated from the specified prototype
+            // and initialied with the specified field values.
+            if (!String.IsNullOrWhiteSpace(match.Groups["params"].Value))
+            {
+                //if (settings.Count != 1)
+                //    throw new ConfigurationException($"The {wildcard} wildcard matches more than one prototype.");
+
+                var proto = settings.First();
+                (object dynamicSettings, string normalizedParams) = CreateInstanse(proto, match.Groups["params"].Value, _parsingPolicies);
+
+                string protoId = _idByRefinedSettings[proto];
+                string dynamicSettingsId = $"{protoId} {{ {normalizedParams} }}";
+
+                if (!_refinedSettingsById.TryGetValue(dynamicSettingsId, out object existingDynamicSettings))
+                {
+                    _refinedSettingsById.Add(dynamicSettingsId, dynamicSettings);
+                    _refinedToRawMap.Add(dynamicSettingsId, _refinedToRawMap[proto]);
+                }
+                else
+                    dynamicSettings = existingDynamicSettings;
+
+                settings.Clear();
+                settings.Add(dynamicSettings);
+            }
+
             return settings;
         }
 
         static Wildcard IdWildcard(string currentNamespace, string pattern, bool hasTypeWildcard, FieldInfo context)
         {
-            pattern = pattern.Trim();
+            pattern = pattern?.Trim();
             // Matches null settings.
             if (pattern == Settings.NullId) return new Wildcard(Settings.NullId);
             // If id wildcard is not specified, then set it to * to match everything in the current namesapce.
@@ -189,6 +242,41 @@ namespace Eco.SettingsVisitors
         string IdOf(object settings)
         {
             return _refinedSettingsById.First(p => p.Value == settings).Key;
+        }
+
+        static (object settins, string normilizedParams) CreateInstanse(object proto, string parameters, ParsingPolicyAttribute[] parsingPolicies)
+        {
+            var result = Cloner.Clone(proto);
+            var props = parameters.SplitAndTrim(ControlChars.WildcardParamsSeparator);
+            string normilizedParams = null;
+            foreach (var p in props)
+            {
+                var parts = p.SplitAndTrim(ControlChars.WildcardParamValueSeparator);
+                if (parts.Length != 2)
+                    Throw();
+
+                object fieldValue = ParseFieldValue(result, fieldName: parts[0], fieldValue: parts[1]);
+                result.SetFieldValue(parts[0], fieldValue);
+
+                FieldInfo field = result.GetType().GetField(parts[0]);
+                string serializedValue = RawSettingsBuilder.ToString(sourceField: field, container: result);
+                normilizedParams += $"{parts[0]}={serializedValue} ";
+            }
+            return (result, normilizedParams.Trim());
+
+            object ParseFieldValue(object container, string fieldName, string fieldValue)
+            {
+                var targetField = container.GetType().GetField(fieldName);
+                if (targetField == null)
+                    Throw();
+
+                if (targetField.FieldType == typeof(string))
+                    return fieldValue;
+
+                return RefinedSettingsBuilder.FromString(fieldValue, targetField, parsingPolicies);
+            }
+
+            void Throw() => throw new ConfigurationException($"Invalid {proto.GetType()} parameters definition: {parameters}");
         }
 
         static string FieldDescription(FieldInfo field)

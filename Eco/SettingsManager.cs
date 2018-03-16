@@ -56,14 +56,14 @@ namespace Eco
             {
                 new RefinedSettingsBuilder(),
                 settingsMapBuilder,
-                new ReferenceResolver(settingsMapBuilder.RefinedSettingsById),
+                new ReferenceResolver(settingsMapBuilder.RefinedSettingsById, settingsMapBuilder.RefinedToRawMap),
                 // ReferenceResolver should go before ApplyDefaultsProcessor and ApplyOverridesProcessor
                 // as they depend on the results produced by the former.
                 new ApplyDefaultsProcessor(settingsMapBuilder.RefinedSettingsById, settingsMapBuilder.RefinedToRawMap, /*out*/ defaultedAndOverridenFields),
                 new ApplyOverridesProcessor(settingsMapBuilder.RefinedSettingsById, settingsMapBuilder.RefinedToRawMap, /*out*/ defaultedAndOverridenFields),
                 new FieldReferenceExpander(),
                 // Include ReferenceResolver for the second time as StringFieldReferenceExpander could substitute additional valid references.
-                new ReferenceResolver(settingsMapBuilder.RefinedSettingsById), 
+                new ReferenceResolver(settingsMapBuilder.RefinedSettingsById, settingsMapBuilder.RefinedToRawMap), 
                 new RequiredFieldChecker(defaultedAndOverridenFields)
             };
         }
