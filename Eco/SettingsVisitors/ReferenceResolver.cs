@@ -22,6 +22,7 @@ namespace Eco.SettingsVisitors
     {
         readonly Dictionary<string, object> _refinedSettingsById;
         readonly Dictionary<object, object> _refinedToRawMap;
+        readonly HashSet<object> _prototypes = new HashSet<object>();
         Dictionary<object, string> _idByRefinedSettings;
         ParsingPolicyAttribute[] _parsingPolicies;
 
@@ -151,7 +152,7 @@ namespace Eco.SettingsVisitors
 
             var match = Regex.Match(wildcard, @"(?<id>[^\:]*)?(?:\s*\" + ControlChars.WildcardTypeSeparator + @"\s*(?<type>[^\{]+))?(?:\s*\{(?<params>.*)\})?");
             if (!match.Success)
-                throw new ConfigurationException($"Invalid reference: {wildcard}.");
+                throw new ConfigurationException("Invalid reference: {0}.", wildcard);
 
             bool hasTypeWildcard = !String.IsNullOrWhiteSpace(match.Groups["type"].Value);
             Wildcard idWildcard = IdWildcard(currentNamespace, match.Groups["id"].Value, hasTypeWildcard, context);
@@ -168,10 +169,21 @@ namespace Eco.SettingsVisitors
             // and initialied with the specified field values.
             if (!String.IsNullOrWhiteSpace(match.Groups["params"].Value))
             {
-                //if (settings.Count != 1)
-                //    throw new ConfigurationException($"The {wildcard} wildcard matches more than one prototype.");
+                if (settings.Count == 0)
+                    throw new ConfigurationException("The {0} wildcard doesn't matche any settings.", wildcard);
 
-                var proto = settings.First();
+                object proto = settings.FirstOrDefault(s => _prototypes.Contains(s));
+                if (proto == null)
+                {
+                    if (settings.Count == 1)
+                    {
+                        proto = settings.Single();
+                        _prototypes.Add(proto);
+                    }
+                    else
+                        throw new ConfigurationException("The {0} wildcard matches more than one prototype.", wildcard);
+                }
+
                 (object dynamicSettings, string normalizedParams) = CreateInstanse(proto, match.Groups["params"].Value, _parsingPolicies);
 
                 string protoId = _idByRefinedSettings[proto];

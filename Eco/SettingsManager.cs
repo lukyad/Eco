@@ -51,19 +51,20 @@ namespace Eco
         void InitializeRefinedSettingsLoadVisitors()
         {
             var settingsMapBuilder = new SettingsMapBuilder();
+            var referenceResolver = new ReferenceResolver(settingsMapBuilder.RefinedSettingsById, settingsMapBuilder.RefinedToRawMap);
             var defaultedAndOverridenFields = new HashSet<Tuple<object, FieldInfo>>();
             this.RefinedSettingsReadVisitors = new List<ITwinSettingsVisitor>
             {
                 new RefinedSettingsBuilder(),
                 settingsMapBuilder,
-                new ReferenceResolver(settingsMapBuilder.RefinedSettingsById, settingsMapBuilder.RefinedToRawMap),
+                referenceResolver,
                 // ReferenceResolver should go before ApplyDefaultsProcessor and ApplyOverridesProcessor
                 // as they depend on the results produced by the former.
                 new ApplyDefaultsProcessor(settingsMapBuilder.RefinedSettingsById, settingsMapBuilder.RefinedToRawMap, /*out*/ defaultedAndOverridenFields),
                 new ApplyOverridesProcessor(settingsMapBuilder.RefinedSettingsById, settingsMapBuilder.RefinedToRawMap, /*out*/ defaultedAndOverridenFields),
                 new FieldReferenceExpander(),
                 // Include ReferenceResolver for the second time as StringFieldReferenceExpander could substitute additional valid references.
-                new ReferenceResolver(settingsMapBuilder.RefinedSettingsById, settingsMapBuilder.RefinedToRawMap), 
+                referenceResolver, 
                 new RequiredFieldChecker(defaultedAndOverridenFields)
             };
         }

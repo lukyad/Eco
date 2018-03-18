@@ -22,5 +22,13 @@ namespace Eco
             if (context == null) throw new ArgumentNullException(nameof(context));
             base.KnownTypes = MatchTypes(genericArgumentWildcard, context.Assembly).Select(t => genericTypeDefinition.MakeGenericType(t)).ToArray();
         }
+
+        public KnownGenericTypesAttribute(Type genericTypeDefinition, Type genericArgumentBase)
+        {
+            if (genericTypeDefinition == null) throw new ArgumentNullException(nameof(genericTypeDefinition));
+            if (!genericTypeDefinition.IsGenericTypeDefinition) throw new ArgumentException("Invalid argument. Expected a generic type definition.");
+            if (genericArgumentBase == null) throw new ArgumentNullException(nameof(genericArgumentBase));
+            base.KnownTypes = genericArgumentBase.GetDerivedTypes().Append(genericArgumentBase).ToArray();
+        }
     }
 }
