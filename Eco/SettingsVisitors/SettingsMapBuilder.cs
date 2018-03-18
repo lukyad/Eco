@@ -17,6 +17,7 @@ namespace Eco.SettingsVisitors
         public override void Initialize(Type rootRefinedSettingsType, Type rootRawSettingsType)
         {
             this.RefinedSettingsById.Clear();
+            this.RefinedToRawMap.Clear();
             this.RefinedSettingsById.Add(Settings.NullId, Settings.Null);
         }
 
