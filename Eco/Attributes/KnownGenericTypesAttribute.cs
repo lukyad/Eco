@@ -28,7 +28,7 @@ namespace Eco
             if (genericTypeDefinition == null) throw new ArgumentNullException(nameof(genericTypeDefinition));
             if (!genericTypeDefinition.IsGenericTypeDefinition) throw new ArgumentException("Invalid argument. Expected a generic type definition.");
             if (genericArgumentBase == null) throw new ArgumentNullException(nameof(genericArgumentBase));
-            base.KnownTypes = genericArgumentBase.GetDerivedTypes().Append(genericArgumentBase).ToArray();
+            base.KnownTypes = genericArgumentBase.GetDerivedTypes().Append(genericArgumentBase).Select(t => genericTypeDefinition.MakeGenericType(t)).ToArray();
         }
     }
 }
