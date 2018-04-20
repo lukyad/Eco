@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Net;
 
-namespace Eco.Variables
+namespace Eco
 {
     public class PublicIpVariable : IVariableProvider
     {

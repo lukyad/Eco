@@ -155,6 +155,7 @@
     <Compile Include="SettingsVisitors\TwinSettingsVisitorBase.cs" />
     <Compile Include="Usage.cs" />
     <Compile Include="Variables\IVariableProvider.cs" />
+    <Compile Include="Variables\UserVariables.cs" />
     <Compile Include="Variables\PublicIpVariable.cs" />
     <Compile Include="Infra\Wildcard.cs" />
     <Compile Include="Serialization\SerialazableTypeEmitter.cs" />

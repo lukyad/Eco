@@ -5,7 +5,6 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Eco.Extensions;
-using Eco.Variables;
 
 namespace Eco.SettingsVisitors
 {
@@ -74,7 +73,7 @@ namespace Eco.SettingsVisitors
         void ValidateVariableName(string varName, string varDescription)
         {
             if (String.IsNullOrWhiteSpace(varName)) throw new ConfigurationException("Detected null or empty configuration variable name: path = '{0}'.", varDescription);
-            if (_vars.ContainsKey(varName)) throw new ConfigurationException("Duplicated configuration variable: '{0}', path = '{1}'.", varName, varDescription);
+            if (_vars.ContainsKey(varName)) throw new ConfigurationException("Duplicate configuration variable: '{0}', path = '{1}'.", varName, varDescription);
         }
     }
 }
