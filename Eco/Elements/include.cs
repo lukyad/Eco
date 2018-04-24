@@ -25,8 +25,12 @@ namespace Eco
         public string format;
 
         [Default(true)]
-        [Doc("If set to true, then Eco library would skip this file when saving the parent configuration file. Default value is true.")]
+        [Doc("If set to true, Eco library would skip this file when saving the parent configuration file. Default value is true.")]
         public bool? readOnly;
+
+        [Default(false)]
+        [Doc("If set to true, Eco library would not trow an exception if the file being included is missing. Default value is false.")]
+        public bool? optional;
 
         [Hidden, SkippedBy(typeof(IncludeElementReader), typeof(IncludeElementWriter))]
         public T data;
@@ -41,8 +45,16 @@ namespace Eco
         {
             object isReadOnly = twin.GetFieldValue(nameof(readOnly));
             return isReadOnly.GetType() == typeof(string) ?
-                isReadOnly.ToString() == Boolean.TrueString :
+                Boolean.Parse(isReadOnly.ToString()) :
                 (isReadOnly as bool?).Value;
+        }
+
+        public static bool IsOptional(object twin)
+        {
+            object isOptional = twin.GetFieldValue(nameof(optional));
+            return isOptional.GetType() == typeof(string) ?
+                Boolean.Parse(isOptional.ToString()) :
+                (isOptional as bool?).Value;
         }
 
         public static object GetData(object twin) => twin.GetFieldValue(nameof(data));

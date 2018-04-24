@@ -22,7 +22,12 @@ namespace Eco.SettingsVisitors
         protected override void ProcessIncludeElement(object includeElem)
         {
             string filePath = include.GetFile(includeElem);
-            if (!File.Exists(filePath)) throw new ConfigurationException("Configuration file '{0}' doesn't exist.", filePath);
+            if (!File.Exists(filePath))
+            {
+                if (!include.IsOptional(includeElem))
+                    throw new ConfigurationException("Configuration file '{0}' doesn't exist.", filePath);
+                return;
+            }
 
             Type includedSettingsType = include.GetDataType(includeElem);
             using (var fileStream = File.Open(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
