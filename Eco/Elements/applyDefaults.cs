@@ -19,8 +19,11 @@ namespace Eco
         [Doc("Settings filter of the following format: <id-wildcard>[:<type-wildcard>. Null is equivalent to '*:T'.")]
         public T[] targets;
 
+        // Note that ReferenceResolver should skip 'defaults' field, as it could contain invalid references.
+        // Reference might be become valid only when all defaults/overrides get applied.
+        // Given above, ReferenceResolver should be run twice before and after ApplyDefaultsProcessor
         [Required, Sealed]
-        [SkippedBy(typeof(RequiredFieldChecker), typeof(SettingsMapBuilder), typeof(DefaultValueSetter))]
+        [SkippedBy(typeof(RequiredFieldChecker), typeof(SettingsMapBuilder), typeof(DefaultValueSetter), typeof(ReferenceResolver))]
         [Doc("Specifies default values to be applied to the matched settings.")]
         public T defaults;
 
