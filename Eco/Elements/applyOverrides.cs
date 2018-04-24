@@ -19,7 +19,7 @@ namespace Eco
         public T[] targets;
 
         [Required, Sealed]
-        [SkippedBy(typeof(RequiredFieldChecker), typeof(SettingsMapBuilder))]
+        [SkippedBy(typeof(RequiredFieldChecker), typeof(SettingsMapBuilder), typeof(DefaultValueSetter))]
         [Doc("Specifies overrides values to be applied to the matched settings.")]
         public T overrides;
 

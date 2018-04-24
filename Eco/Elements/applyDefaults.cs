@@ -20,7 +20,7 @@ namespace Eco
         public T[] targets;
 
         [Required, Sealed]
-        [SkippedBy(typeof(RequiredFieldChecker), typeof(SettingsMapBuilder))]
+        [SkippedBy(typeof(RequiredFieldChecker), typeof(SettingsMapBuilder), typeof(DefaultValueSetter))]
         [Doc("Specifies default values to be applied to the matched settings.")]
         public T defaults;
 
