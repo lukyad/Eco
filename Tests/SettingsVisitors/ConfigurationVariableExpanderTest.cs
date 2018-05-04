@@ -17,10 +17,10 @@ namespace Tests.SettingsVisitors
         static string S1 = $"abc${{{Var1}}}";
         static string S2 = $"${{{Var2}}}456";
         static string S3 = "${Var3}"; // doesn't exist
-        static readonly Dictionary<string, string> _vars = new Dictionary<string, string>
+        static readonly Dictionary<string, Func<string>> _vars = new Dictionary<string, Func<string>>
         {
-            { Var1, "def" },
-            { Var2, "123" },
+            { Var1, () => "def" },
+            { Var2, () => "123" },
         };
 
         class settings

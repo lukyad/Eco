@@ -19,14 +19,6 @@ namespace Eco.Extensions
             return res;
         }
 
-        public static IEnumerable<T> Append<T>(this IEnumerable<T> collection, T item)
-        {
-            foreach (var i in collection)
-                yield return i;
-
-            yield return item;
-        }
-
         public static IEnumerable<T> Replace<T>(this IEnumerable<T> collection, Func<T, bool> predicate, T newItem)
         {
             foreach (var item in collection)
