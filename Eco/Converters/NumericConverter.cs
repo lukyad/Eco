@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Reflection;
+using Eco.Extensions;
 
 namespace Eco.Converters
 {
@@ -36,7 +37,7 @@ namespace Eco.Converters
         /// </summary>
         public static object FromString(string value, string format, FieldInfo context)
         {
-            return Convert.FromString(value, format, context, ParseDecimal);
+            return Parse(value, format, context);
         }
 
         /// <summary>
@@ -44,7 +45,16 @@ namespace Eco.Converters
         /// </summary>
         public static string ToString(object value, string multiplier, FieldInfo context)
         {
-            return Convert.ToString<decimal>(value, multiplier, context, NumericToString);
+            if (context.FieldType.IsArray)
+            {
+                var array = (Array)value;
+                var values = new string[array.Length];
+                for (int i = 0; i < array.Length; i++)
+                    values[i] = NumericToString((decimal)System.Convert.ChangeType(array.GetValue(i), typeof(decimal)), multiplier);
+                return values.CommaWhiteSpaceSeparated();
+            }
+            else
+                return Convert.ToString<decimal>(value, multiplier, context, NumericToString);
         }
 
         /// <summary>
@@ -52,12 +62,28 @@ namespace Eco.Converters
         /// </summary>
         public static object Parse(string value, string format, FieldInfo context)
         {
-            decimal result;
-            return TryParseDecimal(value, out result) ? (object)result : null;
+            if (context.FieldType.IsArray)
+            {
+                var values = value.SplitAndTrim();
+                var elementType = context.FieldType.GetElementType();
+                var result = Array.CreateInstance(elementType, values.Length);
+                for (int i = 0; i < values.Length; i++)
+                {
+                    if (!TryParseDecimal(values[i], out decimal d))
+                        return null;
+                    result.SetValue(System.Convert.ChangeType(d, elementType), i);
+                }
+                return result;
+            }
+            else
+            {
+                return TryParseDecimal(value, out decimal result) ? (object)result : null;
+            }
         }
 
         static string NumericToString(decimal value, string multiplier)
         {
+            if (multiplier == null) return value.ToString();
             if (!_multipliers.ContainsKey(multiplier.ToLower())) throw new ConfigurationException("Unsupported number multiplier: '{0}'.", multiplier);
             return String.Format("{0}{1}", value * _multipliers[multiplier], multiplier);
         }
