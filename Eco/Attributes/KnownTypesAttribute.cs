@@ -41,6 +41,7 @@ namespace Eco
         public KnownTypesAttribute(params Type[] list)
         {
             if (list == null) throw new ArgumentNullException(nameof(list));
+            if (list.Distinct().Count() != list.Length) throw new ArgumentException("List of KnownTypes contains duplicated items.", nameof(list));
             this.KnownTypes = list;
             this.ApplyToGeneratedClass = true;
         }
