@@ -43,8 +43,9 @@ namespace Eco
                 new EnvironmentVariableExpander(),
                 new IncludeElementReader(this),
                 new ImportElementReader(),
-                // We run ConfigurationVariableExpander twice to expand variables from the included files (if any).
-                variableExpander
+                // We run ConfigurationVariableExpander and DefaultValueSetter twice to expand variables from the included files (if any).
+                new DefaultValueSetter(),
+                variableExpander,
             };
         }
 
