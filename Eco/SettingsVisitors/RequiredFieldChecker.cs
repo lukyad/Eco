@@ -19,7 +19,7 @@ namespace Eco.SettingsVisitors
 
         public  override void Visit(string settingsNamesapce, string fieldPath, FieldInfo refinedSettingsField, object refinedSettings, FieldInfo rawSettingsField, object rawSettings)
         {
-            if (!refinedSettingsField.IsDefined<RequiredAttribute>()) return;
+            if (!rawSettingsField.IsDefined<RequiredAttribute>()) return;
 
             bool fieldInitialized =
                 rawSettingsField != null && rawSettingsField.GetValue(rawSettings) != null ||
