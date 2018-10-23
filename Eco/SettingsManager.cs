@@ -392,7 +392,11 @@ namespace Eco
 
                 var slaveField = slaveSettings?.GetType().GetField(masterField.Name);
                 string fieldNamespace = localNamespace == null || masterField.FieldType.IsSimple() ? currentNamespace : SettingsPath.Combine(currentNamespace, localNamespace);
-                string currentPath = SettingsPath.Combine(settingsPath, masterField.Name);
+
+                string currentPath = settingsPath;
+                //if (!masterField.IsDefined<HiddenAttribute>())
+                    currentPath = SettingsPath.Combine(settingsPath, masterField.Name);
+
                 VisitTwinSettingsField(fieldNamespace, currentPath, masterField, masterSettings, slaveField, slaveSettings);
 
                 object masterValue = masterField.GetValue(masterSettings);
@@ -410,7 +414,7 @@ namespace Eco
                         var slaveArray = (Array)slaveValue;
                         for (int i = 0; i < masterArray.Length; i++)
                         {
-                            currentPath = SettingsPath.Combine(settingsPath, masterField.Name, i);
+                            currentPath = SettingsPath.Combine(settingsPath, masterArray.GetValue(i).GetType().GetCsharpCompatibleName(), i);
                             TraverseTwinSeetingsTreesRecursive(fieldNamespace, currentPath, masterArray.GetValue(i), slaveArray?.GetValue(i), visitorType, VisitTwinSettings, VisitTwinSettingsField, SkipBranch);
                         }
                     }

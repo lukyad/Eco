@@ -10,16 +10,15 @@ namespace Eco
 	{
 		public const char Separator = '.';
 
-		public const string ArrayIndexFormat = "[{0}]";
 
 		public static string Combine(string left, string right)
 		{
             return (left + Separator + right).Trim(Separator);
         }
 
-		public static string Combine(string left, string right, int index)
+		public static string Combine(string path, string objectType, int index)
 		{
-			return Combine(left, right) + String.Format(ArrayIndexFormat, index);
+			return $"{path}[{index}]({objectType})";
         }
 	}
 }

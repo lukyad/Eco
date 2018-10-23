@@ -141,6 +141,20 @@ namespace Eco.Extensions
             return compatibleName;
         }
 
+        public static string GetCsharpCompatibleName(this Type type)
+        {
+            var compatibleName = type.Name;
+            if (!type.IsGenericType) return compatibleName;
+
+            var iBacktick = compatibleName.IndexOf('`');
+            if (iBacktick > 0) compatibleName = compatibleName.Remove(iBacktick);
+
+            var genericParameters = type.GetGenericArguments().Select(x => type.IsGenericTypeDefinition ? "" : x.GetCsharpCompatibleName());
+            compatibleName += "<" + string.Join(", ", genericParameters) + ">";
+
+            return compatibleName;
+        }
+
         public static Type[] GetReferencedSettingsTypesRecursive(this Type root)
         {
             return TypesCache.GetReferencedSettingsTypes(root);
