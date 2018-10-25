@@ -68,15 +68,11 @@ namespace Eco
     {
         public  class MockSerializer : ISerializer
         {
-            public object Deserialize(Type rawSettingsType, TextReader stream)
-            {
-                throw new NotImplementedException();
-            }
+            public object Deserialize(Type rawSettingsType, TextReader stream) => throw new NotImplementedException();
 
-            public void Serialize(object rawSettings, TextWriter stream)
-            {
-                throw new NotImplementedException();
-            }
+            public void Serialize(object rawSettings, TextWriter stream) => throw new NotImplementedException();
+
+            public void GenerateSerializationAssembly(Type[] rawSettingsTypes) => throw new NotImplementedException();
         }
     }
 }

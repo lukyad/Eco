@@ -19,7 +19,7 @@ namespace Eco.SettingsVisitors
         {
         }
 
-        protected override void ProcessIncludeElement(object includeElem)
+        protected override void ProcessIncludeElement(string settingsNamesapce, string settingsPath, object includeElem)
         {
             // Skip readonly files.
             if (include.IsReadOnly(includeElem)) return;

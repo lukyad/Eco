@@ -12,30 +12,22 @@ namespace Eco.SettingsVisitors
     /// <summary>
     /// Common base for IncludeElementReader and IncludeElementWriter.
     /// </summary>
-    public abstract class IncludeElementProcessor  : ISettingsVisitor
+    public abstract class IncludeElementProcessor : SettingsVisitorBase
     {
-        readonly SettingsManager _context;
-
         public IncludeElementProcessor(SettingsManager context)
+            : base(isReversable: true)
         {
-            if (context == null) throw new ArgumentNullException(nameof(context));
-            _context = context;
+            Context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
-        public SettingsManager Context { get { return _context; } }
+        public SettingsManager Context { get; }
 
-        public bool IsReversable { get { return true; } }
-
-        public void Initialize(Type rootRawSettingsType) { }
-
-        public void Visit(string settingsNamesapce, string settingsPath, object rawSettings)
+        public override void Visit(string settingsNamesapce, string settingsPath, object rawSettings)
         {
             if (rawSettings.IsEcoElementOfGenericType(typeof(include<>)))
-                ProcessIncludeElement(rawSettings);
+                ProcessIncludeElement(settingsNamesapce, settingsPath, rawSettings);
         }
 
-        public void Visit(string settingsNamespace, string fieldPath, FieldInfo settingsField, object settings) { }
-
-        protected abstract void ProcessIncludeElement(object includeElem);
+        protected abstract void ProcessIncludeElement(string settingsNamesapce, string settingsPath, object includeElem);
     }
 }

@@ -35,7 +35,12 @@ namespace Eco.SettingsVisitors
                 Func<FieldInfo, object, bool> IsArrayField = (f, o) => f.FieldType.IsArray;
                 var overridenFieldCollector = new OverridenFieldCollector();
                 object rawOverrides = applyOverrides.GetOverrides(rawSettings);
-                SettingsManager.TraverseSeetingsTree(rawOverrides, overridenFieldCollector, SkipBranch: IsArrayField);
+                SettingsManager.TraverseSeetingsTree(
+                    startNamespace: settingsNamespace,
+                    startPath: settingsPath,
+                    rootMasterSettings: rawOverrides,
+                    visitor: overridenFieldCollector, 
+                    SkipBranch: IsArrayField);
 
                 object refinedOverrides = applyOverrides.GetOverrides(refinedSettings);
                 var targets = applyOverrides.GetTargets(refinedSettings) ??
@@ -48,15 +53,19 @@ namespace Eco.SettingsVisitors
                 {
                     object rawTarget = _refinedToRawMap[target];
                     SettingsManager.TraverseTwinSeetingsTrees(
-                       rawOverrides,
-                       rawTarget,
-                       new OverridesSetter(overridenFieldCollector.PathsToOverride, new HashSet<Tuple<object, FieldInfo>>()),
-                       SkipBranch: IsArrayField);
+                        startNamespace: settingsNamespace,
+                        startPath: settingsPath,
+                        rootMasterSettings: rawOverrides,
+                        rootSlaveSettings: rawTarget,
+                        visitor: new OverridesSetter(overridenFieldCollector.PathsToOverride, new HashSet<Tuple<object, FieldInfo>>()),
+                        SkipBranch: IsArrayField);
 
                     SettingsManager.TraverseTwinSeetingsTrees(
-                        refinedOverrides, 
-                        target,
-                        new OverridesSetter(overridenFieldCollector.PathsToOverride, _initializedFields), 
+                        startNamespace: settingsNamespace,
+                        startPath: settingsPath,
+                        rootMasterSettings: refinedOverrides,
+                        rootSlaveSettings: target,
+                        visitor: new OverridesSetter(overridenFieldCollector.PathsToOverride, _initializedFields), 
                         SkipBranch: IsArrayField);
                 }
             }
@@ -66,7 +75,7 @@ namespace Eco.SettingsVisitors
         {
             public HashSet<string> PathsToOverride { get; } = new HashSet<string>();
 
-            public override void Visit(string settingsNamespace, string fieldPath, FieldInfo settingsField, object settings)
+            public override void Visit(string settingsNamespace, string fieldPath, object settings, FieldInfo settingsField)
             {
                 var fieldValue = settingsField.GetValue(settings);
                 if (settingsField.GetValue(settings) != null && !fieldValue.GetType().IsSettingsType())
@@ -85,7 +94,7 @@ namespace Eco.SettingsVisitors
                 _initializedFields = initializedFields;
             }
 
-            public override void Visit(string settingsNamespace, string fieldPath, FieldInfo overridesField, object overrides, FieldInfo targetField, object target)
+            public override void Visit(string settingsNamespace, string fieldPath, object overrides, FieldInfo overridesField, object target, FieldInfo targetField)
             {
                 if (targetField.IsDefined<SealedAttribute>()) return;
                 if (_fieldsToOverride.Contains(fieldPath))

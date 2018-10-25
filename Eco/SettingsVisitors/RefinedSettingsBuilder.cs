@@ -22,7 +22,7 @@ namespace Eco.SettingsVisitors
 
         public void Visit(string settingsNamespace, string settingsPath, object refinedSettings, object rawSettings) { }
 
-        public void Visit(string settingsNamesapce, string fieldPath, FieldInfo refinedSettingsField, object refinedSettings, FieldInfo rawSettingsField, object rawSettings)
+        public void Visit(string settingsNamesapce, string fieldPath, object refinedSettings, FieldInfo refinedSettingsField, object rawSettings, FieldInfo rawSettingsField)
         {
             if (refinedSettingsField.IsDefined<RefAttribute>()) return;
 

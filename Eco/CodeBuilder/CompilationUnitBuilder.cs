@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Eco.Extensions;
 
 namespace Eco
 {
@@ -21,7 +22,7 @@ namespace Eco
 
         public void AddAssemblyAttribute(string attribute)
         {
-            _assemblyAttributesBuilder.AddPart("[assembly: " + attribute + "]");
+            _assemblyAttributesBuilder.AddPart(attribute);
         }
 
         public ClassBuilder AddClass(string className, string derivedFrom = null)

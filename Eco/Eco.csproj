@@ -23,6 +23,7 @@
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>
     </DocumentationFile>
+    <UseVSHostingProcess>true</UseVSHostingProcess>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -69,6 +70,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Attributes\DefaultAttribute.cs" />
+    <Compile Include="Attributes\PrototypeAttribute.cs" />
     <Compile Include="Attributes\Name.cs" />
     <Compile Include="Attributes\KnownTypesAttribute.cs" />
     <Compile Include="Attributes\ItemNameAttribute.cs" />
@@ -82,6 +84,7 @@
     <Compile Include="Elements\applyDefaults.cs" />
     <Compile Include="Infra\Cloner.cs" />
     <Compile Include="Serialization\Csv\CsvSerializer.cs" />
+    <Compile Include="SettingsTreeNodes.cs" />
     <Compile Include="SettingsVisitors\ApplyDefaultsProcessor.cs" />
     <Compile Include="SettingsVisitors\ApplyOverridesProcessor.cs" />
     <Compile Include="Attributes\EcoElementAttribute.cs" />
@@ -122,6 +125,8 @@
     <Compile Include="SettingsVisitors\IncludeElementReader.cs" />
     <Compile Include="SettingsVisitors\RequiredFieldChecker.cs" />
     <Compile Include="SettingsVisitors\NamespaceMapBuilder.cs" />
+    <Compile Include="SettingsVisitors\TwinSettingsListBuilder.cs" />
+    <Compile Include="SettingsVisitors\SettingsListBuilder.cs" />
     <Compile Include="SettingsVisitors\SettingsMapBuilder.cs" />
     <Compile Include="Serialization\CommonAttributesGenerator.cs" />
     <Compile Include="Serialization\CommonAttributeTranslator.cs" />

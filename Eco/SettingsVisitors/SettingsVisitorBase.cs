@@ -12,7 +12,7 @@ namespace Eco.SettingsVisitors
     {
         public SettingsVisitorBase(bool isReversable = true)
         {
-            this.IsReversable = isReversable;
+            IsReversable = isReversable;
         }
 
         public bool IsReversable { get; }
@@ -21,6 +21,6 @@ namespace Eco.SettingsVisitors
 
         public virtual void Visit(string settingsNamespace, string settingsPath, object settings) { }
 
-        public virtual void Visit(string settingsNamespace, string fieldPath, FieldInfo settingsField, object settings) { }
+        public virtual void Visit(string settingsNamespace, string fieldPath, object settings, FieldInfo settingsField) { }
     }
 }

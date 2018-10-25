@@ -16,29 +16,24 @@ namespace Eco.SettingsVisitors
     /// * an invalid variable name is detected (valid name contains 'word' charcters only)
     /// * a duplicated variable is detected.
     /// </summary>
-    public class ConfigurationVariableMapBuilder : ISettingsVisitor
+    public class ConfigurationVariableMapBuilder : SettingsVisitorBase
     {
         static readonly IVariableProvider[] _variableProviders = GetEcoVariableProviders();
-        readonly Dictionary<string, Func<string>> _vars = new Dictionary<string, Func<string>>();
 
-        public Dictionary<string, Func<string>> Variables { get { return _vars; } }
+        public ConfigurationVariableMapBuilder() : base(isReversable: true) { }
 
-        // ConfigurationVariableMapBuilder doesn't make any changes per se.
-        public bool IsReversable { get { return true; } }
+        public Dictionary<string, Func<string>> Variables { get; } = new Dictionary<string, Func<string>>();
 
-        public void Initialize(Type rootRawSettingsType)
+        public override void Initialize(Type rootRawSettingsType)
         {
-            _vars.Clear();
-            this.RegisterDynamicVariables();
+            Variables.Clear();
+            RegisterDynamicVariables();
         }
-
-        public void Visit(string settingsNamespace, string settingsPath, object rawSettings)
+        public override void Visit(string settingsNamespace, string settingsPath, object rawSettings)
         {
             if (rawSettings.IsEcoElementOfType<variable>())
                 this.RegisterVariable(settingsPath, rawSettings);
         }
-
-        public void Visit(string settingsNamespace, string fieldPath, FieldInfo rawSettingsField, object rawSettings) { }
 
         static IVariableProvider[] GetEcoVariableProviders()
         {
@@ -57,7 +52,7 @@ namespace Eco.SettingsVisitors
                 foreach (var v in p.GetVariables())
                 {
                     ValidateVariableName(v.Key, varDescription: p.GetType().FullName);
-                    _vars.Add(v.Key, v.Value);
+                    Variables.Add(v.Key, v.Value);
                 }
             }
         }
@@ -67,13 +62,13 @@ namespace Eco.SettingsVisitors
             string varName = Eco.variable.GetName(variable);
             string varValue = Eco.variable.GetValue(variable);
             ValidateVariableName(varName, varDescription: fieldPath);
-            _vars.Add(varName, () => varValue);
+            Variables.Add(varName, () => varValue);
         }
 
         void ValidateVariableName(string varName, string varDescription)
         {
             if (String.IsNullOrWhiteSpace(varName)) throw new ConfigurationException("Detected null or empty configuration variable name: path = '{0}'.", varDescription);
-            if (_vars.ContainsKey(varName)) throw new ConfigurationException("Duplicate configuration variable: '{0}', path = '{1}'.", varName, varDescription);
+            if (Variables.ContainsKey(varName)) throw new ConfigurationException("Duplicate configuration variable: '{0}', path = '{1}'.", varName, varDescription);
         }
     }
 }

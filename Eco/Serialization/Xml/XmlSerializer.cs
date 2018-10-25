@@ -46,6 +46,22 @@ namespace Eco.Serialization.Xml
                 serializer.Serialize(xw, rawSettings, ns);
         }
 
+        public void GenerateSerializationAssembly(Type[] rawSettingsTypes)
+        {
+            if (rawSettingsTypes == null) throw new ArgumentNullException(nameof(rawSettingsTypes));
+            if (rawSettingsTypes.Length == 0) throw new ArgumentException($"{nameof(rawSettingsTypes)} should not be empty.");
+            var rawTypesAssembly = rawSettingsTypes.Select(t => t.Assembly).Distinct().SingleOrDefault();
+            if (rawTypesAssembly == null) throw new ArgumentException($"All {nameof(rawSettingsTypes)} should belong to the same assembly.");
+
+            var xmlReflectionImporter = new XmlReflectionImporter();
+            var mappings = rawSettingsTypes
+                .Select(t => xmlReflectionImporter.ImportTypeMapping(t))
+                .ToArray();
+            var xmlSerializerAssembly = SystemXmlSerializer.GenerateSerializer(rawSettingsTypes, mappings);
+            string destFilePath = Path.Combine(Path.GetDirectoryName(rawTypesAssembly.Location), Path.GetFileName(xmlSerializerAssembly.Location));
+            File.Copy(xmlSerializerAssembly.Location, destFilePath, overwrite: true);
+        }
+
         static void serializer_UnknownAttribute(object sender, XmlAttributeEventArgs e)
         {
             throw new ConfigurationException(

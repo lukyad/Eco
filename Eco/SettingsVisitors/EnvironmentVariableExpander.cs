@@ -13,17 +13,14 @@ namespace Eco.SettingsVisitors
     /// Variables expantion is performed on the 'raw settings' (not refined one),
     /// this allows using of variables in any raw settings field of the string type (e.g. fields marked with Converter and Ref attributes).
     /// </summary>
-    public class EnvironmentVariableExpander : ISettingsVisitor
+    public class EnvironmentVariableExpander : SettingsVisitorBase
     {
+        // isReversable: false
         // Changes made by the EnvironmentVariableExpander are not revocable.
         // i.e. it's not possible to pack expanded strings back to variables.
-        public bool IsReversable { get { return false; } }
-
-        public void Initialize(Type rootRawSettingsType) { }
-
-        public void Visit(string settingsNamespace, string fieldPath, object rawSettings) { }
-
-        public void Visit(string settingsNamespace, string fieldPath, FieldInfo rawSettingsField, object rawSettings)
+        public EnvironmentVariableExpander() : base(isReversable: false) { }
+        
+        public override void Visit(string settingsNamespace, string fieldPath, object rawSettings, FieldInfo rawSettingsField)
         {
             // Skip 'sealed' fields.
             if (rawSettingsField.IsDefined<SealedAttribute>()) return;

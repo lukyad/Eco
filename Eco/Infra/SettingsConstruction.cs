@@ -39,8 +39,11 @@ namespace Eco
             Type targetType;
             if (!typeMappings.TryGetValue(sourceType, out targetType))
             {
-                targetType = targetField.DeclaringType
-                    .GetReferencedSettingsTypesRecursive()
+                //targetType = targetField.DeclaringType
+                //    .GetReferencedSettingsTypesRecursive()
+                //    .FirstOrDefault(t => t.GetNonGenericName() == sourceType.GetNonGenericName());
+                targetType = targetField
+                    .GetKnownSerializableTypes()
                     .FirstOrDefault(t => t.GetNonGenericName() == sourceType.GetNonGenericName());
                 if (targetType == null) throw new ConfigurationException("Could not find corresponding target type for '{0}'.", sourceType.Name);
                 typeMappings.Add(sourceType, targetType);

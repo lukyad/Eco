@@ -2,12 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+using System.IO;
 using System.Reflection;
 using System.Xml.Serialization;
 using Microsoft.CSharp;
 using System.CodeDom.Compiler;
 using Eco.Extensions;
+using Eco.CodeBuilder;
 
 namespace Eco.Serialization
 {
@@ -18,12 +19,16 @@ namespace Eco.Serialization
 
         delegate Type GetRawFieldTypeDelegate(FieldInfo field, ParsingPolicyAttribute[] parsingPolicies);
 
-        public static Type GetRawTypeFor<T>(ISerializationAttributesGenerator attributesGenerator, Usage defaultUsage)
+        public const string RawTypesAssemblySuffix = ".RawTypes.dll";
+
+        public const string RawSchemaAssemblySuffix = ".RawSchema.dll";
+
+        public static Type GetRawTypeFor<T>(ISerializer serizlizer, ISerializationAttributesGenerator attributesGenerator, Usage defaultUsage)
         {
-            return GetRawTypeFor(typeof(T), attributesGenerator, defaultUsage);
+            return GetRawTypeFor(typeof(T), serizlizer, attributesGenerator, defaultUsage);
         }
 
-        public static Type GetRawTypeFor(Type settingsType, ISerializationAttributesGenerator attributesGenerator, Usage defaultUsage)
+        public static Type GetRawTypeFor(Type settingsType, ISerializer serizlizer, ISerializationAttributesGenerator attributesGenerator, Usage defaultUsage)
         {
             if (settingsType == null) throw new ArgumentNullException(nameof(settingsType));
             lock (_serializableTypeCache)
@@ -31,7 +36,9 @@ namespace Eco.Serialization
                 Type serializableType;
                 if (!_serializableTypeCache.TryGetValue(settingsType, out serializableType))
                 {
-                    serializableType = Emit(settingsType, attributesGenerator, GetRawFieldType, defaultUsage, validateAttributes: true);
+                    serializableType = 
+                        TryLoadExistingType(settingsType, RawTypesAssemblySuffix) ??
+                        Emit(settingsType, serizlizer, attributesGenerator, GetRawFieldType, defaultUsage, RawTypesAssemblySuffix, validateAttributes: true);
                     _serializableTypeCache.Add(settingsType, serializableType);
                 }
                 return serializableType;
@@ -51,7 +58,9 @@ namespace Eco.Serialization
                 Type schemaType;
                 if (!_schemaTypeCache.TryGetValue(settingsType, out schemaType))
                 {
-                    schemaType = Emit(settingsType, attributesGenerator, GetSchemaFieldType, defaultUsage, validateAttributes: false);
+                    schemaType =
+                        TryLoadExistingType(settingsType, RawSchemaAssemblySuffix) ??
+                        Emit(settingsType, null, attributesGenerator, GetSchemaFieldType, defaultUsage, RawSchemaAssemblySuffix, validateAttributes: false);
                     _schemaTypeCache.Add(settingsType, schemaType);
                 }
                 return schemaType;
@@ -97,11 +106,23 @@ namespace Eco.Serialization
             }
         }
 
+        static Type TryLoadExistingType(Type rootSettingsType, string assemblyNameSuffix)
+        {
+            string generatedAssemblyPath = GetGeneratedAssemblyPath(rootSettingsType, assemblyNameSuffix);
+            if (!File.Exists(generatedAssemblyPath)) return null;
+            var generatedAssemblyName = AssemblyName.GetAssemblyName(generatedAssemblyPath);
+            if (generatedAssemblyName.Version != rootSettingsType.Assembly.GetName().Version) return null;
+            var generatedAssembly = Assembly.LoadFrom(generatedAssemblyPath);
+            return generatedAssembly.GetTypes().First(t => t.Name == rootSettingsType.Name);
+        }
+
         static Type Emit(
             Type rootSettingsType, 
+            ISerializer serializer,
             ISerializationAttributesGenerator attributesGenerator,
             GetRawFieldTypeDelegate GetRawFieldType, 
             Usage defaultUsage,
+            string assemblyNameSuffix,
             bool validateAttributes)
         {
             var parsingPolicies = ParsingPolicyAttribute.GetPolicies(rootSettingsType);
@@ -110,7 +131,8 @@ namespace Eco.Serialization
                 .Where(a => !a.IsDynamic)
                 .Select(a => a.Location)
                 .ToArray();
-            CompilerParameters p = new CompilerParameters(referencedAssemblies);
+            string outputFileName = GetGeneratedAssemblyPath(rootSettingsType, assemblyNameSuffix);
+            CompilerParameters p = new CompilerParameters(referencedAssemblies, outputFileName);
             CompilerResults results = new CSharpCodeProvider().CompileAssemblyFromSource(p, compilationUnit);
             if (results.Errors.Count > 0)
             {
@@ -120,7 +142,17 @@ namespace Eco.Serialization
                     Environment.NewLine,
                     GetCompilationErrorsDescription(results.Errors));
             }
+
+            serializer?.GenerateSerializationAssembly(results.CompiledAssembly.GetTypes());
+
             return results.CompiledAssembly.GetTypes().First(t => t.Name == rootSettingsType.Name);
+        }
+
+        static string GetGeneratedAssemblyPath(Type rootSettingsType, string assemblyNameSuffix)
+        {
+            return Path.Combine(
+                Path.GetDirectoryName(rootSettingsType.Assembly.Location),
+                Path.GetFileNameWithoutExtension(rootSettingsType.Assembly.Location) + $".{rootSettingsType.Name}" + assemblyNameSuffix);
         }
 
         static string GetCompilationErrorsDescription(CompilerErrorCollection errors)
@@ -141,7 +173,12 @@ namespace Eco.Serialization
         {
             var autogenNamespace = settingsType.Namespace + ".AutoGenerated";
             var codeBuilder = new CompilationUnitBuilder(autogenNamespace);
-            codeBuilder.AddAssemblyAttribute(typeof(SettingsAssemblyAttribute).FullName);
+
+            var settingsAssemblyAttr = new AttributeBuilder(typeof(SettingsAssemblyAttribute).FullName, isAssembly: true);
+            codeBuilder.AddAssemblyAttribute(settingsAssemblyAttr.ToString());
+            var versionAttr = new AttributeBuilder(typeof(AssemblyVersionAttribute).FullName, isAssembly: true).AddStringParam(settingsType.Assembly.GetName().Version.ToString());
+            codeBuilder.AddAssemblyAttribute(versionAttr.ToString());
+
             foreach (var type in settingsType.GetReferencedSettingsTypesRecursive())
             {
                 string baseTypeName = type.BaseType.IsSettingsType() ? type.BaseType.GetNonGenericName() : null;

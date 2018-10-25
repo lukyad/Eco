@@ -19,6 +19,8 @@ namespace Eco
     {
         readonly ISerializer _serializer;
         readonly ISerializationAttributesGenerator _serializationAttributesGenerator;
+        // Builds list of all ITwinSettingsTreeNodes for a single Load operation.
+        readonly TwinSettingsListBuilder _refinedSettingsListBuilder = new TwinSettingsListBuilder();
 
         public SettingsManager(ISerializer serializer, ISerializationAttributesGenerator serializationAttributesGenerator)
         {
@@ -43,8 +45,7 @@ namespace Eco
                 new EnvironmentVariableExpander(),
                 new IncludeElementReader(this),
                 new ImportElementReader(),
-                // We run ConfigurationVariableExpander and DefaultValueSetter twice to expand variables from the included files (if any).
-                new DefaultValueSetter(),
+                // We run ConfigurationVariableExpander twice to expand variables imported from the included files (if any).
                 variableExpander,
             };
         }
@@ -52,20 +53,19 @@ namespace Eco
         void InitializeRefinedSettingsLoadVisitors()
         {
             var settingsMapBuilder = new SettingsMapBuilder();
-            var referenceResolver = new ReferenceResolver(settingsMapBuilder.RefinedSettingsById, settingsMapBuilder.RefinedToRawMap);
             var defaultedAndOverridenFields = new HashSet<Tuple<object, FieldInfo>>();
             this.RefinedSettingsReadVisitors = new List<ITwinSettingsVisitor>
             {
-                new RefinedSettingsBuilder(),
                 settingsMapBuilder,
-                referenceResolver,
+                // Use this ReferenceResolver to resolve applyDefaults.targets and applyOverrides.targets only.
+                new ReferenceResolver(settingsMapBuilder.RefinedSettingsById, settingsMapBuilder.RefinedToRawMap, _refinedSettingsListBuilder, typeof(applyDefaults<>), typeof(applyOverrides<>)),
                 // ReferenceResolver should go before ApplyDefaultsProcessor and ApplyOverridesProcessor
                 // as they depend on the results produced by the former.
                 new ApplyDefaultsProcessor(settingsMapBuilder.RefinedSettingsById, settingsMapBuilder.RefinedToRawMap, /*out*/ defaultedAndOverridenFields),
                 new ApplyOverridesProcessor(settingsMapBuilder.RefinedSettingsById, settingsMapBuilder.RefinedToRawMap, /*out*/ defaultedAndOverridenFields),
                 new FieldReferenceExpander(),
-                // Include ReferenceResolver for the second time as StringFieldReferenceExpander could substitute additional valid references.
-                referenceResolver, 
+                // Include ReferenceResolver for the second time to resolve the rest references.
+                new ReferenceResolver(settingsMapBuilder.RefinedSettingsById, settingsMapBuilder.RefinedToRawMap, _refinedSettingsListBuilder),
                 new RequiredFieldChecker(defaultedAndOverridenFields)
             };
         }
@@ -166,7 +166,7 @@ namespace Eco
 
         /// <summary>
         /// Loads settings of the specified type from the default configuration file in the current working directory.
-       /// </summary>
+        /// </summary>
         public T Load<T>()
         {
             return this.Load<T>(GetDefaultSettingsFileName<T>());
@@ -231,22 +231,55 @@ namespace Eco
         /// </summary>
         public object Read(Type settingsType, TextReader reader)
         {
-            Type rawSettingsType = SerializableTypeEmitter.GetRawTypeFor(settingsType, this.SerializationAttributesGenerator, this.DefaultUsage);
-            return CreateRefinedSettings(settingsType, ReadRawSettings(rawSettingsType, reader, initializeVisitors: true));
+            Type rawSettingsType = SerializableTypeEmitter.GetRawTypeFor(settingsType, this.Serializer, this.SerializationAttributesGenerator, this.DefaultUsage);
+            var rawSettings = ReadRawSettings(
+                currentNamespace: null,
+                currentSettingsPath: rawSettingsType.Name,
+                rawSettingsType: rawSettingsType,
+                reader: reader,
+                initializeVisitors: true);
+            return CreateRefinedSettings(settingsType, rawSettings);
         }
 
         /// <summary>
         /// Used internally by the Eco library to read raw settings from included configuratoin files (if any).
         /// </summary>
-        internal object ReadRawSettings(Type rawSettingsType, TextReader reader, bool initializeVisitors)
+        internal object ReadRawSettings(string currentNamespace, string currentSettingsPath, Type rawSettingsType, TextReader reader, bool initializeVisitors)
         {
             object rawSettings = this.Serializer.Deserialize(rawSettingsType, reader);
             if (this.RawSettingsReadVisitors != null)
             {
+                var settingsListBuilder = new SettingsListBuilder();
+                TraverseSeetingsTree(
+                    startNamespace: currentNamespace,
+                    startPath: currentSettingsPath,
+                    rootMasterSettings: rawSettings,
+                    visitor: settingsListBuilder,
+                    initVisitor: initializeVisitors);
+
+                // TraverseTwinSeetingsTrees uses Reflection to go through the settings tree.
+                // Below we dump all tree nodes to a list and use it further instead of traversing the tree through the reflection.
                 var visitors = this.SkipNonReversableOperations ? this.RawSettingsReadVisitors.Where(v => v.IsReversable) : this.RawSettingsReadVisitors;
-                Func<FieldInfo, object, bool> IsInsideIncludeElement = (f, o) => f.DeclaringType.IsGenericType && f.DeclaringType.GetGenericTypeDefinition() == typeof(include<>);
                 foreach (var v in visitors)
-                    TraverseSeetingsTree(rawSettings, v, initializeVisitors,  SkipBranch: IsInsideIncludeElement);
+                {
+                    if (initializeVisitors)
+                        v.Initialize(rootSettingsType: rawSettings.GetType());
+
+                    var settings = settingsListBuilder.Settings;
+                    for (int i = 0; i < settings.Count; i++)
+                    {
+                        var node = settingsListBuilder.Settings[i];
+                        if (node.SkippedBy(v))
+                        {
+                            // Skip all child nodes. (all children goes right after parent)
+                            while (i < settings.Count && settings[i].Path.StartsWith(node.Path))
+                                i++;
+
+                            node = i < settings.Count ? settings[i] : null;
+                        }
+                        node?.Accept(v);
+                    }
+                }
             }
             return rawSettings;
         }
@@ -267,7 +300,7 @@ namespace Eco
         {
             if (settings == null) throw new ArgumentNullException(nameof(settings));
             if (writer == null) throw new ArgumentNullException(nameof(writer));
-            Type rawSettingsType = SerializableTypeEmitter.GetRawTypeFor(settings.GetType(), this.SerializationAttributesGenerator, this.DefaultUsage);
+            Type rawSettingsType = SerializableTypeEmitter.GetRawTypeFor(settings.GetType(), this.Serializer, this.SerializationAttributesGenerator, this.DefaultUsage);
             object rawSettings = CreateRawSettings(rawSettingsType, settings);
             this.Serializer.Serialize(rawSettings, writer);
         }
@@ -311,11 +344,43 @@ namespace Eco
         object CreateRefinedSettings(Type refinedSettingsType, object rawSettings)
         {
             object refinedSettings = Activator.CreateInstance(refinedSettingsType);
+            var mandatoryVisitors = new ITwinSettingsVisitor[]
+            {
+                    new RefinedSettingsBuilder(),
+                    _refinedSettingsListBuilder
+            };
+            foreach (var v in mandatoryVisitors)
+            {
+                TraverseTwinSeetingsTrees(
+                    startNamespace: null,
+                    startPath: refinedSettingsType.Name,
+                    rootMasterSettings: refinedSettings,
+                    rootSlaveSettings: rawSettings,
+                    visitor: v);
+            }
             if (this.RefinedSettingsReadVisitors != null)
             {
-                var visitors = this.SkipNonReversableOperations ? this.RefinedSettingsReadVisitors.Where(v => v.IsReversable) : this.RefinedSettingsReadVisitors;
-                foreach (var v in visitors)
-                    TraverseTwinSeetingsTrees(refinedSettings, rawSettings, v);
+                // TraverseTwinSeetingsTrees uses Reflection to go through the settings tree.
+                // Below we dump all tree nodes to a list and use it further instead of traversing the tree through the reflection.
+                var userVisitors = this.SkipNonReversableOperations ? this.RefinedSettingsReadVisitors.Where(v => v.IsReversable) : this.RefinedSettingsReadVisitors;
+                foreach (var v in userVisitors)
+                {
+                    v.Initialize(rootMasterSettingsType: refinedSettings.GetType(), rootSlaveSettingsType: rawSettings.GetType());
+                    var settings = _refinedSettingsListBuilder.Settings;
+                    for (int i = 0; i < settings.Count; i++)
+                    {
+                        var node = settings[i];
+                        if (node.SkippedBy(v))
+                        {
+                            // Skip all child nodes. (all children goes right after parent)
+                            while (i < settings.Count && settings[i].Path.StartsWith(node.Path))
+                                i++;
+
+                            node = i < settings.Count ? settings[i] : null;
+                        }
+                        node?.Accept(v);
+                    }
+                }
             }
 
             return refinedSettings;
@@ -327,39 +392,65 @@ namespace Eco
             if (this.RefinedSettingsWriteVisitors != null)
             {
                 foreach (var v in this.RefinedSettingsWriteVisitors)
-                    TraverseTwinSeetingsTrees(refinedSettings, rawSettings, v, initVisitor: true);
+                    TraverseTwinSeetingsTrees(
+                        startNamespace: null,
+                        startPath: refinedSettings.GetType().Name,
+                        rootMasterSettings: refinedSettings,
+                        rootSlaveSettings: rawSettings,
+                        visitor: v,
+                        initVisitor: true);
             }
             if (this.RawSettingsWriteVisitors != null)
             {
                 foreach (var v in this.RawSettingsWriteVisitors)
-                    TraverseSeetingsTree(rawSettings, v, initVisitor: true);
+                {
+                    TraverseSeetingsTree(
+                        startNamespace: null,
+                        startPath: refinedSettings.GetType().Name,
+                        rootMasterSettings: rawSettings,
+                        visitor: v,
+                        initVisitor: true);
+                }
             }
-           
+
             return rawSettings;
         }
 
-        public static void TraverseSeetingsTree(object rootMasterSettings, ISettingsVisitor visitor, bool initVisitor = true, Func<FieldInfo, object, bool> SkipBranch = null)
+        public static void TraverseSeetingsTree(
+            string startNamespace,
+            string startPath,
+            object rootMasterSettings,
+            ISettingsVisitor visitor,
+            bool initVisitor = true,
+            Func<FieldInfo, object, bool> SkipBranch = null)
         {
-            Func<FieldInfo, object, bool>  DefaultSkipBranch = (f, o) => false;
+            Func<FieldInfo, object, bool> DefaultSkipBranch = (f, o) => false;
             if (initVisitor) visitor.Initialize(rootMasterSettings.GetType());
             TraverseTwinSeetingsTreesRecursive(
-                currentNamespace: null,
-                settingsPath: rootMasterSettings.GetType().Name,
+                currentNamespace: startNamespace,
+                settingsPath: startPath,
                 masterSettings: rootMasterSettings,
                 slaveSettings: null,
                 visitorType: visitor.GetType(),
                 VisitTwinSettings: (currentNamespace, settingsPath, masterSettings, slaveSettings) => visitor.Visit(currentNamespace, settingsPath, masterSettings),
-                VisitTwinSettingsField: (settingsNamespace, fieldPath, masterSettingsField, masterSettings, slaveSettingsField, slaveSettings) => visitor.Visit(settingsNamespace, fieldPath, masterSettingsField, masterSettings),
+                VisitTwinSettingsField: (settingsNamespace, fieldPath, masterSettings, masterSettingsField, slaveSettings, slaveSettingsField) => visitor.Visit(settingsNamespace, fieldPath, masterSettings, masterSettingsField),
                 SkipBranch: SkipBranch ?? DefaultSkipBranch);
         }
 
-        public static void TraverseTwinSeetingsTrees(object rootMasterSettings, object rootSlaveSettings, ITwinSettingsVisitor visitor, bool initVisitor = true, Func<FieldInfo, object, bool> SkipBranch = null)
+        public static void TraverseTwinSeetingsTrees(
+            string startNamespace,
+            string startPath,
+            object rootMasterSettings,
+            object rootSlaveSettings,
+            ITwinSettingsVisitor visitor,
+            bool initVisitor = true,
+            Func<FieldInfo, object, bool> SkipBranch = null)
         {
             Func<FieldInfo, object, bool> DefaultSkipBranch = (f, o) => false;
             if (initVisitor) visitor.Initialize(rootMasterSettings.GetType(), rootSlaveSettings.GetType());
             TraverseTwinSeetingsTreesRecursive(
-                currentNamespace: null,
-                settingsPath: rootMasterSettings.GetType().Name,
+                currentNamespace: startNamespace,
+                settingsPath: startPath,
                 masterSettings: rootMasterSettings,
                 slaveSettings: rootSlaveSettings,
                 visitorType: visitor.GetType(),
@@ -369,14 +460,14 @@ namespace Eco
         }
 
         delegate void VisitTwinSettingsDelegate(string currentNamespace, string settingsPath, object masterSettings, object slaveSettings);
-        delegate void VisitTwinSettingsFieldDelegate(string settingsNamespace, string fieldPath, FieldInfo masterSettingsField, object masterSettings, FieldInfo slaveSettingsField, object slaveSettings);
+        delegate void VisitTwinSettingsFieldDelegate(string settingsNamespace, string fieldPath, object masterSettings, FieldInfo masterSettingsField, object slaveSettings, FieldInfo slaveSettingsField);
 
         // Traverses two twin settings trees.
         // Allows slave tree to be null.
         static void TraverseTwinSeetingsTreesRecursive(
-            string currentNamespace, 
-            string settingsPath, 
-            object masterSettings, 
+            string currentNamespace,
+            string settingsPath,
+            object masterSettings,
             object slaveSettings,
             Type visitorType,
             VisitTwinSettingsDelegate VisitTwinSettings,
@@ -393,11 +484,8 @@ namespace Eco
                 var slaveField = slaveSettings?.GetType().GetField(masterField.Name);
                 string fieldNamespace = localNamespace == null || masterField.FieldType.IsSimple() ? currentNamespace : SettingsPath.Combine(currentNamespace, localNamespace);
 
-                string currentPath = settingsPath;
-                //if (!masterField.IsDefined<HiddenAttribute>())
-                    currentPath = SettingsPath.Combine(settingsPath, masterField.Name);
-
-                VisitTwinSettingsField(fieldNamespace, currentPath, masterField, masterSettings, slaveField, slaveSettings);
+                string currentPath = SettingsPath.Combine(left: settingsPath, right: masterField.Name);
+                VisitTwinSettingsField(fieldNamespace, currentPath, masterSettings, masterField, slaveSettings, slaveField);
 
                 object masterValue = masterField.GetValue(masterSettings);
                 object slaveValue = slaveField?.GetValue(slaveSettings);
@@ -406,6 +494,7 @@ namespace Eco
                     if (masterValue.GetType().IsSettingsType())
                     {
                         string ns = SettingsPath.Combine(currentNamespace, localNamespace);
+                        currentPath = SettingsPath.AddType(currentPath, objectType: masterValue.GetType().GetCsharpCompatibleName());
                         TraverseTwinSeetingsTreesRecursive(fieldNamespace, currentPath, masterValue, slaveValue, visitorType, VisitTwinSettings, VisitTwinSettingsField, SkipBranch);
                     }
                     else if (masterValue.GetType().IsSettingsOrObjectArrayType())
@@ -414,8 +503,9 @@ namespace Eco
                         var slaveArray = (Array)slaveValue;
                         for (int i = 0; i < masterArray.Length; i++)
                         {
-                            currentPath = SettingsPath.Combine(settingsPath, masterArray.GetValue(i).GetType().GetCsharpCompatibleName(), i);
-                            TraverseTwinSeetingsTreesRecursive(fieldNamespace, currentPath, masterArray.GetValue(i), slaveArray?.GetValue(i), visitorType, VisitTwinSettings, VisitTwinSettingsField, SkipBranch);
+                            var itemValue = masterArray.GetValue(i);
+                            string itemPath = SettingsPath.AddType(currentPath, objectType: itemValue.GetType().GetCsharpCompatibleName(), index: i);
+                            TraverseTwinSeetingsTreesRecursive(fieldNamespace, itemPath, itemValue, slaveArray?.GetValue(i), visitorType, VisitTwinSettings, VisitTwinSettingsField, SkipBranch);
                         }
                     }
                 }
@@ -426,5 +516,5 @@ namespace Eco
         {
             return (string)settings.GetType().GetFields().FirstOrDefault(f => f.IsDefined<NamespaceAttribute>())?.GetValue(settings);
         }
-}
+    }
 }

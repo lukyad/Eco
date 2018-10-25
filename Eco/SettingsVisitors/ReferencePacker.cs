@@ -18,7 +18,7 @@ namespace Eco.SettingsVisitors
             _namespaceMap = namespaceMap;
         }
 
-        public override void Visit(string settingsNamesapce, string fieldPath, FieldInfo refinedSettingsField, object refinedSettings, FieldInfo rawSettingsField, object rawSettings)
+        public override void Visit(string settingsNamesapce, string fieldPath, object refinedSettings, FieldInfo refinedSettingsField, object rawSettings, FieldInfo rawSettingsField)
         {
             if (refinedSettingsField.IsDefined<RefAttribute>())
             {

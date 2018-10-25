@@ -22,14 +22,19 @@ namespace Eco.SettingsVisitors
     {
         readonly Dictionary<string, object> _refinedSettingsById;
         readonly Dictionary<object, object> _refinedToRawMap;
+        // ReferenceResolver adds dynamicly generated settings to the global twinSettingsList for the futher processing by the following visitors.
+        readonly TwinSettingsListBuilder _twinSettingsListBuilder;
         readonly HashSet<object> _prototypes = new HashSet<object>();
+        readonly HashSet<Type> _settingTypesFilter;
         Dictionary<object, string> _idByRefinedSettings;
         ParsingPolicyAttribute[] _parsingPolicies;
 
-        public ReferenceResolver(Dictionary<string, object> refinedSettingsById, Dictionary<object, object> refinedToRawMap)
+        public ReferenceResolver(Dictionary<string, object> refinedSettingsById, Dictionary<object, object> refinedToRawMap, TwinSettingsListBuilder twinSettingsListBuilder, params Type[] settingTypesFilter)
         {
             _refinedSettingsById = refinedSettingsById;
             _refinedToRawMap = refinedToRawMap;
+            _twinSettingsListBuilder = twinSettingsListBuilder;
+            _settingTypesFilter = settingTypesFilter != null && settingTypesFilter.Length > 0 ? new HashSet<Type>(settingTypesFilter) : null;
         }
         public static class ControlChars
         {
@@ -58,9 +63,15 @@ namespace Eco.SettingsVisitors
 
         public void Visit(string settingsNamespace, string settingsPath, object refinedSettings, object rawSettings) { }
 
-        public void Visit(string settingsNamesapce, string fieldPath, FieldInfo refinedSettingsField, object refinedSettings, FieldInfo rawSettingsField, object rawSettings)
+        public void Visit(string settingsNamesapce, string fieldPath, object refinedSettings, FieldInfo refinedSettingsField, object rawSettings, FieldInfo rawSettingsField)
         {
-            if (refinedSettingsField.IsDefined<RefAttribute>())
+            var refinedSettingsType = refinedSettings.GetType();
+            bool passTypeFilter =
+                _settingTypesFilter == null ||
+                _settingTypesFilter.Contains(refinedSettingsType) ||
+                refinedSettingsType.IsGenericType && _settingTypesFilter.Contains(refinedSettingsType.GetGenericTypeDefinition());
+
+            if (passTypeFilter && refinedSettingsField.IsDefined<RefAttribute>())
             {
                 if (refinedSettingsField.FieldType.IsArray) ResolveReferenceArray(settingsNamesapce, fieldPath, rawSettingsField, rawSettings, refinedSettingsField, refinedSettings);
                 else ResolveReference(settingsNamesapce, fieldPath, rawSettingsField, rawSettings, refinedSettingsField, refinedSettings);
@@ -124,18 +135,18 @@ namespace Eco.SettingsVisitors
             var elementType = context.FieldType.GetElementType();
             var settings = new HashSet<object>();
             foreach (string jointWildcard in wildcards.Split(Settings.IdSeparator))
-                settings.UnionWith(MatchJointWildcard(currentNamespace, fieldPath, jointWildcard, context));
+                settings.UnionWith(MatchJointReference(currentNamespace, fieldPath, jointWildcard, context));
 
             return settings.ToArray();
         }
 
-        IEnumerable<object> MatchJointWildcard(string currentNamespace, string fieldPath, string jointWildcard, FieldInfo context)
+        IEnumerable<object> MatchJointReference(string currentNamespace, string fieldPath, string jointWildcard, FieldInfo context)
         {
             var settings = new HashSet<object>();
             string[] joints = jointWildcard.Split(ControlChars.WildcardJoiner);
             for (int i = 0; i < joints.Length; i++)
             {
-                settings.UnionWith(MatchWildcard(currentNamespace, joints[i].Trim(), context));
+                settings.UnionWith(MatchReference(currentNamespace, fieldPath, joints[i].Trim(), context));
                 if (settings.Count > 0) break;
             }
 
@@ -146,7 +157,7 @@ namespace Eco.SettingsVisitors
             return settings;
         }
 
-        IEnumerable<object> MatchWildcard(string currentNamespace, string wildcard, FieldInfo context)
+        IEnumerable<object> MatchReference(string currentNamespace, string currentPath, string wildcard, FieldInfo context)
         {
             var settings = new HashSet<object>();
 
@@ -184,21 +195,31 @@ namespace Eco.SettingsVisitors
                         throw new ConfigurationException("The {0} wildcard matches more than one prototype.", wildcard);
                 }
 
-                (object dynamicSettings, string normalizedParams) = CreateInstanse(proto, match.Groups["params"].Value, _parsingPolicies);
+                (object dynamicRefinedSettings, object dynamicRawSettings, string normalizedParams) = 
+                    CreateInstanse(proto, _refinedToRawMap[proto], match.Groups["params"].Value, _parsingPolicies);
 
                 string protoId = _idByRefinedSettings[proto];
                 string dynamicSettingsId = $"{protoId} {{ {normalizedParams} }}";
 
                 if (!_refinedSettingsById.TryGetValue(dynamicSettingsId, out object existingDynamicSettings))
                 {
-                    _refinedSettingsById.Add(dynamicSettingsId, dynamicSettings);
-                    _refinedToRawMap.Add(dynamicSettingsId, _refinedToRawMap[proto]);
+                    // Make SettingsManager aware of the dynamicly generated settings.
+                    _refinedSettingsById.Add(dynamicSettingsId, dynamicRefinedSettings);
+                    _refinedToRawMap.Add(dynamicSettingsId, dynamicRawSettings);
+
+                    SettingsManager.TraverseTwinSeetingsTrees(
+                        startNamespace: currentNamespace,
+                        startPath: currentPath,
+                        rootMasterSettings: dynamicRefinedSettings,
+                        rootSlaveSettings: dynamicRawSettings,
+                        visitor: _twinSettingsListBuilder,
+                        initVisitor: false);
                 }
                 else
-                    dynamicSettings = existingDynamicSettings;
+                    dynamicRefinedSettings = existingDynamicSettings;
 
                 settings.Clear();
-                settings.Add(dynamicSettings);
+                settings.Add(dynamicRefinedSettings);
             }
 
             return settings;
@@ -256,9 +277,10 @@ namespace Eco.SettingsVisitors
             return _refinedSettingsById.First(p => p.Value == settings).Key;
         }
 
-        static (object settins, string normilizedParams) CreateInstanse(object proto, string parameters, ParsingPolicyAttribute[] parsingPolicies)
+        static (object refinedSettins, object rawProto, string normilizedParams) CreateInstanse(object refinedProto, object rawProto, string parameters, ParsingPolicyAttribute[] parsingPolicies)
         {
-            var result = Cloner.Clone(proto);
+            var refinedResult = Cloner.Clone(refinedProto);
+            var rawResult = Cloner.Clone(rawProto);
             var props = parameters.SplitAndTrim(ControlChars.WildcardParamsSeparator);
             string normilizedParams = null;
             foreach (var p in props)
@@ -267,14 +289,15 @@ namespace Eco.SettingsVisitors
                 if (parts.Length != 2)
                     Throw();
 
-                object fieldValue = ParseFieldValue(result, fieldName: parts[0], fieldValue: parts[1]);
-                result.SetFieldValue(parts[0], fieldValue);
+                rawResult.SetFieldValue(parts[0], parts[1]);
+                object fieldValue = ParseFieldValue(refinedResult, fieldName: parts[0], fieldValue: parts[1]);
+                refinedResult.SetFieldValue(parts[0], fieldValue);
 
-                FieldInfo field = result.GetType().GetField(parts[0]);
-                string serializedValue = RawSettingsBuilder.ToString(sourceField: field, container: result);
-                normilizedParams += $"{parts[0]}={serializedValue} ";
+                FieldInfo field = refinedResult.GetType().GetField(parts[0]);
+                string serializedValue = RawSettingsBuilder.ToString(sourceField: field, container: refinedResult);
+                normilizedParams += $"{parts[0]}={serializedValue}{ControlChars.WildcardParamsSeparator}";
             }
-            return (result, normilizedParams.Trim());
+            return (refinedResult, rawResult, normilizedParams.Trim(ControlChars.WildcardParamsSeparator));
 
             object ParseFieldValue(object container, string fieldName, string fieldValue)
             {
@@ -288,7 +311,7 @@ namespace Eco.SettingsVisitors
                 return RefinedSettingsBuilder.FromString(fieldValue, targetField, parsingPolicies);
             }
 
-            void Throw() => throw new ConfigurationException($"Invalid {proto.GetType()} parameters definition: {parameters}");
+            void Throw() => throw new ConfigurationException($"Invalid {refinedProto.GetType()} parameters definition: {parameters}");
         }
 
         static string FieldDescription(FieldInfo field)

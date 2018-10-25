@@ -25,5 +25,11 @@ namespace Eco.Serialization
         /// a raw settings type using the specified TextReader.
         /// </summary>
         object Deserialize(Type rawSettingsType, TextReader stream);
+
+        /// <summary>
+        /// If implemented, generates serialization assembly that can be used by the System Serializer to speed up serialization.
+        /// </summary>
+        /// <param name="rawSettingTypes"></param>
+        void GenerateSerializationAssembly(Type[] rawSettingTypes);
     }
 }

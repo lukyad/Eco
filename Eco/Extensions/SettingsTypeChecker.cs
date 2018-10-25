@@ -12,10 +12,11 @@ namespace Eco.Extensions
 
         public static bool IsSettingsType(Type t)
         {
-            if (String.IsNullOrEmpty(t.Namespace) || t.IsArray || !t.IsClass || t.IsDefined<NonSettingsTypeAttribute>() || t.IsDefined<CompilerGeneratedAttribute>()) return false;
-            if (_knownSettingNamesapces.ContainsKey(t.Namespace)) return true;
+            if (String.IsNullOrEmpty(t.Namespace)) return false;
             if (_knownNonSettingNamesapces.ContainsKey(t.Namespace)) return false;
-            
+            if (t.IsArray || !t.IsClass || t.IsDefined<NonSettingsTypeAttribute>() || t.IsDefined<CompilerGeneratedAttribute>()) return false;
+            if (_knownSettingNamesapces.ContainsKey(t.Namespace)) return true;
+
             var settingsAssemblyAttr = t.Assembly.GetCustomAttribute<SettingsAssemblyAttribute>();
             bool isSettingsType =
                 settingsAssemblyAttr != null && (

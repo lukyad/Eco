@@ -11,20 +11,17 @@ namespace Eco.SettingsVisitors
 {
     /// <summary>
     /// Common base for ImportElementReader and ImportElementWriter.
+    /// Note that IncludeElementProcessor should support multiVisit as included path could be yet unresolved during the first pass.
     /// </summary>
-    public abstract class ImportElementProcessor  : ISettingsVisitor
+    public abstract class ImportElementProcessor : SettingsVisitorBase
     {
-        public bool IsReversable { get { return true; } }
+        public ImportElementProcessor() : base(isReversable: true) { }
 
-        public void Initialize(Type rootRawSettingsType) { }
-
-        public void Visit(string settingsNamesapce, string settingsPath, object rawSettings)
+        public override void Visit(string settingsNamesapce, string settingsPath, object rawSettings)
         {
             if (rawSettings.IsEcoElementOfGenericType(typeof(import<,>)))
                 ProcessImportElement(rawSettings);
         }
-
-        public void Visit(string settingsNamespace, string fieldPath, FieldInfo settingsField, object settings) { }
 
         protected abstract void ProcessImportElement(object includeElem);
     }

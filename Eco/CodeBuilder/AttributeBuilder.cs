@@ -11,11 +11,13 @@ namespace Eco.CodeBuilder
     {
         readonly List<AttributeParam> _params = new List<AttributeParam>();
         readonly string _type;
+        readonly bool _isAssembly;
         bool _namedParamAdded = false;
 
-        public AttributeBuilder(string attributeType)
+        public AttributeBuilder(string attributeType, bool isAssembly = false)
         {
             _type = attributeType;
+            _isAssembly = isAssembly;
         }
 
         public AttributeBuilder AddParam(string value)
@@ -69,12 +71,12 @@ namespace Eco.CodeBuilder
             return builder.ToString();
         }
 
-        public override string ToString() => $"[{_type}({AttributeParams})]";
+        public override string ToString() => $"[{(_isAssembly ? "assembly: " : null)}{_type}({AttributeParams})]";
 
         string AttributeParams => String.Join(", ", _params);
 
-        string TypeOf(string typeName) => $"typeof({typeName})";
+        static string TypeOf(string typeName) => $"typeof({typeName})";
 
-        string Quoted(string value) => $"\"{value}\"";
+        static string Quoted(string value) => $"\"{value}\"";
     }
 }

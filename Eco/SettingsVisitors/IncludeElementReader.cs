@@ -19,7 +19,7 @@ namespace Eco.SettingsVisitors
         {
         }
 
-        protected override void ProcessIncludeElement(object includeElem)
+        protected override void ProcessIncludeElement(string settingsNamesapce, string settingsPath, object includeElem)
         {
             string filePath = include.GetFile(includeElem);
             if (!File.Exists(filePath))
@@ -35,7 +35,12 @@ namespace Eco.SettingsVisitors
             {
                 // Note, that we skip visitor initialization here, as this should be done
                 // only one per the root configuration file. (i.e. by this moment, all visitors have been initialized already)
-                object includedSettings = this.Context.ReadRawSettings(includedSettingsType, reader, initializeVisitors: false);
+                object includedSettings = this.Context.ReadRawSettings(
+                    currentNamespace: settingsNamesapce,
+                    currentSettingsPath: settingsPath,
+                    rawSettingsType: includedSettingsType,
+                    reader: reader,
+                    initializeVisitors: false);
                 include.SetData(includeElem, includedSettings);
             }
         }

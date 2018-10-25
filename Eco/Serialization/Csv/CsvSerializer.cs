@@ -63,6 +63,8 @@ namespace Eco.Serialization.Csv
             return data;
         }
 
+        public void GenerateSerializationAssembly(Type[] rawSettingsTypes) { }
+
         static void ValidateColumns(string[] columns, Type serializedObjectType)
         {
             var fieldNames = new HashSet<string>(serializedObjectType.GetFields().Select(f => f.Name));

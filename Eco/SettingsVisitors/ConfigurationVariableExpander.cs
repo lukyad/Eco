@@ -17,27 +17,26 @@ namespace Eco.SettingsVisitors
     /// 
     /// Throws an exception if a circular variable dependency is detected.
     /// </summary>
-    public class ConfigurationVariableExpander : ISettingsVisitor
+    public class ConfigurationVariableExpander : SettingsVisitorBase
     {
         // Mathes variable reference in a string.
         static readonly Regex _variableReferenceRegex = new Regex(@"\$\{(?<varName>\w)\}");
         // Name/value variable pairs.
         readonly Dictionary<string, Func<string>> _variables;
 
-        public ConfigurationVariableExpander(Dictionary<string, Func<string>> variables)
+        // isReversable: false
+        // Changes made by the ConfigurationVariableExpander are not revocable.
+        // i.e. it's not possible to pack expanded strings back to variables.
+        //
+        // supportsMultiVisit: true
+        // Not all variables could be initialized at the first pass. Thus we try to expand variables all the times.
+        public ConfigurationVariableExpander(Dictionary<string, Func<string>> variables) :
+            base(isReversable: false)
         {
             _variables = variables;
         }
 
-        // Changes made by the ConfigurationVariableExpander are not revocable.
-        // i.e. it's not possible to pack expanded strings back to variables.
-        public bool IsReversable { get { return false; } }
-
-        public void Initialize(Type rootRawSettingsType) { }
-
-        public void Visit(string settingsNamespace, string fieldPath, object rawSettings) { }
-
-        public void Visit(string settingsNamesapce, string fieldPath, FieldInfo rawSettingsField, object rawSettings)
+        public override void Visit(string settingsNamesapce, string fieldPath, object rawSettings, FieldInfo rawSettingsField)
         {
             // Skip 'sealed' fields.
             if (rawSettingsField.IsDefined<SealedAttribute>()) return;

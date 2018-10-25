@@ -47,6 +47,6 @@ namespace Eco
         /// <summary>
         /// Gets called ones for each field for all objects of a settings type in the settings tree.
         /// </summary>
-        void Visit(string settingsNamespace, string fieldPath, FieldInfo settingsField, object settings);
+        void Visit(string settingsNamespace, string fieldPath, object settings, FieldInfo settingsField);
     }
 }
