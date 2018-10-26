@@ -14,7 +14,7 @@ namespace Eco.SettingsVisitors
     /// </summary>
     public class ImportElementWriter : ImportElementProcessor
     {
-        protected override void ProcessImportElement(object importElem)
+        protected override void ProcessImportElement(string settingsNamesapce, string settingsPath, object importElem)
         {
             // Skip readonly files.
             if (import.IsReadOnly(importElem)) return;

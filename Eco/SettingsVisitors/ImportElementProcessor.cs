@@ -20,9 +20,9 @@ namespace Eco.SettingsVisitors
         public override void Visit(string settingsNamesapce, string settingsPath, object rawSettings)
         {
             if (rawSettings.IsEcoElementOfGenericType(typeof(import<,>)))
-                ProcessImportElement(rawSettings);
+                ProcessImportElement(settingsNamesapce, settingsPath, rawSettings);
         }
 
-        protected abstract void ProcessImportElement(object includeElem);
+        protected abstract void ProcessImportElement(string settingsNamesapce, string settingsPath, object includeElem);
     }
 }

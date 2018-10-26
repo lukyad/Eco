@@ -44,7 +44,7 @@ namespace Eco
                 variableExpander,
                 new EnvironmentVariableExpander(),
                 new IncludeElementReader(this),
-                new ImportElementReader(),
+                new ImportElementReader(this),
                 // We run ConfigurationVariableExpander twice to expand variables imported from the included files (if any).
                 variableExpander,
             };
@@ -247,6 +247,15 @@ namespace Eco
         internal object ReadRawSettings(string currentNamespace, string currentSettingsPath, Type rawSettingsType, TextReader reader, bool initializeVisitors)
         {
             object rawSettings = this.Serializer.Deserialize(rawSettingsType, reader);
+            InitilizeRawSettings(currentNamespace, currentSettingsPath, rawSettings, initializeVisitors);
+            return rawSettings;
+        }
+
+        /// <summary>
+        /// Used internally by the Eco library to initialize raw settings included/imported from sub-configuratoin files (if any).
+        /// </summary>
+        internal void InitilizeRawSettings(string currentNamespace, string currentSettingsPath, object rawSettings, bool initializeVisitors)
+        {
             if (this.RawSettingsReadVisitors != null)
             {
                 var settingsListBuilder = new SettingsListBuilder();
@@ -281,7 +290,6 @@ namespace Eco
                     }
                 }
             }
-            return rawSettings;
         }
 
         /// <summary>
