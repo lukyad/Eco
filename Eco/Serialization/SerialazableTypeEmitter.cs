@@ -9,6 +9,7 @@ using Microsoft.CSharp;
 using System.CodeDom.Compiler;
 using Eco.Extensions;
 using Eco.CodeBuilder;
+using System.Threading;
 
 namespace Eco.Serialization
 {
@@ -36,10 +37,21 @@ namespace Eco.Serialization
                 Type serializableType;
                 if (!_serializableTypeCache.TryGetValue(settingsType, out serializableType))
                 {
-                    serializableType = 
-                        TryLoadExistingType(settingsType, RawTypesAssemblySuffix) ??
-                        Emit(settingsType, serizlizer, attributesGenerator, GetRawFieldType, defaultUsage, RawTypesAssemblySuffix, validateAttributes: true);
-                    _serializableTypeCache.Add(settingsType, serializableType);
+                    using (var mutex = new Mutex(false, "EcoSerializationAssymblyGenerator"))
+                    {
+                        mutex.WaitOne();
+                        try
+                        {
+                            serializableType =
+                                TryLoadExistingType(settingsType, RawTypesAssemblySuffix) ??
+                                Emit(settingsType, serizlizer, attributesGenerator, GetRawFieldType, defaultUsage, RawTypesAssemblySuffix, validateAttributes: true);
+                            _serializableTypeCache.Add(settingsType, serializableType);
+                        }
+                        finally
+                        {
+                            mutex.ReleaseMutex();
+                        }
+                    }
                 }
                 return serializableType;
             }
