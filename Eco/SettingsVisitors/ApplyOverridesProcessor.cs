@@ -14,12 +14,12 @@ namespace Eco.SettingsVisitors
     /// </summary>
     public class ApplyOverridesProcessor : TwinSettingsVisitorBase
     {
-        readonly Dictionary<string, object> _refinedSettingsById;
-        readonly Dictionary<object, object> _refinedToRawMap;
+        readonly IReadOnlyDictionary<string, object> _refinedSettingsById;
+        readonly IReadOnlyDictionary<object, object> _refinedToRawMap;
 
         public ApplyOverridesProcessor(
-            Dictionary<string, object> refinedSettingsById,
-            Dictionary<object, object> refinedToRawMap)
+            IReadOnlyDictionary<string, object> refinedSettingsById,
+            IReadOnlyDictionary<object, object> refinedToRawMap)
         {
             _refinedSettingsById = refinedSettingsById;
             _refinedToRawMap = refinedToRawMap;

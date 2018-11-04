@@ -57,16 +57,23 @@ namespace Eco
             {
                 settingsMapBuilder,
                 // Use this ReferenceResolver to resolve applyDefaults.targets and applyOverrides.targets only.
-                new ReferenceResolver(settingsMapBuilder.RefinedSettingsById, settingsMapBuilder.RefinedToRawMap, _refinedSettingsListBuilder, typeof(applyDefaults<>), typeof(applyOverrides<>)),
+                new ReferenceResolver(settingsMapBuilder.RefinedSettingsById, settingsMapBuilder.RefinedToRawMap, typeof(applyDefaults<>), typeof(applyOverrides<>)),
                 // ReferenceResolver should go before ApplyDefaultsProcessor and ApplyOverridesProcessor
                 // as they depend on the results produced by the former.
                 new ApplyDefaultsProcessor(settingsMapBuilder.RefinedSettingsById, settingsMapBuilder.RefinedToRawMap),
                 new ApplyOverridesProcessor(settingsMapBuilder.RefinedSettingsById, settingsMapBuilder.RefinedToRawMap),
                 new FieldReferenceExpander(),
                 // Include ReferenceResolver for the second time to resolve the rest references.
-                new ReferenceResolver(settingsMapBuilder.RefinedSettingsById, settingsMapBuilder.RefinedToRawMap, _refinedSettingsListBuilder),
+                new ReferenceResolver(settingsMapBuilder.RefinedSettingsById, settingsMapBuilder.RefinedToRawMap),
                 new RequiredFieldChecker()
             };
+
+            // Link ISettingsConstuctor(s) and ISettingsConstructorObserver(s)
+            foreach (var observer in this.RefinedSettingsReadVisitors.OfType<IDynamicSettingsConstructorObserver>().Append(_refinedSettingsListBuilder))
+            {
+                foreach (var ctor in this.RefinedSettingsReadVisitors.OfType<IDynamicSettingsConstructor>())
+                    observer.Observe(ctor);
+            }
         }
 
         void InitializeRawSettingsSaveVisitors()
@@ -146,6 +153,14 @@ namespace Eco
         /// not break raw settins graph construction.
         /// </summary>
         public List<ITwinSettingsVisitor> RefinedSettingsWriteVisitors { get; set; }
+
+        /// <summary>
+        /// RefinedSettingsListBuilder is used internally by SettingsManager to dump all twin settings to a list
+        /// and use the list further in place of traversing the settings tree through the reflection.
+        /// If you modify the default list of RefinedSettingsReadVisitors, you might need to link RefinedSettingsListBuilder
+        /// to the added IDynamicSettingsConstructor(s), if any.
+        /// </summary>
+        public IDynamicSettingsConstructorObserver RefinedSettingsListBuilder => _refinedSettingsListBuilder;
 
         /// <summary>
         /// Returns default configuration file name for the specified settins type which is typeof(T).Name + ".config"
@@ -353,8 +368,8 @@ namespace Eco
             object refinedSettings = Activator.CreateInstance(refinedSettingsType);
             var mandatoryVisitors = new ITwinSettingsVisitor[]
             {
-                    new RefinedSettingsBuilder(),
-                    _refinedSettingsListBuilder
+                new RefinedSettingsBuilder(),
+                _refinedSettingsListBuilder
             };
             foreach (var v in mandatoryVisitors)
             {
@@ -368,7 +383,7 @@ namespace Eco
             if (this.RefinedSettingsReadVisitors != null)
             {
                 // TraverseTwinSeetingsTrees uses Reflection to go through the settings tree.
-                // Below we dump all tree nodes to a list and use it further instead of traversing the tree through the reflection.
+                // Below we use tree nodes dumped to a list instead of traversing the tree through the reflection.
                 var userVisitors = this.SkipNonReversableOperations ? this.RefinedSettingsReadVisitors.Where(v => v.IsReversable) : this.RefinedSettingsReadVisitors;
                 foreach (var v in userVisitors)
                 {

@@ -8,27 +8,43 @@ using Eco.Extensions;
 
 namespace Eco.SettingsVisitors
 {
-    public class TwinSettingsListBuilder : TwinSettingsVisitorBase
+    public class TwinSettingsListBuilder : TwinSettingsVisitorBase, IDynamicSettingsConstructorObserver
     {
-        public List<ITwinSettingsTreeNode> Settings { get; } = new List<ITwinSettingsTreeNode>();
+        readonly List<ITwinSettingsTreeNode> _settings = new List<ITwinSettingsTreeNode>();
 
-        public override void Initialize(Type rootMasterSettingsType, Type rootSlaveSettingsType) => Settings.Clear();
+        public IReadOnlyList<ITwinSettingsTreeNode> Settings => _settings;
+
+        public override void Initialize(Type rootMasterSettingsType, Type rootSlaveSettingsType) => _settings.Clear();
 
         public override void Visit(string settingsNamespace, string settingsPath, object masterSettings, object slaveSettings)
         {
-            Settings.Add(new TwinSettingsObjectTreeNode(settingsNamespace, settingsPath, masterSettings, slaveSettings));
+            _settings.Add(new TwinSettingsObjectTreeNode(settingsNamespace, settingsPath, masterSettings, slaveSettings));
         }
 
         public override void Visit(string settingsNamespace, string fieldPath, object masterSettings, FieldInfo masterSettingsField, object slaveSettings, FieldInfo slaveSettingsField)
         {
-            Settings.Add(new TwinSettingsFieldTreeNode(
+            _settings.Add(new TwinSettingsFieldTreeNode(
                 settingsNamespace,
-                fieldPath, 
-                masterSettings, 
-                masterSettingsField, 
-                slaveSettings, 
-                slaveSettingsField, 
+                fieldPath,
+                masterSettings,
+                masterSettingsField,
+                slaveSettings,
+                slaveSettingsField,
                 masterSettingsField.GetCustomAttribute<SkippedByAttribute>()?.Visitors));
+        }
+
+        public void Observe(IDynamicSettingsConstructor ctor)
+        {
+            ctor.SettingsCreated += s =>
+            {
+                SettingsManager.TraverseTwinSeetingsTrees(
+                    startNamespace: s.settingsNamesapase,
+                    startPath: s.settingsPath,
+                    rootMasterSettings: s.refinedSettings,
+                    rootSlaveSettings: s.rawSettings,
+                    visitor: this,
+                    initVisitor: false);
+            };
         }
     }
 }

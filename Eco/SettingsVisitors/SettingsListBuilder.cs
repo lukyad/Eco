@@ -10,18 +10,20 @@ namespace Eco.SettingsVisitors
 {
     public class SettingsListBuilder : SettingsVisitorBase
     {
-        public List<ISettingsTreeNode> Settings { get; } = new List<ISettingsTreeNode>();
+        readonly List<ISettingsTreeNode> _settings = new List<ISettingsTreeNode>();
 
-        public override void Initialize(Type rootSettingsType) => Settings.Clear();
+        public IReadOnlyList<ISettingsTreeNode> Settings => _settings;
+
+        public override void Initialize(Type rootSettingsType) => _settings.Clear();
 
         public override void Visit(string settingsNamespace, string settingsPath, object settings)
         {
-            Settings.Add(new SettingsObjectTreeNode(settingsNamespace, settingsPath, settings));
+            _settings.Add(new SettingsObjectTreeNode(settingsNamespace, settingsPath, settings));
         }
 
         public override void Visit(string settingsNamespace, string fieldPath, object settings, FieldInfo settingsField)
         {
-            Settings.Add(new SettingsFieldTreeNode(settingsNamespace, fieldPath, settings, settingsField, settingsField.GetCustomAttribute<SkippedByAttribute>()?.Visitors));
+            _settings.Add(new SettingsFieldTreeNode(settingsNamespace, fieldPath, settings, settingsField, settingsField.GetCustomAttribute<SkippedByAttribute>()?.Visitors));
         }
     }
 }

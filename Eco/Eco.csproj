@@ -85,6 +85,7 @@
     <Compile Include="Infra\Cloner.cs" />
     <Compile Include="Serialization\Csv\CsvSerializer.cs" />
     <Compile Include="SettingsTreeNodes.cs" />
+    <Compile Include="SettingsVisitors\IDynamicSettingsConstructor.cs" />
     <Compile Include="SettingsVisitors\ApplyDefaultsProcessor.cs" />
     <Compile Include="SettingsVisitors\ApplyOverridesProcessor.cs" />
     <Compile Include="Attributes\EcoElementAttribute.cs" />

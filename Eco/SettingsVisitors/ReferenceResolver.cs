@@ -18,22 +18,19 @@ namespace Eco.SettingsVisitors
     // Normalized id means that two NOT EQUAL `generating` references that result in instantiation of two EQUAL objects
     // would have the same id and would resolve to a single settings object (i.e. the first resolved reference would generate an extra object
     // and the second one would be resolved to the already generated object).
-    public class ReferenceResolver : ITwinSettingsVisitor
+    public class ReferenceResolver : ITwinSettingsVisitor, IDynamicSettingsConstructor
     {
-        readonly Dictionary<string, object> _refinedSettingsById;
-        readonly Dictionary<object, object> _refinedToRawMap;
-        // ReferenceResolver adds dynamicly generated settings to the global twinSettingsList for the futher processing by the following visitors.
-        readonly TwinSettingsListBuilder _twinSettingsListBuilder;
+        readonly IReadOnlyDictionary<string, object> _refinedSettingsById;
+        readonly IReadOnlyDictionary<object, object> _refinedToRawMap;
         readonly HashSet<object> _prototypes = new HashSet<object>();
         readonly HashSet<Type> _settingTypesFilter;
         Dictionary<object, string> _idByRefinedSettings;
         ParsingPolicyAttribute[] _parsingPolicies;
 
-        public ReferenceResolver(Dictionary<string, object> refinedSettingsById, Dictionary<object, object> refinedToRawMap, TwinSettingsListBuilder twinSettingsListBuilder, params Type[] settingTypesFilter)
+        public ReferenceResolver(IReadOnlyDictionary<string, object> refinedSettingsById, IReadOnlyDictionary<object, object> refinedToRawMap, params Type[] settingTypesFilter)
         {
             _refinedSettingsById = refinedSettingsById;
             _refinedToRawMap = refinedToRawMap;
-            _twinSettingsListBuilder = twinSettingsListBuilder;
             _settingTypesFilter = settingTypesFilter != null && settingTypesFilter.Length > 0 ? new HashSet<Type>(settingTypesFilter) : null;
         }
         public static class ControlChars
@@ -53,6 +50,8 @@ namespace Eco.SettingsVisitors
 
 
         public bool IsReversable { get { return true; } }
+
+        public event Action<(string settingsNamesapase, string settingsPath, string settingsId, object rawSettings, object refinedSettings)> SettingsCreated;
 
         public void Initialize(Type rootRefinedSettingsType, Type rootRawSettingsType)
         {
@@ -203,17 +202,16 @@ namespace Eco.SettingsVisitors
 
                 if (!_refinedSettingsById.TryGetValue(dynamicSettingsId, out object existingDynamicSettings))
                 {
-                    // Make SettingsManager aware of the dynamicly generated settings.
-                    _refinedSettingsById.Add(dynamicSettingsId, dynamicRefinedSettings);
-                    _refinedToRawMap.Add(dynamicSettingsId, dynamicRawSettings);
+                    // Make dependent IDynamicSettingsConstructor(s) aware of the dynamicly generated settings.
+                    SettingsCreated?.Invoke((
+                        settingsNamesapase: currentNamespace,
+                        settingsPath: currentPath,
+                        settingsId: dynamicSettingsId,
+                        rawSettings: dynamicRawSettings,
+                        refinedSettings: dynamicRefinedSettings));
 
-                    SettingsManager.TraverseTwinSeetingsTrees(
-                        startNamespace: currentNamespace,
-                        startPath: currentPath,
-                        rootMasterSettings: dynamicRefinedSettings,
-                        rootSlaveSettings: dynamicRawSettings,
-                        visitor: _twinSettingsListBuilder,
-                        initVisitor: false);
+                    //_refinedSettingsById.Add(dynamicSettingsId, dynamicRefinedSettings);
+                    //_refinedToRawMap.Add(dynamicSettingsId, dynamicRawSettings);
                 }
                 else
                     dynamicRefinedSettings = existingDynamicSettings;

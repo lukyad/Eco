@@ -8,17 +8,20 @@ using Eco.Extensions;
 
 namespace Eco.SettingsVisitors
 {
-    public class SettingsMapBuilder : TwinSettingsVisitorBase
+    public class SettingsMapBuilder : TwinSettingsVisitorBase, IDynamicSettingsConstructorObserver
     {
-        public Dictionary<string, object> RefinedSettingsById { get; } = new Dictionary<string, object>();
+        readonly Dictionary<string, object> _refinedSettingsById = new Dictionary<string, object>();
+        readonly Dictionary<object, object>  _refinedToRawMap = new Dictionary<object, object>();
 
-        public Dictionary<object, object> RefinedToRawMap { get; } = new Dictionary<object, object>();
+        public IReadOnlyDictionary<string, object> RefinedSettingsById => _refinedSettingsById;
+
+        public IReadOnlyDictionary<object, object> RefinedToRawMap => _refinedToRawMap;
 
         public override void Initialize(Type rootRefinedSettingsType, Type rootRawSettingsType)
         {
-            this.RefinedSettingsById.Clear();
-            this.RefinedToRawMap.Clear();
-            this.RefinedSettingsById.Add(Settings.NullId, Settings.Null);
+            this._refinedSettingsById.Clear();
+            this._refinedToRawMap.Clear();
+            this._refinedSettingsById.Add(Settings.NullId, Settings.Null);
         }
 
         public override void Visit(string settingsNamespace, string settingsPath, object refinedSettings, object rawSettings)
@@ -26,8 +29,8 @@ namespace Eco.SettingsVisitors
             string id = GetSettingsId(settingsNamespace, settingsPath, refinedSettings);
             if (id == Settings.NullId) throw new ConfigurationException("'null' settins id is reserved by the Eco library. Please use another id.", id);
             if (this.RefinedSettingsById.ContainsKey(id)) throw new ConfigurationException("Duplicate settings ID: '{0}'.", id);
-            this.RefinedSettingsById.Add(id, refinedSettings);
-            this.RefinedToRawMap.Add(refinedSettings, rawSettings);
+            _refinedSettingsById.Add(id, refinedSettings);
+            _refinedToRawMap.Add(refinedSettings, rawSettings);
         }
 
         string GetSettingsId(string settingsNamesapce, string fieldPath, object refinedSettings)
@@ -37,6 +40,15 @@ namespace Eco.SettingsVisitors
             if (idField != null) id = (string)idField.GetValue(refinedSettings);
             if (id == null) id = fieldPath;
             return SettingsPath.Combine(settingsNamesapce, id);
+        }
+
+        public void Observe(IDynamicSettingsConstructor ctor)
+        {
+            ctor.SettingsCreated += s =>
+            {
+                _refinedSettingsById.Add(s.settingsId, s.refinedSettings);
+                _refinedToRawMap.Add(s.refinedSettings, s.rawSettings);
+            };
         }
     }
 }
