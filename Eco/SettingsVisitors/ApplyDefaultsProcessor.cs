@@ -16,17 +16,14 @@ namespace Eco.SettingsVisitors
     {
         readonly Dictionary<string, object> _refinedSettingsById;
         readonly Dictionary<object, object> _refinedToRawMap;
-        readonly HashSet<Tuple<object, FieldInfo>> _initializedFields;
 
 
         public ApplyDefaultsProcessor(
             Dictionary<string, object> refinedSettingsById,
-            Dictionary<object, object> refinedToRawMap,
-            /*out*/ HashSet<Tuple<object, FieldInfo>> initializedFields)
+            Dictionary<object, object> refinedToRawMap)
         {
             _refinedSettingsById = refinedSettingsById;
             _refinedToRawMap = refinedToRawMap;
-            _initializedFields = initializedFields;
         }
 
         public override void Visit(string settingsNamespace, string settingsPath, object refinedSettings, object rawSettings)
@@ -59,7 +56,7 @@ namespace Eco.SettingsVisitors
                         startPath: settingsPath,
                         rootMasterSettings: rawDefaults,
                         rootSlaveSettings: rawTarget,
-                        visitor: new DefaultsSetter(toBeDefaultedFieldCollector.PathsToDefault, new HashSet<Tuple<object, FieldInfo>>()),
+                        visitor: new DefaultsSetter(toBeDefaultedFieldCollector.PathsToDefault),
                         SkipBranch: IsArrayField);
 
                     SettingsManager.TraverseTwinSeetingsTrees(
@@ -67,7 +64,7 @@ namespace Eco.SettingsVisitors
                         startPath: settingsPath,
                         rootMasterSettings: refinedDefaults,
                         rootSlaveSettings: target,
-                        visitor: new DefaultsSetter(toBeDefaultedFieldCollector.PathsToDefault, _initializedFields),
+                        visitor: new DefaultsSetter(toBeDefaultedFieldCollector.PathsToDefault),
                         SkipBranch: IsArrayField);
                 }
             }
@@ -95,12 +92,10 @@ namespace Eco.SettingsVisitors
         class DefaultsSetter : TwinSettingsVisitorBase
         {
             readonly HashSet<string> _fieldsToBeDefaulted;
-            readonly HashSet<Tuple<object, FieldInfo>> _initializedFields;
 
-            public DefaultsSetter(HashSet<string> fieldsToBeDefaulted,/*out*/ HashSet<Tuple<object, FieldInfo>> initializedFields)
+            public DefaultsSetter(HashSet<string> fieldsToBeDefaulted)
             {
                 _fieldsToBeDefaulted = fieldsToBeDefaulted;
-                _initializedFields = initializedFields;
             }
 
             public override void Visit(string settingsNamespace, string fieldPath, object defaults, FieldInfo defaultsField, object target, FieldInfo targetField)
@@ -110,10 +105,7 @@ namespace Eco.SettingsVisitors
 
                 object defaultValue = defaultsField.GetValue(defaults);
                 if (defaultValue != null)
-                {
                     targetField.SetValue(target, defaultsField.GetValue(defaults));
-                    _initializedFields.Add(Tuple.Create(target, targetField));
-                }
             }
         }
     }
