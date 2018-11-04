@@ -139,11 +139,13 @@ namespace Eco.Serialization
         {
             var parsingPolicies = ParsingPolicyAttribute.GetPolicies(rootSettingsType);
             string compilationUnit = GenerateClassDefinitionRecursive(rootSettingsType, attributesGenerator, GetRawFieldType, defaultUsage, parsingPolicies, validateAttributes);
+            // skip generated assemblies.
             string[] referencedAssemblies = AppDomain.CurrentDomain.GetAssemblies()
-                .Where(a => !a.IsDynamic)
+                .Where(a => !a.IsDynamic && !a.Location.Contains(Path.GetFileNameWithoutExtension(assemblyNameSuffix)))
                 .Select(a => a.Location)
                 .ToArray();
             string outputFileName = GetGeneratedAssemblyPath(rootSettingsType, assemblyNameSuffix);
+
             CompilerParameters p = new CompilerParameters(referencedAssemblies, outputFileName);
             CompilerResults results = new CSharpCodeProvider().CompileAssemblyFromSource(p, compilationUnit);
             if (results.Errors.Count > 0)
