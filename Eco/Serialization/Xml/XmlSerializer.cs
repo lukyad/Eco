@@ -7,6 +7,7 @@ using System.IO;
 using System.Xml.Serialization;
 using System.Xml;
 using System.Runtime.Serialization;
+using System.CodeDom.Compiler;
 using Eco.Extensions;
 using SystemXmlSerializer = System.Xml.Serialization.XmlSerializer;
 
@@ -57,9 +58,9 @@ namespace Eco.Serialization.Xml
             var mappings = rawSettingsTypes
                 .Select(t => xmlReflectionImporter.ImportTypeMapping(t))
                 .ToArray();
-            var xmlSerializerAssembly = SystemXmlSerializer.GenerateSerializer(rawSettingsTypes, mappings);
-            string destFilePath = Path.Combine(Path.GetDirectoryName(rawTypesAssembly.Location), Path.GetFileName(xmlSerializerAssembly.Location));
-            File.Copy(xmlSerializerAssembly.Location, destFilePath, overwrite: true);
+
+            string destFilePath = Path.Combine(Path.GetDirectoryName(rawTypesAssembly.Location), SystemXmlSerializer.GetXmlSerializerAssemblyName(rawSettingsTypes.First()) + ".dll");
+            SystemXmlSerializer.GenerateSerializer(rawSettingsTypes, mappings, new CompilerParameters { OutputAssembly = destFilePath });
         }
 
         static void serializer_UnknownAttribute(object sender, XmlAttributeEventArgs e)
