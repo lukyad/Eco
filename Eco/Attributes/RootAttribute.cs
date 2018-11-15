@@ -20,7 +20,8 @@ namespace Eco
         {
             new ParsingPolicyAttribute(typeof(TimeSpanConverter)),
             new ParsingPolicyAttribute(typeof(NumericConverter)),
-            new ParsingPolicyAttribute(typeof(DateTimeConverter), "yyyyMMdd")
+            new ParsingPolicyAttribute(typeof(DateTimeConverter), "yyyyMMdd"),
+            new ParsingPolicyAttribute(typeof(DecimalConverter))
         };
 
         public ParsingPolicyAttribute[] ParsingPolicies => this.DisableDefaultParsingPolicies ? new ParsingPolicyAttribute[0] : DefaultParsingPolicies;

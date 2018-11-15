@@ -78,6 +78,7 @@
     <Compile Include="Attributes\NonSettingsTypeAttribute.cs" />
     <Compile Include="Attributes\SkippedByAttribute.cs" />
     <Compile Include="Converters\Convert.cs" />
+    <Compile Include="Converters\DecimalConverter.cs" />
     <Compile Include="Converters\DateTimeConverter.cs" />
     <Compile Include="Elements\import.cs" />
     <Compile Include="Elements\applyOverrides.cs" />
