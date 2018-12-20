@@ -28,7 +28,7 @@ namespace Eco.SettingsVisitors
     /// 
     /// If Eco detects a reference to a non-exiting field, it just doesn't expand the reference and leave it as is. 
     /// </summary>
-    public class FieldReferenceExpander : TwinSettingsVisitorBase
+    public class FieldReferenceExpander : TwinSettingsVisitorBase, IDynamicSettingsIdGenerator
     {
         // Changes made by the StringFieldReferenceExpander are not revocable.
         // i.e. it's not possible to pack expanded strings back.
@@ -36,6 +36,8 @@ namespace Eco.SettingsVisitors
             : base(isReversable: false)
         {
         }
+
+        public event Action<(object refinedSettings, string generatedId)> IdGenerated;
 
         public override void Visit(string settingsNamesapce, string fieldPath, object refinedSettings, FieldInfo refinedSettingsField, object rawSettings, FieldInfo rawSettingsField)
         {
@@ -52,6 +54,9 @@ namespace Eco.SettingsVisitors
                 {
                     var expandedString = ExpandFieldReferences(originalString, fieldPath, rawSettings);
                     rawSettingsField.SetValue(rawSettings, expandedString);
+                    // If field is marked with IdAttribute, notify interested observers about ID change.
+                    if (expandedString != originalString && refinedSettingsField.IsDefined<IdAttribute>())
+                        IdGenerated?.Invoke((refinedSettings, generatedId: expandedString));
                 }
             }
             else if (rawSettingsField.FieldType == typeof(string[]))

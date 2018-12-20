@@ -10,8 +10,8 @@ namespace Eco.SettingsVisitors
 {
     /// <summary>
     /// Provides a way to notify interested ITwinSettingsVisitor(s) that a new dynamic settings object has been created.
-    /// SettingsManager automatically links only default ISettingsConstuctor(s) and ISettingsConstructorObserver(s) (i.e. default visitors).
-    /// If you override default visiotrs (ie. SettingsManager.RefinedSettingsReadVisitors), you need to care abount the linking yourself.
+    /// SettingsManager automatically links only default IDynamicSettingsConstuctor(s) and IDynamicSettingsConstructorObserver(s) (i.e. default visitors).
+    /// If you override default visiotrs (ie. SettingsManager.RefinedSettingsReadVisitors), you need to care about the linking yourself.
     /// </summary>
     public interface IDynamicSettingsConstructor
     {

@@ -68,10 +68,17 @@ namespace Eco
                 new RequiredFieldChecker()
             };
 
-            // Link ISettingsConstuctor(s) and ISettingsConstructorObserver(s)
+            // Link IDynamicSettingsConstuctor(s) and IDynamicSettingsConstructorObserver(s)
             foreach (var observer in this.RefinedSettingsReadVisitors.OfType<IDynamicSettingsConstructorObserver>().Append(_refinedSettingsListBuilder))
             {
                 foreach (var ctor in this.RefinedSettingsReadVisitors.OfType<IDynamicSettingsConstructor>())
+                    observer.Observe(ctor);
+            }
+
+            // Link IDynamicSettingsIdGenerator(s) and IDynamicSettingsIdGeneratorObserver(s)
+            foreach (var observer in this.RefinedSettingsReadVisitors.OfType<IDynamicSettingsIdGeneratorObserver>())
+            {
+                foreach (var ctor in this.RefinedSettingsReadVisitors.OfType<IDynamicSettingsIdGenerator>())
                     observer.Observe(ctor);
             }
         }

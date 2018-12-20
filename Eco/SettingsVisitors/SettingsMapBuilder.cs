@@ -8,7 +8,7 @@ using Eco.Extensions;
 
 namespace Eco.SettingsVisitors
 {
-    public class SettingsMapBuilder : TwinSettingsVisitorBase, IDynamicSettingsConstructorObserver
+    public class SettingsMapBuilder : TwinSettingsVisitorBase, IDynamicSettingsConstructorObserver, IDynamicSettingsIdGeneratorObserver
     {
         readonly Dictionary<string, object> _refinedSettingsById = new Dictionary<string, object>();
         readonly Dictionary<object, object>  _refinedToRawMap = new Dictionary<object, object>();
@@ -28,7 +28,7 @@ namespace Eco.SettingsVisitors
         {
             string id = GetSettingsId(settingsNamespace, settingsPath, refinedSettings);
             if (id == Settings.NullId) throw new ConfigurationException("'null' settins id is reserved by the Eco library. Please use another id.", id);
-            if (this.RefinedSettingsById.ContainsKey(id)) throw new ConfigurationException("Duplicate settings ID: '{0}'.", id);
+            CheckDupes(id);
             _refinedSettingsById.Add(id, refinedSettings);
             _refinedToRawMap.Add(refinedSettings, rawSettings);
         }
@@ -49,6 +49,25 @@ namespace Eco.SettingsVisitors
                 _refinedSettingsById.Add(s.settingsId, s.refinedSettings);
                 _refinedToRawMap.Add(s.refinedSettings, s.rawSettings);
             };
+        }
+
+        public void Observe(IDynamicSettingsIdGenerator idGenerator)
+        {
+            idGenerator.IdGenerated += info =>
+            {
+                CheckDupes(info.generatedId);
+                // Find the old settings ID
+                string oldId = _refinedSettingsById.SingleOrDefault(p => p.Value == info.refinedSettings).Key;
+                if (oldId == null) throw new ApplicationException($"Could not find refined settings object with generatedId={info.generatedId}");
+                // Replace old id with the new one.
+                _refinedSettingsById.Remove(oldId);
+                _refinedSettingsById.Add(info.generatedId, info.refinedSettings);
+            };
+        }
+
+        void CheckDupes(string id)
+        {
+            if (this.RefinedSettingsById.ContainsKey(id)) throw new ConfigurationException("Duplicate settings ID: '{0}'.", id);
         }
     }
 }
