@@ -12,7 +12,7 @@ namespace Eco
     /// Provides default value for the raw field.
     /// 
     /// Usage:
-    /// Can be applied to a field that has one of the following corresponding raw types: non-simple or string type.
+    /// Can be applied to a field that has the following attributes: (raw type is string) and (field type is either Nullable or not a value type or field is hidden).
     /// </summary>
     [AttributeUsage(AttributeTargets.Field)]
     public class DefaultAttribute : EcoFieldAttribute
@@ -27,8 +27,9 @@ namespace Eco
 
         public override void ValidateContext(FieldInfo context, Type rawFieldType)
         {
-            if (rawFieldType != typeof(string) && rawFieldType.IsSimple())
-                ThrowExpectedFieldOf($"a type that has one of the following corresponding raw settings types: non-simple or string type. If orginal field is of a simple type, consider using of appropriate {nameof(ParsingPolicyAttribute)} attribute.", context);
+            //&& Nullable.GetUnderlyingType(field.FieldType) == null
+            if (rawFieldType != typeof(string) || (context.FieldType.IsValueType && Nullable.GetUnderlyingType(context.FieldType) == null && !context.IsDefined<HiddenAttribute>()))
+                ThrowExpectedFieldOf($"a type that has one of the following attributes: (raw type is string) and (field type is either Nullable or not a value type or field is hidden).", context);
         }
     }
 }
