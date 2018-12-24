@@ -82,6 +82,7 @@
     <Compile Include="Elements\import.cs" />
     <Compile Include="Elements\applyOverrides.cs" />
     <Compile Include="Elements\applyDefaults.cs" />
+    <Compile Include="Infra\Disposable.cs" />
     <Compile Include="Infra\Cloner.cs" />
     <Compile Include="Serialization\Csv\CsvSerializer.cs" />
     <Compile Include="SettingsTreeNodes.cs" />

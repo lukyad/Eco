@@ -21,7 +21,7 @@ namespace Eco
         readonly ISerializationAttributesGenerator _serializationAttributesGenerator;
         // Builds list of all ITwinSettingsTreeNodes for a single Load operation.
         readonly TwinSettingsListBuilder _refinedSettingsListBuilder = new TwinSettingsListBuilder();
-        readonly HashSet<(object settings, string field)> _defaultedFields = new HashSet<(object settings, string field)> ();
+        readonly HashSet<(object settings, string field)> _defaultedFields = new HashSet<(object settings, string field)>();
         readonly HashSet<(object settings, string field)> _overridenFields = new HashSet<(object settings, string field)>();
 
         public SettingsManager(ISerializer serializer, ISerializationAttributesGenerator serializationAttributesGenerator)
@@ -249,33 +249,58 @@ namespace Eco
         public object Read(Type settingsType, TextReader reader)
         {
             var readVisitors = this.RawSettingsReadVisitors.OfType<object>().Concat(this.RefinedSettingsReadVisitors);
-            foreach (var v in readVisitors.OfType<IDefaultValueSetter>())
+            using (DefaultsCheck(readVisitors))
+            using (OverridesCheck(readVisitors))
             {
-                v.InitializingField += f =>
-                {
-                    if (_defaultedFields.Contains(f)) throw new ConfigurationException($"Second time initialization: field={f.settings.GetType().Name}.{f.field}");
-                    _defaultedFields.Add(f);
-                };
+                Type rawSettingsType = SerializableTypeEmitter.GetRawTypeFor(settingsType, this.Serializer, this.SerializationAttributesGenerator, this.DefaultUsage);
+                var rawSettings = ReadRawSettings(
+                    currentNamespace: null,
+                    currentSettingsPath: rawSettingsType.Name,
+                    rawSettingsType: rawSettingsType,
+                    reader: reader,
+                    initializeVisitors: true);
+                return CreateRefinedSettings(settingsType, rawSettings);
             }
-            foreach (var v in readVisitors.OfType<IFieldValueOverrider>())
-            {
-                v.OverridingField += f =>
-                {
-                    if (_overridenFields.Contains(f)) throw new ConfigurationException($"Second time override: field={f.settings.GetType().Name}.{f.field}");
-                    _overridenFields.Add(f);
-                };
-            }
-            _defaultedFields.Clear();
-            _overridenFields.Clear();
+        }
 
-            Type rawSettingsType = SerializableTypeEmitter.GetRawTypeFor(settingsType, this.Serializer, this.SerializationAttributesGenerator, this.DefaultUsage);
-            var rawSettings = ReadRawSettings(
-                currentNamespace: null,
-                currentSettingsPath: rawSettingsType.Name,
-                rawSettingsType: rawSettingsType,
-                reader: reader,
-                initializeVisitors: true);
-            return CreateRefinedSettings(settingsType, rawSettings);
+        static IDisposable DefaultsCheck(IEnumerable<object> visitors)
+        {
+            var defaultedFields = new HashSet<(object settings, string field)>();
+            //var readVisitors = this.RawSettingsReadVisitors.OfType<object>().Concat(this.RefinedSettingsReadVisitors);
+            foreach (var v in visitors.OfType<IDefaultValueSetter>())
+                v.InitializingField += OnFieldInitialized;
+
+            return new Disposable(() =>
+            {
+                foreach (var v in visitors.OfType<IDefaultValueSetter>())
+                    v.InitializingField -= OnFieldInitialized;
+            });
+
+            void OnFieldInitialized((object settings, string field) fieldInfo)
+            {
+                if (defaultedFields.Contains(fieldInfo)) throw new ConfigurationException($"Second time initialization: field={fieldInfo.settings.GetType().Name}.{fieldInfo.field}");
+                defaultedFields.Add(fieldInfo);
+            }
+        }
+
+        static IDisposable OverridesCheck(IEnumerable<object> visitors)
+        {
+            var overridenFields = new HashSet<(object settings, string field)>();
+            //var readVisitors = this.RawSettingsReadVisitors.OfType<object>().Concat(this.RefinedSettingsReadVisitors);
+            foreach (var v in visitors.OfType<IFieldValueOverrider>())
+                v.OverridingField += OnFieldOverriden;
+
+            return new Disposable(() =>
+            {
+                foreach (var v in visitors.OfType<IDefaultValueSetter>())
+                    v.InitializingField -= OnFieldOverriden;
+            });
+
+            void OnFieldOverriden((object settings, string field) fieldInfo)
+            {
+                if (overridenFields.Contains(fieldInfo)) throw new ConfigurationException($"Second time override: field={fieldInfo.settings.GetType().Name}.{fieldInfo.field}");
+                overridenFields.Add(fieldInfo);
+            }
         }
 
         /// <summary>
