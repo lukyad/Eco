@@ -17,13 +17,4 @@ namespace Eco.SettingsVisitors
     {
         event Action<(object refinedSettings, string generatedId)> IdGenerated;
     }
-
-    public interface IDynamicSettingsIdGeneratorObserver
-    {
-        /// <summary>
-        /// Eco library calls Observe only once for each default RefinedSettingsReadVisitor.
-        /// It doesn't call Observe for any Visitors added manually. 
-        /// </summary>
-        void Observe(IDynamicSettingsIdGenerator idGenerator);
-    }
 }

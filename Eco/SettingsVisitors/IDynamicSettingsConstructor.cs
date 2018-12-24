@@ -17,13 +17,4 @@ namespace Eco.SettingsVisitors
     {
         event Action<(string settingsNamesapase, string settingsPath, string settingsId, object rawSettings, object refinedSettings)> SettingsCreated;
     }
-
-    public interface IDynamicSettingsConstructorObserver
-    {
-        /// <summary>
-        /// Eco library calls Observe only once for each default RefinedSettingsReadVisitor.
-        /// It doesn't call Observe for any Visitors added manually. 
-        /// </summary>
-        void Observe(IDynamicSettingsConstructor ctor);
-    }
 }

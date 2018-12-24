@@ -8,7 +8,7 @@ using Eco.Extensions;
 
 namespace Eco.SettingsVisitors
 {
-    public class SettingsMapBuilder : TwinSettingsVisitorBase, IDynamicSettingsConstructorObserver, IDynamicSettingsIdGeneratorObserver
+    public class SettingsMapBuilder : TwinSettingsVisitorBase, ISettingsVisitorObserver
     {
         readonly Dictionary<string, object> _refinedSettingsById = new Dictionary<string, object>();
         readonly Dictionary<object, object>  _refinedToRawMap = new Dictionary<object, object>();
@@ -42,27 +42,31 @@ namespace Eco.SettingsVisitors
             return SettingsPath.Combine(settingsNamesapce, id);
         }
 
-        public void Observe(IDynamicSettingsConstructor ctor)
+        public void Observe(object visitor)
         {
-            ctor.SettingsCreated += s =>
+            switch (visitor)
             {
-                _refinedSettingsById.Add(s.settingsId, s.refinedSettings);
-                _refinedToRawMap.Add(s.refinedSettings, s.rawSettings);
-            };
-        }
+                case IDynamicSettingsConstructor ctor:
+                    ctor.SettingsCreated += s =>
+                    {
+                        _refinedSettingsById.Add(s.settingsId, s.refinedSettings);
+                        _refinedToRawMap.Add(s.refinedSettings, s.rawSettings);
+                    };
+                    break;
 
-        public void Observe(IDynamicSettingsIdGenerator idGenerator)
-        {
-            idGenerator.IdGenerated += info =>
-            {
-                CheckDupes(info.generatedId);
-                // Find the old settings ID
-                string oldId = _refinedSettingsById.SingleOrDefault(p => p.Value == info.refinedSettings).Key;
-                if (oldId == null) throw new ApplicationException($"Could not find refined settings object with generatedId={info.generatedId}");
-                // Replace old id with the new one.
-                _refinedSettingsById.Remove(oldId);
-                _refinedSettingsById.Add(info.generatedId, info.refinedSettings);
-            };
+                case IDynamicSettingsIdGenerator idGenerator:
+                    idGenerator.IdGenerated += info =>
+                    {
+                        CheckDupes(info.generatedId);
+                        // Find the old settings ID
+                        string oldId = _refinedSettingsById.SingleOrDefault(p => p.Value == info.refinedSettings).Key;
+                        if (oldId == null) throw new ApplicationException($"Could not find refined settings object with generatedId={info.generatedId}");
+                        // Replace old id with the new one.
+                        _refinedSettingsById.Remove(oldId);
+                        _refinedSettingsById.Add(info.generatedId, info.refinedSettings);
+                    };
+                    break;
+            }
         }
 
         void CheckDupes(string id)

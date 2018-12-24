@@ -12,7 +12,7 @@ namespace Eco.SettingsVisitors
     /// Applies overrides to all matched settings.
     /// Overrides and settings filter is provided by the Eco.applyOverrides configuration element.
     /// </summary>
-    public class ApplyOverridesProcessor : TwinSettingsVisitorBase
+    public class ApplyOverridesProcessor : TwinSettingsVisitorBase, IFieldValueOverrider
     {
         readonly IReadOnlyDictionary<string, object> _refinedSettingsById;
         readonly IReadOnlyDictionary<object, object> _refinedToRawMap;
@@ -25,6 +25,8 @@ namespace Eco.SettingsVisitors
             _refinedToRawMap = refinedToRawMap;
         }
 
+        public event Action<(object settings, string field)> OverridingField;
+
         public override void Visit(string settingsNamespace, string settingsPath, object refinedSettings, object rawSettings)
         {
             if (refinedSettings.IsEcoElementOfGenericType(typeof(applyOverrides<>)))
@@ -33,8 +35,8 @@ namespace Eco.SettingsVisitors
                 var overridenFieldCollector = new OverridenFieldCollector();
                 object rawOverrides = applyOverrides.GetOverrides(rawSettings);
                 SettingsManager.TraverseSeetingsTree(
-                    startNamespace: settingsNamespace,
-                    startPath: settingsPath,
+                    startNamespace: null,
+                    startPath: null,
                     rootMasterSettings: rawOverrides,
                     visitor: overridenFieldCollector, 
                     SkipBranch: IsArrayField);
@@ -50,19 +52,19 @@ namespace Eco.SettingsVisitors
                 {
                     object rawTarget = _refinedToRawMap[target];
                     SettingsManager.TraverseTwinSeetingsTrees(
-                        startNamespace: settingsNamespace,
-                        startPath: settingsPath,
+                        startNamespace: null,
+                        startPath: null,
                         rootMasterSettings: rawOverrides,
                         rootSlaveSettings: rawTarget,
-                        visitor: new OverridesSetter(overridenFieldCollector.PathsToOverride),
+                        visitor: new OverridesSetter(overridenFieldCollector.PathsToOverride, notifyOverridingField: OverridingField),
                         SkipBranch: IsArrayField);
 
                     SettingsManager.TraverseTwinSeetingsTrees(
-                        startNamespace: settingsNamespace,
-                        startPath: settingsPath,
+                        startNamespace: null,
+                        startPath: null,
                         rootMasterSettings: refinedOverrides,
                         rootSlaveSettings: target,
-                        visitor: new OverridesSetter(overridenFieldCollector.PathsToOverride), 
+                        visitor: new OverridesSetter(overridenFieldCollector.PathsToOverride, notifyOverridingField: null), 
                         SkipBranch: IsArrayField);
                 }
             }
@@ -83,10 +85,12 @@ namespace Eco.SettingsVisitors
         class OverridesSetter : TwinSettingsVisitorBase
         {
             readonly HashSet<string> _fieldsToOverride;
+            readonly Action<(object settings, string field)> _notifyOverridingField;
 
-            public OverridesSetter(HashSet<string> fieldsToOverride)
+            public OverridesSetter(HashSet<string> fieldsToOverride, Action<(object settings, string field)> notifyOverridingField)
             {
                 _fieldsToOverride = fieldsToOverride;
+                _notifyOverridingField = notifyOverridingField;
             }
 
             public override void Visit(string settingsNamespace, string fieldPath, object overrides, FieldInfo overridesField, object target, FieldInfo targetField)
@@ -94,6 +98,7 @@ namespace Eco.SettingsVisitors
                 if (targetField.IsDefined<SealedAttribute>()) return;
                 if (_fieldsToOverride.Contains(fieldPath))
                 {
+                    _notifyOverridingField?.Invoke((target, targetField.Name));
                     object overridesValue = overridesField.GetValue(overrides);
                     targetField.SetValue(target, overridesValue);
                 }

@@ -21,6 +21,8 @@ namespace Eco
         readonly ISerializationAttributesGenerator _serializationAttributesGenerator;
         // Builds list of all ITwinSettingsTreeNodes for a single Load operation.
         readonly TwinSettingsListBuilder _refinedSettingsListBuilder = new TwinSettingsListBuilder();
+        readonly HashSet<(object settings, string field)> _defaultedFields = new HashSet<(object settings, string field)> ();
+        readonly HashSet<(object settings, string field)> _overridenFields = new HashSet<(object settings, string field)>();
 
         public SettingsManager(ISerializer serializer, ISerializationAttributesGenerator serializationAttributesGenerator)
         {
@@ -69,17 +71,11 @@ namespace Eco
             };
 
             // Link IDynamicSettingsConstuctor(s) and IDynamicSettingsConstructorObserver(s)
-            foreach (var observer in this.RefinedSettingsReadVisitors.OfType<IDynamicSettingsConstructorObserver>().Append(_refinedSettingsListBuilder))
+            var readVisitors = this.RefinedSettingsReadVisitors.Append(_refinedSettingsListBuilder);
+            foreach (var observer in readVisitors.OfType<ISettingsVisitorObserver>())
             {
-                foreach (var ctor in this.RefinedSettingsReadVisitors.OfType<IDynamicSettingsConstructor>())
-                    observer.Observe(ctor);
-            }
-
-            // Link IDynamicSettingsIdGenerator(s) and IDynamicSettingsIdGeneratorObserver(s)
-            foreach (var observer in this.RefinedSettingsReadVisitors.OfType<IDynamicSettingsIdGeneratorObserver>())
-            {
-                foreach (var ctor in this.RefinedSettingsReadVisitors.OfType<IDynamicSettingsIdGenerator>())
-                    observer.Observe(ctor);
+                foreach (var v in readVisitors)
+                    observer.Observe(v);
             }
         }
 
@@ -161,13 +157,13 @@ namespace Eco
         /// </summary>
         public List<ITwinSettingsVisitor> RefinedSettingsWriteVisitors { get; set; }
 
-        /// <summary>
-        /// RefinedSettingsListBuilder is used internally by SettingsManager to dump all twin settings to a list
-        /// and use the list further in place of traversing the settings tree through the reflection.
-        /// If you modify the default list of RefinedSettingsReadVisitors, you might need to link RefinedSettingsListBuilder
-        /// to the added IDynamicSettingsConstructor(s), if any.
-        /// </summary>
-        public IDynamicSettingsConstructorObserver RefinedSettingsListBuilder => _refinedSettingsListBuilder;
+        ///// <summary>
+        ///// RefinedSettingsListBuilder is used internally by SettingsManager to dump all twin settings to a list
+        ///// and use the list further in place of traversing the settings tree through the reflection.
+        ///// If you modify the default list of RefinedSettingsReadVisitors, you might need to link RefinedSettingsListBuilder
+        ///// to the added IDynamicSettingsConstructor(s), if any.
+        ///// </summary>
+        public ISettingsVisitorObserver RefinedSettingsListBuilder => _refinedSettingsListBuilder;
 
         /// <summary>
         /// Returns default configuration file name for the specified settins type which is typeof(T).Name + ".config"
@@ -249,9 +245,29 @@ namespace Eco
 
         /// <summary>
         /// Reads settings of the specified type from the specified TextReader.
-        /// </summary>
+        /// </summary>.
         public object Read(Type settingsType, TextReader reader)
         {
+            var readVisitors = this.RawSettingsReadVisitors.OfType<object>().Concat(this.RefinedSettingsReadVisitors);
+            foreach (var v in readVisitors.OfType<IDefaultValueSetter>())
+            {
+                v.InitializingField += f =>
+                {
+                    if (_defaultedFields.Contains(f)) throw new ConfigurationException($"Second time initialization: field={f.settings.GetType().Name}.{f.field}");
+                    _defaultedFields.Add(f);
+                };
+            }
+            foreach (var v in readVisitors.OfType<IFieldValueOverrider>())
+            {
+                v.OverridingField += f =>
+                {
+                    if (_overridenFields.Contains(f)) throw new ConfigurationException($"Second time override: field={f.settings.GetType().Name}.{f.field}");
+                    _overridenFields.Add(f);
+                };
+            }
+            _defaultedFields.Clear();
+            _overridenFields.Clear();
+
             Type rawSettingsType = SerializableTypeEmitter.GetRawTypeFor(settingsType, this.Serializer, this.SerializationAttributesGenerator, this.DefaultUsage);
             var rawSettings = ReadRawSettings(
                 currentNamespace: null,

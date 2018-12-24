@@ -10,6 +10,8 @@ namespace Eco
 	{
         public const char Separator = '.';
 
+        public const string Root = ".";
+
         public const char TypeSeparator = ':';
 
 

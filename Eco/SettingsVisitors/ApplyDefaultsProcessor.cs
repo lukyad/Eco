@@ -12,7 +12,7 @@ namespace Eco.SettingsVisitors
     /// Applies defaults to all matched settings.
     /// Defaults and settings filter is provided by the Eco.applyDefaults configuration element.
     /// </summary>
-    public class ApplyDefaultsProcessor : TwinSettingsVisitorBase
+    public class ApplyDefaultsProcessor : TwinSettingsVisitorBase, IDefaultValueSetter
     {
         readonly IReadOnlyDictionary<string, object> _refinedSettingsById;
         readonly IReadOnlyDictionary<object, object> _refinedToRawMap;
@@ -25,6 +25,8 @@ namespace Eco.SettingsVisitors
             _refinedSettingsById = refinedSettingsById;
             _refinedToRawMap = refinedToRawMap;
         }
+
+        public event Action<(object settings, string field)> InitializingField;
 
         public override void Visit(string settingsNamespace, string settingsPath, object refinedSettings, object rawSettings)
         {
@@ -40,41 +42,34 @@ namespace Eco.SettingsVisitors
                     .Select(k => _refinedSettingsById[k])
                     .Where(s => refinedDefaults.GetType().IsAssignableFrom(s.GetType()));
 
+                var toBeDefaultedFieldCollector = new ToBeDefaultedFieldCollector();
+                SettingsManager.TraverseSeetingsTree(
+                    startNamespace: null,
+                    startPath: null,
+                    rootMasterSettings: rawDefaults,
+                    visitor: toBeDefaultedFieldCollector,
+                    SkipBranch: IsArrayField);
+
                 foreach (object target in targets)
                 {
-                    var toBeDefaultedFieldCollector = new ToBeDefaultedFieldCollector();
                     object rawTarget = _refinedToRawMap[target];
-                    SettingsManager.TraverseSeetingsTree(
-                        startNamespace: settingsNamespace,
-                        startPath: settingsPath,
-                        rootMasterSettings: rawTarget,
-                        visitor: toBeDefaultedFieldCollector,
-                        SkipBranch: IsArrayField);
-
                     SettingsManager.TraverseTwinSeetingsTrees(
-                        startNamespace: settingsNamespace,
-                        startPath: settingsPath,
+                        startNamespace: null,
+                        startPath: null,
                         rootMasterSettings: rawDefaults,
                         rootSlaveSettings: rawTarget,
-                        visitor: new DefaultsSetter(toBeDefaultedFieldCollector.PathsToDefault),
+                        visitor: new DefaultsSetter(toBeDefaultedFieldCollector.PathsToDefault, notifyInitializingField: InitializingField),
                         SkipBranch: IsArrayField);
 
                     SettingsManager.TraverseTwinSeetingsTrees(
-                        startNamespace: settingsNamespace,
-                        startPath: settingsPath,
+                        startNamespace: null,
+                        startPath: null,
                         rootMasterSettings: refinedDefaults,
                         rootSlaveSettings: target,
-                        visitor: new DefaultsSetter(toBeDefaultedFieldCollector.PathsToDefault),
+                        visitor: new DefaultsSetter(toBeDefaultedFieldCollector.PathsToDefault, notifyInitializingField: null),
                         SkipBranch: IsArrayField);
                 }
             }
-        }
-
-        // Field path has the following format: containingObjectType.fieldName.nestedFieldName...
-        // This function returns fieldPath without the very first part of the path - containingObjectType.
-        static string NonRootedFieldPath(string fieldPath)
-        {
-            return fieldPath.Remove(0, fieldPath.IndexOf('.'));
         }
 
         class ToBeDefaultedFieldCollector : SettingsVisitorBase
@@ -84,27 +79,31 @@ namespace Eco.SettingsVisitors
             public override void Visit(string settingsNamespace, string fieldPath, object settings, FieldInfo settingsField)
             {
                 var fieldValue = settingsField.GetValue(settings);
-                if (settingsField.GetValue(settings) == null)
-                    PathsToDefault.Add(NonRootedFieldPath(fieldPath));
+                if (settingsField.GetValue(settings) != null)
+                    PathsToDefault.Add(fieldPath);
             }
         }
 
         class DefaultsSetter : TwinSettingsVisitorBase
         {
             readonly HashSet<string> _fieldsToBeDefaulted;
+            readonly Action<(object settings, string field)> _notifyInitializingField;
 
-            public DefaultsSetter(HashSet<string> fieldsToBeDefaulted)
+            public DefaultsSetter(HashSet<string> fieldsToBeDefaulted, Action<(object settings, string field)> notifyInitializingField)
             {
                 _fieldsToBeDefaulted = fieldsToBeDefaulted;
+                _notifyInitializingField = notifyInitializingField;
             }
 
             public override void Visit(string settingsNamespace, string fieldPath, object defaults, FieldInfo defaultsField, object target, FieldInfo targetField)
             {
                 if (targetField.IsDefined<SealedAttribute>()) return;
-                if (!_fieldsToBeDefaulted.Contains(NonRootedFieldPath(fieldPath))) return;
+                if (!_fieldsToBeDefaulted.Contains(fieldPath)) return;
 
-                object defaultValue = defaultsField.GetValue(defaults);
-                if (defaultValue != null)
+                if (fieldPath == "async") { }
+                _notifyInitializingField?.Invoke((target, targetField.Name));
+                object targetValue = defaultsField.GetValue(target);
+                if (targetValue == null)
                     targetField.SetValue(target, defaultsField.GetValue(defaults));
             }
         }

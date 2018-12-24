@@ -11,11 +11,14 @@ namespace Eco.SettingsVisitors
     /// <summary>
     /// Used by the Eco library to set default raw setting values.
     /// </summary>
-    public class DefaultValueSetter : SettingsVisitorBase
+    public class DefaultValueSetter : SettingsVisitorBase, IDefaultValueSetter
+
     {
         // isReversable: false
         // Changes made by the DefaultValueSetter are not revocable.
         public DefaultValueSetter() : base(isReversable: false) { }
+
+        public event Action<(object settings, string field)> InitializingField;
 
         public override void Visit(string settingsNamespace, string fieldPath, object rawSettings, FieldInfo rawSettingsField)
         {
@@ -25,6 +28,7 @@ namespace Eco.SettingsVisitors
                 if (!CanAssign(rawSettingsField, defaultAttr.Value))
                     throw new ConfigurationException("Invalid default field value for {0}.{1}: '{2}'.", rawSettingsField.DeclaringType.Name, rawSettingsField.Name, defaultAttr.Value);
 
+                this.InitializingField?.Invoke((rawSettings, rawSettingsField.Name));
                 object targetValue = rawSettingsField.GetValue(rawSettings);
                 if (targetValue == null)
                 {

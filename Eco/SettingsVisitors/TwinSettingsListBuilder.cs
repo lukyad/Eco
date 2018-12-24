@@ -8,7 +8,7 @@ using Eco.Extensions;
 
 namespace Eco.SettingsVisitors
 {
-    public class TwinSettingsListBuilder : TwinSettingsVisitorBase, IDynamicSettingsConstructorObserver
+    public class TwinSettingsListBuilder : TwinSettingsVisitorBase, ISettingsVisitorObserver
     {
         readonly List<ITwinSettingsTreeNode> _settings = new List<ITwinSettingsTreeNode>();
 
@@ -33,18 +33,21 @@ namespace Eco.SettingsVisitors
                 masterSettingsField.GetCustomAttribute<SkippedByAttribute>()?.Visitors));
         }
 
-        public void Observe(IDynamicSettingsConstructor ctor)
+        public void Observe(object visitor)
         {
-            ctor.SettingsCreated += s =>
+            if (visitor is IDynamicSettingsConstructor ctor)
             {
-                SettingsManager.TraverseTwinSeetingsTrees(
-                    startNamespace: s.settingsNamesapase,
-                    startPath: s.settingsPath,
-                    rootMasterSettings: s.refinedSettings,
-                    rootSlaveSettings: s.rawSettings,
-                    visitor: this,
-                    initVisitor: false);
-            };
+                ctor.SettingsCreated += s =>
+                {
+                    SettingsManager.TraverseTwinSeetingsTrees(
+                        startNamespace: s.settingsNamesapase,
+                        startPath: s.settingsPath,
+                        rootMasterSettings: s.refinedSettings,
+                        rootSlaveSettings: s.rawSettings,
+                        visitor: this,
+                        initVisitor: false);
+                };
+            }
         }
     }
 }
