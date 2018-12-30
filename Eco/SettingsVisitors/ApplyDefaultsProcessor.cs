@@ -53,12 +53,13 @@ namespace Eco.SettingsVisitors
                 foreach (object target in targets)
                 {
                     object rawTarget = _refinedToRawMap[target];
+                    var rawDefaultsSetter = new RawDefaultsSetter(toBeDefaultedFieldCollector.PathsToDefault, notifyInitializingField: InitializingField);
                     SettingsManager.TraverseTwinSeetingsTrees(
                         startNamespace: null,
                         startPath: null,
                         rootMasterSettings: rawDefaults,
                         rootSlaveSettings: rawTarget,
-                        visitor: new DefaultsSetter(toBeDefaultedFieldCollector.PathsToDefault, notifyInitializingField: InitializingField),
+                        visitor: rawDefaultsSetter,
                         SkipBranch: IsArrayField);
 
                     SettingsManager.TraverseTwinSeetingsTrees(
@@ -66,7 +67,7 @@ namespace Eco.SettingsVisitors
                         startPath: null,
                         rootMasterSettings: refinedDefaults,
                         rootSlaveSettings: target,
-                        visitor: new DefaultsSetter(toBeDefaultedFieldCollector.PathsToDefault, notifyInitializingField: null),
+                        visitor: new RefinedDefaultsSetter(rawDefaultsSetter.DefaultedFiels),
                         SkipBranch: IsArrayField);
                 }
             }
@@ -84,27 +85,48 @@ namespace Eco.SettingsVisitors
             }
         }
 
-        class DefaultsSetter : TwinSettingsVisitorBase
+        class RawDefaultsSetter : TwinSettingsVisitorBase
         {
             readonly HashSet<string> _fieldsToBeDefaulted;
             readonly Action<(object settings, string field)> _notifyInitializingField;
 
-            public DefaultsSetter(HashSet<string> fieldsToBeDefaulted, Action<(object settings, string field)> notifyInitializingField)
+            public RawDefaultsSetter(HashSet<string> fieldsToBeDefaulted, Action<(object settings, string field)> notifyInitializingField)
             {
                 _fieldsToBeDefaulted = fieldsToBeDefaulted;
                 _notifyInitializingField = notifyInitializingField;
             }
+
+            public HashSet<string> DefaultedFiels { get; } = new HashSet<string>();
 
             public override void Visit(string settingsNamespace, string fieldPath, object defaults, FieldInfo defaultsField, object target, FieldInfo targetField)
             {
                 if (targetField.IsDefined<SealedAttribute>()) return;
                 if (!_fieldsToBeDefaulted.Contains(fieldPath)) return;
 
-                if (fieldPath == "async") { }
                 _notifyInitializingField?.Invoke((target, targetField.Name));
                 object targetValue = defaultsField.GetValue(target);
                 if (targetValue == null)
+                {
                     targetField.SetValue(target, defaultsField.GetValue(defaults));
+                    DefaultedFiels.Add(fieldPath);
+                }
+            }
+        }
+
+        class RefinedDefaultsSetter : TwinSettingsVisitorBase
+        {
+            readonly HashSet<string> _defaultedRawFields;
+
+            public RefinedDefaultsSetter(HashSet<string> defaultedRawFields)
+            {
+                _defaultedRawFields = defaultedRawFields;
+            }
+
+            public override void Visit(string settingsNamespace, string fieldPath, object defaults, FieldInfo defaultsField, object target, FieldInfo targetField)
+            {
+                if (!_defaultedRawFields.Contains(fieldPath)) return;
+                object targetValue = defaultsField.GetValue(target);
+                targetField.SetValue(target, defaultsField.GetValue(defaults));
             }
         }
     }
