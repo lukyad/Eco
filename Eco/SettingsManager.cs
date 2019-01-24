@@ -29,6 +29,7 @@ namespace Eco
             _serializer = serializer;
             _serializationAttributesGenerator = serializationAttributesGenerator;
             this.DefaultUsage = Usage.Optional;
+            this.AllowUndefinedVariables = false;
             this.InitializeRawSettingsLoadVisitors();
             this.InitializeRefinedSettingsLoadVisitors();
             this.InitializeRefinedSettingsSaveVisitors();
@@ -38,15 +39,15 @@ namespace Eco
         void InitializeRawSettingsLoadVisitors()
         {
             var variableMapBuilder = new ConfigurationVariableMapBuilder();
-            var variableExpander = new ConfigurationVariableExpander(variableMapBuilder.Variables);
+            var variableExpander = new ConfigurationVariableExpander(variableMapBuilder.Variables, context: this);
             this.RawSettingsReadVisitors = new List<ISettingsVisitor>
             {
                 new DefaultValueSetter(),
                 variableMapBuilder,
                 variableExpander,
                 new EnvironmentVariableExpander(),
-                new IncludeElementReader(this),
-                new ImportElementReader(this),
+                new IncludeElementReader(context: this),
+                new ImportElementReader(context: this),
                 // We run ConfigurationVariableExpander twice to expand variables imported from the included files (if any).
                 variableExpander,
             };
@@ -113,6 +114,8 @@ namespace Eco
         /// <summary>
         /// Default field usage policy to be used when reading/writing configuration files.
         /// Applies to the settings fields for which usage was not specified explicitly through Optinal or Required attributes.
+        /// 
+        /// By default DefaultUsage is set to Optional.
         /// </summary>
         public Usage DefaultUsage { get; set; }
 
@@ -128,6 +131,14 @@ namespace Eco
         /// 
         /// By default SkipNonReversableOperations is set to false.
         public bool SkipNonReversableOperations { get; set; }
+
+        /// <summary>
+        /// If AllowUndefinedVariables is set to false, Eco would throw an exception if it matches undefined configuration variable.
+        /// Otherwise, variable reference is left as is without any changes.
+        /// 
+        /// By default AllowUndefinedVariables is set to false.
+        /// </summary>
+        public bool AllowUndefinedVariables { get; set; }
 
         /// <summary>
         /// Fields visitors to be invoked right after raw settins object has been deserialized from a source stream.

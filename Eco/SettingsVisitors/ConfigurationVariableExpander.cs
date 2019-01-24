@@ -23,6 +23,8 @@ namespace Eco.SettingsVisitors
         static readonly Regex _variableReferenceRegex = new Regex(@"\$\{(?<varName>\w)\}");
         // Name/value variable pairs.
         readonly Dictionary<string, Func<string>> _variables;
+        // Context is used to get value for AllowUndefinedVariables.
+        readonly SettingsManager _context;
 
         // isReversable: false
         // Changes made by the ConfigurationVariableExpander are not revocable.
@@ -30,10 +32,11 @@ namespace Eco.SettingsVisitors
         //
         // supportsMultiVisit: true
         // Not all variables could be initialized at the first pass. Thus we try to expand variables all the times.
-        public ConfigurationVariableExpander(Dictionary<string, Func<string>> variables) :
+        public ConfigurationVariableExpander(Dictionary<string, Func<string>> variables, SettingsManager context) :
             base(isReversable: false)
         {
-            _variables = variables;
+            _variables = variables ?? throw new ArgumentNullException(nameof(variables));
+            _context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
         public override void Visit(string settingsNamesapce, string fieldPath, object rawSettings, FieldInfo rawSettingsField)
@@ -46,7 +49,7 @@ namespace Eco.SettingsVisitors
                 var originalString = (string)rawSettingsField.GetValue(rawSettings);
                 if (originalString != null)
                 {
-                    var expandedString = ExpandVariables(originalString, _variables);
+                    var expandedString = ExpandVariables(originalString, _variables, _context.AllowUndefinedVariables);
                     rawSettingsField.SetValue(rawSettings, expandedString);
                 }
             }
@@ -58,14 +61,14 @@ namespace Eco.SettingsVisitors
                     string originalString = arr[i];
                     if (originalString != null)
                     {
-                        var expandedString = ExpandVariables(originalString, _variables);
+                        var expandedString = ExpandVariables(originalString, _variables, _context.AllowUndefinedVariables);
                         arr[i] = expandedString;
                     }
                 }
             }
         }
 
-        static string ExpandVariables(string source, Dictionary<string, Func<string>> variables)
+        static string ExpandVariables(string source, Dictionary<string, Func<string>> variables, bool allowUndefinedVars)
         {
             string result = source;
             var expandedVars = new HashSet<string>();
@@ -85,13 +88,14 @@ namespace Eco.SettingsVisitors
                     // Make sure we do not go into a circular dependency.
                     if (expandedVars.Contains(varName)) throw new ConfigurationException("Circular configuration variable dependency detected in '{0}'.", source);
 
-                    Func<string> getValue;
-                    // skip unknown variables
-                    if (variables.TryGetValue(varName, out getValue))
+                    // skip undefined variables
+                    if (variables.TryGetValue(varName, out Func<string> getValue))
                     {
                         result = result.Replace(m.Value, getValue());
                         localExpandedVars.Add(varName);
                     }
+                    else if (!allowUndefinedVars)
+                        throw new ConfigurationException("Undefined variable: '{0}'.", varName);
                 }
                 // Remember variables expanded during this run. 
                 // They should not appear in the next run as that would lead to a circular dependency.
