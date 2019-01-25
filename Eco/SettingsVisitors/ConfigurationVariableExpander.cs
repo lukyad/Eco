@@ -88,19 +88,25 @@ namespace Eco.SettingsVisitors
                     // Make sure we do not go into a circular dependency.
                     if (expandedVars.Contains(varName)) throw new ConfigurationException("Circular configuration variable dependency detected in '{0}'.", source);
 
-                    // skip undefined variables
+                    // Sustitute variable or throw
                     if (variables.TryGetValue(varName, out Func<string> getValue))
                     {
                         result = result.Replace(m.Value, getValue());
-                        localExpandedVars.Add(varName);
                     }
-                    else if (!allowUndefinedVars)
+                    else if (allowUndefinedVars)
+                    {
+                        result = result.Replace(m.Value, null);
+                    }
+                    else
                         throw new ConfigurationException("Undefined variable: '{0}'.", varName);
+
+                    // Remember expanded var to check for a Circular Dependency on the next iteration.
+                    localExpandedVars.Add(varName);
                 }
                 // Remember variables expanded during this run. 
                 // They should not appear in the next run as that would lead to a circular dependency.
                 expandedVars.UnionWith(localExpandedVars.Distinct());
-                // Break the loop, if we can not expand anythif else.
+                // Break the loop, if we can not expand anything else.
                 if (localExpandedVars.Count == 0) break;
             }
 

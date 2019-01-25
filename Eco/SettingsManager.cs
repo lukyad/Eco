@@ -29,7 +29,7 @@ namespace Eco
             _serializer = serializer;
             _serializationAttributesGenerator = serializationAttributesGenerator;
             this.DefaultUsage = Usage.Optional;
-            this.AllowUndefinedVariables = false;
+            this.AllowUndefinedVariables = true;
             this.InitializeRawSettingsLoadVisitors();
             this.InitializeRefinedSettingsLoadVisitors();
             this.InitializeRefinedSettingsSaveVisitors();
@@ -134,9 +134,9 @@ namespace Eco
 
         /// <summary>
         /// If AllowUndefinedVariables is set to false, Eco would throw an exception if it matches undefined configuration variable.
-        /// Otherwise, variable reference is left as is without any changes.
+        /// Otherwise, variable is expanded to an empty string.
         /// 
-        /// By default AllowUndefinedVariables is set to false.
+        /// By default AllowUndefinedVariables is set to true.
         /// </summary>
         public bool AllowUndefinedVariables { get; set; }
 
