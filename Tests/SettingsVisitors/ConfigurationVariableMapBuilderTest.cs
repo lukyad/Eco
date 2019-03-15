@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Xunit;
+using NHamcrest;
 using NHamcrest.Core;
 using Eco;
 using Eco.SettingsVisitors;
@@ -33,8 +34,17 @@ namespace Tests.SettingsVisitors
                 }
             };
             var fieldVisitor = new ConfigurationVariableMapBuilder();
-            SettingsManager.TraverseSeetingsTree(settings, fieldVisitor);
-            Assert.That(fieldVisitor.Variables.Keys, Has.Items("var1", "Var2", "var_3", "444", "_"));
+            SettingsManager.TraverseSeetingsTree(
+                startNamespace: null,
+                startPath: null,
+                rootMasterSettings: settings,
+                visitor: fieldVisitor);
+            Assert.That(fieldVisitor.Variables.Keys, Has.Items(
+                Is.EqualTo("var1"),
+                Is.EqualTo("Var2"),
+                Is.EqualTo("var_3"),
+                Is.EqualTo("444"),
+                Is.EqualTo("_")));
             //Assert.That(fieldVisitor.Variables.Values, Has.Items("value1", "value2", "value3", "value4", "value5"));
         }
 
@@ -48,20 +58,20 @@ namespace Tests.SettingsVisitors
             };
             var fieldVisitor = new ConfigurationVariableMapBuilder();
             Assert.That(
-                () => SettingsManager.TraverseSeetingsTree(settings, fieldVisitor), 
+                () => SettingsManager.TraverseSeetingsTree(startNamespace: null, startPath: null, rootMasterSettings: settings, visitor: fieldVisitor), 
                 Throws.An<ConfigurationException>());
         }
 
         [Fact]
         public static void ThrowsInvalidVarName()
         {
-            string[] invalidVarNames = new string[] { null, "", "my var", "my.var", "!", "*", "*", "%","^", "-" };
+            string[] invalidVarNames = new string[] { null, "" };
             var fieldVisitor = new ConfigurationVariableMapBuilder();
             foreach (var varName in invalidVarNames)
             {
                 var settings = new settings { var = new variable { name = varName } };
                 Assert.That(
-                    () => SettingsManager.TraverseSeetingsTree(settings, fieldVisitor),
+                    () => SettingsManager.TraverseSeetingsTree(startNamespace: null, startPath: null, rootMasterSettings: settings, visitor: fieldVisitor),
                     Throws.An<ConfigurationException>());
             }
         }

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Xunit;
-using NHamcrest.Core;
+using NHamcrest;
 using Eco;
 using Eco.SettingsVisitors;
 

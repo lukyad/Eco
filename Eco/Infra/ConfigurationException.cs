@@ -15,5 +15,10 @@ namespace Eco
             : base(String.Format(format, args))
         {
         }
+
+        public ConfigurationException(Exception innerException, string format, params object[] args)
+            : base(String.Format(format, args), innerException)
+        {
+        }
     }
 }

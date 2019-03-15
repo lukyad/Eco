@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Xunit;
+using NHamcrest;
 using NHamcrest.Core;
 using Eco;
 using Eco.Converters;
@@ -29,7 +30,7 @@ namespace Tests.Converters
         [Fact]
         public static void ParsingFails()
         {
-            Assert.That(NumericConverter.Parse("1s", null, null), Is.Null());
+            Assert.That("1s".TryParseDecimal(out decimal value), Is.False());
         }
 
         [Fact]

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Xunit;
-using NHamcrest.Core;
+using NHamcrest;
 using Eco;
 using Eco.SettingsVisitors;
 
@@ -34,9 +34,10 @@ namespace Tests.SettingsVisitors
         [Fact]
         public static void ExpandStringField()
         {
-            var settings = new settings { value1 = S1 + S2 + S3 };
-            Visit(new ConfigurationVariableExpander(_vars), s => s.value1, settings);
-            Assert.That(settings.value1, Is.EqualTo("abcdef123456" + S3));
+            Settings.DefaultManager.AllowUndefinedVariables = true;
+            var settings = new settings { value1 = S1 + S2 };
+            Visit(new ConfigurationVariableExpander(_vars, Settings.DefaultManager), s => s.value1, settings);
+            Assert.That(settings.value1, Is.EqualTo("abcdef123456"));
         }
 
         
@@ -44,11 +45,12 @@ namespace Tests.SettingsVisitors
         [Fact]
         public static void ExpandStringArrayField()
         {
+            Settings.DefaultManager.AllowUndefinedVariables = true;
             var settings = new settings { array = new[] { S1, S2, S3 } };
-            Visit(new ConfigurationVariableExpander(_vars), s => s.array, settings);
+            Visit(new ConfigurationVariableExpander(_vars, Settings.DefaultManager), s => s.array, settings);
             Assert.That(settings.array[0], Is.EqualTo("abcdef"));
             Assert.That(settings.array[1], Is.EqualTo("123456"));
-            Assert.That(settings.array[2], Is.EqualTo(S3));
+            Assert.That(settings.array[2], Is.EqualTo(String.Empty));
         }
 
 
@@ -60,7 +62,7 @@ namespace Tests.SettingsVisitors
                 value1 = S1,
                 value2 = S1
             };
-            var fieldVisitor = new ConfigurationVariableExpander(_vars);
+            var fieldVisitor = new ConfigurationVariableExpander(_vars, Settings.DefaultManager);
             Visit(fieldVisitor, s => s.value1, settings);
             Visit(fieldVisitor, s => s.value2, settings);
             Assert.That(settings.value1, Is.EqualTo("abcdef"));

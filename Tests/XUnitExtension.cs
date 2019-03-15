@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using NHamcrest;
+using NHamcrest.Core;
 using Xunit.Sdk;
 
 

@@ -99,7 +99,7 @@ namespace Eco.Converters
             TimeSpan result;
             bool succeed = TryParseTimeSpan(timeSpan, out result);
             if (!succeed)
-                throw new ApplicationException(String.Format("Unsupported TimeSpan format: '{0}'", timeSpan));
+                throw new ConfigurationException("Unsupported TimeSpan format: '{0}'", timeSpan);
 
             return result;
         }
