@@ -31,9 +31,11 @@ namespace Eco.SettingsVisitors
         {
             if (refinedSettings.IsEcoElementOfGenericType(typeof(applyOverrides<>)))
             {
+                object rawOverrides = applyOverrides.GetOverrides(rawSettings);
+                if (rawOverrides == null) return; // No overrides has been provided.
+
                 Func<FieldInfo, object, bool> IsArrayField = (f, o) => f.FieldType.IsArray;
                 var overridenFieldCollector = new OverridenFieldCollector();
-                object rawOverrides = applyOverrides.GetOverrides(rawSettings);
                 SettingsManager.TraverseSeetingsTree(
                     startNamespace: null,
                     startPath: null,

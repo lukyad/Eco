@@ -24,30 +24,33 @@ namespace Eco
 
     public abstract class refListCommand
     {
+        public abstract object[] Apply(object[] sourceList);
+    }
+
+    public abstract class refListBulkCommand : refListCommand
+    {
         // Please note that we define items as an reference array (not a string)
         // This is required to catch any missing references before the list modification gets applied.
         [Required, Ref, Doc("Settings reference(s).")]
         public object[] items;
 
         public IEnumerable<object> NotNullItems => items.Where(i => i != null);
-
-        public abstract object[] Apply(object[] sourceList);
     }
 
     [EcoElement(typeof(refListAddBack)), Doc("Adds new reference(s) to the end of the list.")]
-    public class refListAddBack : refListCommand
+    public class refListAddBack : refListBulkCommand
     {
         public override object[] Apply(object[] sourceList) => sourceList.Concat(NotNullItems).ToArray();
     }
 
     [EcoElement(typeof(refListAddBack)), Doc("Adds new reference(s) to the begining of the list.")]
-    public class refListAddFront : refListCommand
+    public class refListAddFront : refListBulkCommand
     {
         public override object[] Apply(object[] sourceList) => NotNullItems.Concat(sourceList).ToArray();
     }
 
     [EcoElement(typeof(refListAddBack)), Doc("Inserts new reference(s) after (or before) the specified item.")]
-    public class refListInsert : refListCommand
+    public class refListInsert : refListBulkCommand
     {
         [Ref, Doc("Reference after that all items to be inserted.")]
         public object after;
@@ -72,8 +75,36 @@ namespace Eco
         }
     }
 
+    [EcoElement(typeof(refListReplace)), Doc("Replace one reference with another.")]
+    public class refListReplace : refListCommand
+    {
+        [Ref, Doc("Reference to be replaced.")]
+        public object what;
+
+        [Ref, Doc("Reference to be placed inplace of the old one.")]
+        public object with;
+
+        public override object[] Apply(object[] sourceList)
+        {
+            if (what == null)
+                throw new ConfigurationException("refListReplace: 'what' got resolved to null.");
+
+            if (with == null)
+                throw new ConfigurationException("refListInsert: 'with' got resolved to null.");
+
+            int targetIndex = Array.FindIndex(sourceList, i => ReferenceEquals(i, what));
+            if (targetIndex == -1)
+                throw new ConfigurationException("refListReplace: list doesn't contain reference to be replaced");
+
+            var modifiedList = new object[sourceList.Length];
+            Array.Copy(sourceList, modifiedList, sourceList.Length);
+            modifiedList[targetIndex] = with;
+            return modifiedList;
+        }
+    }
+
     [EcoElement(typeof(refListAddBack)), Doc("Removes specified items from the reference list.")]
-    public class refListRemove : refListCommand
+    public class refListRemove : refListBulkCommand
     {
         public override object[] Apply(object[] sourceList) => sourceList.Where(i => !NotNullItems.Any(toRemove => ReferenceEquals(toRemove, i))).ToArray();
     }

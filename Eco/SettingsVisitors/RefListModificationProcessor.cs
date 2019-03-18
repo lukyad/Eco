@@ -25,12 +25,12 @@ namespace Eco.SettingsVisitors
         {
             if (refinedSettings.IsEcoElementOfGenericType(typeof(applyOverrides<>)))
             {
-                object refinedOverrides = applyOverrides.GetOverrides(refinedSettings);
+                Type overridesType = applyOverrides.GetOverridesType(refinedSettings);
                 var targets = applyOverrides.GetTargets(refinedSettings) ??
                     _refinedSettingsById.Keys
                     .Where(k => k.StartsWith(settingsNamespace ?? String.Empty))
                     .Select(k => _refinedSettingsById[k])
-                    .Where(s => refinedOverrides.GetType().IsAssignableFrom(s.GetType()));
+                    .Where(s => overridesType.IsAssignableFrom(s.GetType()));
 
                 foreach (object target in targets)
                 {
@@ -42,9 +42,9 @@ namespace Eco.SettingsVisitors
 
                 void ApplyRefListModification(object refinedTarget, modifyRefList spec)
                 {
-                    var targetField = refinedOverrides.GetType().GetField(spec.field);
+                    var targetField = overridesType.GetField(spec.field);
                     if (targetField == null || !targetField.FieldType.IsArray || !targetField.IsDefined<RefAttribute>())
-                        throw new ConfigurationException("Settings of type '{0}' doesn't contain field of a ref list type with name '{1}'.", refinedOverrides.GetType(), spec.field);
+                        throw new ConfigurationException("Settings of type '{0}' doesn't contain field of a ref list type with name '{1}'.", overridesType, spec.field);
 
                     object[] list = (object[])targetField.GetValue(refinedTarget);
                     foreach (var cmd in spec.commands)

@@ -35,6 +35,8 @@ namespace Eco
 
         public static object GetOverrides(object twin) => twin.GetFieldValue(nameof(overrides));
 
+        public static Type GetOverridesType(object twin) => twin.GetType().GetField(nameof(overrides)).FieldType;
+
         public static modifyRefList[] GetRefListModifications(object twin) => (modifyRefList[])twin.GetFieldValue(nameof(refListModifications)) ?? new modifyRefList[0];
     }
 
