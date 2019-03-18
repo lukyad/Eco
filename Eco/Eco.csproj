@@ -79,6 +79,7 @@
     <Compile Include="Converters\Convert.cs" />
     <Compile Include="Converters\DecimalConverter.cs" />
     <Compile Include="Converters\DateTimeConverter.cs" />
+    <Compile Include="Elements\modifyRefList.cs" />
     <Compile Include="Elements\import.cs" />
     <Compile Include="Elements\applyOverrides.cs" />
     <Compile Include="Elements\applyDefaults.cs" />
@@ -86,6 +87,7 @@
     <Compile Include="Infra\Cloner.cs" />
     <Compile Include="Serialization\Csv\CsvSerializer.cs" />
     <Compile Include="SettingsTreeNodes.cs" />
+    <Compile Include="SettingsVisitors\RefListModificationProcessor.cs" />
     <Compile Include="SettingsVisitors\IFieldValueOverrider.cs" />
     <Compile Include="SettingsVisitors\IDefaultValueSetter.cs" />
     <Compile Include="SettingsVisitors\ISettingsVisitorObserver.cs" />

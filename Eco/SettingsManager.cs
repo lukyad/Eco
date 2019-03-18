@@ -68,6 +68,9 @@ namespace Eco
                 new FieldReferenceExpander(),
                 // Include ReferenceResolver for the second time to resolve the rest references.
                 new ReferenceResolver(settingsMapBuilder.RefinedSettingsById, settingsMapBuilder.RefinedToRawMap),
+                // RefList modifications are applied to the refined settings only, 
+                // thus they need to be processed only after all references get resolved.
+                new RefListModificationProcessor(settingsMapBuilder.RefinedSettingsById),
                 new RequiredFieldChecker()
             };
 
