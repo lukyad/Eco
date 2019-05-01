@@ -55,7 +55,7 @@ namespace Eco.Serialization.Csv
             string[] columns = reader.ReadLine().Split(new[] { this.Delimiter }, StringSplitOptions.RemoveEmptyEntries);
             ValidateColumns(columns, elemType);
             // Read data.
-            string[] lines = reader.ReadToEnd().Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+            string[] lines = reader.ReadToEnd().Split(new[] { '\n', '\r' }).Where(l => !String.IsNullOrWhiteSpace(l)).ToArray();
             Array data = Array.CreateInstance(elemType, lines.Length);
             for (int i = 0; i < data.Length; i++)
                 data.SetValue(FromCsv(lines[i], elemType, columns), i);
