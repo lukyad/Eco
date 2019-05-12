@@ -27,6 +27,8 @@ namespace Eco
             _variables.Add(name, valueProvider);
         }
 
+        public static void Clear() => _variables.Clear();
+
         public Dictionary<string, Func<string>> GetVariables() => _variables;
     }
 }
