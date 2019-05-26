@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Eco
+namespace Eco.Extensions
 {
     public static class StringExtensions
     {
