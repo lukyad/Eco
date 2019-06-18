@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.IO;
-using Eco.Extensions;
+using Eco.Serialization;
 
 namespace Eco.SettingsVisitors
 {
@@ -28,12 +28,12 @@ namespace Eco.SettingsVisitors
             string dir = Path.GetDirectoryName(filePath);
             Directory.CreateDirectory(dir);
             // Write settings to the file.
-            Type includedSettingsType = include.GetDataType(includeElem);
             using (var fileStream = File.Open(filePath, FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
             using (var writer = new StreamWriter(fileStream))
             {
+                var serializer = GetSerializer(includeElem);
                 object settings = include.GetData(includeElem);
-                this.Context.Serializer.Serialize(settings, writer);
+                serializer.Serialize(settings, writer);
             }
         }
     }

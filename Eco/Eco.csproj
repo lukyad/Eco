@@ -86,6 +86,9 @@
     <Compile Include="Infra\Disposable.cs" />
     <Compile Include="Infra\Cloner.cs" />
     <Compile Include="Serialization\Csv\CsvSerializer.cs" />
+    <Compile Include="Serialization\SettingsSerializerAttribute.cs" />
+    <Compile Include="Serialization\SupportedFormats.cs" />
+    <Compile Include="Serialization\IImporter.cs" />
     <Compile Include="SettingsTreeNodes.cs" />
     <Compile Include="SettingsVisitors\RefListModificationProcessor.cs" />
     <Compile Include="SettingsVisitors\IFieldValueOverrider.cs" />
@@ -122,10 +125,8 @@
     <Compile Include="SettingsVisitors\ConfigurationVariableMapBuilder.cs" />
     <Compile Include="SettingsVisitors\DefaultValueSetter.cs" />
     <Compile Include="SettingsVisitors\EnvironmentVariableExpander.cs" />
-    <Compile Include="SettingsVisitors\ImportElementProcessor.cs" />
     <Compile Include="SettingsVisitors\IncludeElementProcessor.cs" />
-    <Compile Include="SettingsVisitors\ImportElementReader.cs" />
-    <Compile Include="SettingsVisitors\ImportElementWriter.cs" />
+    <Compile Include="SettingsVisitors\ImportElementProcessor.cs" />
     <Compile Include="SettingsVisitors\IncludeElementWriter.cs" />
     <Compile Include="SettingsVisitors\ISettingsVisitor.cs" />
     <Compile Include="SettingsVisitors\ReferencePacker.cs" />

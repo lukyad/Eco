@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Reflection;
 using System.IO;
 using Eco.Extensions;
+using Eco.Serialization;
 
 namespace Eco.SettingsVisitors
 {
@@ -29,5 +30,13 @@ namespace Eco.SettingsVisitors
         }
 
         protected abstract void ProcessIncludeElement(string settingsNamesapce, string settingsPath, object includeElem);
+
+        protected ISerializer GetSerializer(object includeElem)
+        {
+            var specifiedFormat = include.GetFormat(includeElem);
+            return specifiedFormat != null ?
+                (ISerializer)Activator.CreateInstance(SupportedFormats.GetSerializerType(specifiedFormat)) :
+                this.Context.Serializer;
+        }
     }
 }

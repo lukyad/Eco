@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.IO;
-using Eco.Extensions;
+using Eco.Serialization;
 
 namespace Eco.SettingsVisitors
 {
@@ -33,16 +33,27 @@ namespace Eco.SettingsVisitors
             using (var fileStream = File.Open(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
             using (var reader = new StreamReader(fileStream))
             {
-                // Note, that we skip visitor initialization here, as this should be done
-                // only one per the root configuration file. (i.e. by this moment, all visitors have been initialized already)
-                object includedSettings = this.Context.ReadRawSettings(
+                var serializer = GetSerializer(includeElem);
+                object includedSettings = serializer.Deserialize(includedSettingsType, reader);
+                if (includedSettings != null && includedSettings.GetType() != includedSettingsType)
+                    throw new ConfigurationException("Invalid include: `{0}`. Expected data of type `{1}`, but got `{2}`", filePath, includedSettingsType.FullName, includedSettings.GetType().FullName);
+
+                // Initialize includedSettings.
+                // Pls, note that we pass importedSettings to the SettingsManager as a field of the init class instance.
+                // This is required, as SettingsManager.InitilizeRawSettings accepts only non-array objects as an input.
+                this.Context.InitilizeRawSettings(
                     currentNamespace: settingsNamesapce,
                     currentSettingsPath: settingsPath,
-                    rawSettingsType: includedSettingsType,
-                    reader: reader,
+                    rawSettings: new init { data = includedSettings },
                     initializeVisitors: false);
+
                 include.SetData(includeElem, includedSettings);
             }
+        }
+
+        class init
+        {
+            public object data;
         }
     }
 }

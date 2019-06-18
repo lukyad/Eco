@@ -14,6 +14,7 @@ namespace Eco.Serialization.Csv
     /// 1. All columns represented in the file, must correspond to a field of the settings being deserialized.
     /// 2. Serializer supports only fields of the String type.
     /// </summary>
+    [SettingsSerializer(SupportedFormats.Csv)]
     public class CsvSerializer : ISerializer
     {
         /// <summary>
