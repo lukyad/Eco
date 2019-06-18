@@ -13,6 +13,7 @@ using SystemXmlSerializer = System.Xml.Serialization.XmlSerializer;
 
 namespace Eco.Serialization.Xml
 {
+    [SettingsSerializer(format: SupportedFormats.Xml)]
     public class XmlSerializer : ISerializer
     {
         public Encoding Encoding { get; set; } = Encoding.ASCII;
