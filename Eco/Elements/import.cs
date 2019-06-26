@@ -16,7 +16,6 @@ namespace Eco
     /// and all parameters need to be specified in the inherited class, 
     /// the instance of that class will be provided to the Importer's c'tor.
     /// Thus, Importer class must have a constructor accepting instance of the import<> element as a single parameter.
-    /// For an implementation example, pls see importFile class.
     /// </summary>
     [EcoElement(typeof(import<,>)), Doc("Instructs serializer to import settings using the specified importer.")]
     public class import<TData, TImporter>

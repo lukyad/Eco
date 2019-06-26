@@ -47,7 +47,6 @@ namespace Eco
                 variableExpander,
                 new EnvironmentVariableExpander(),
                 new IncludeElementReader(context: this),
-                new ImportElementProcessor(context: this),
                 // We run ConfigurationVariableExpander twice to expand variables imported from the included files (if any).
                 variableExpander,
             };
@@ -59,6 +58,7 @@ namespace Eco
             this.RefinedSettingsReadVisitors = new List<ITwinSettingsVisitor>
             {
                 settingsMapBuilder,
+                new ImportElementProcessor(context: this),
                 // Use this ReferenceResolver to resolve applyDefaults.targets and applyOverrides.targets only.
                 new ReferenceResolver(settingsMapBuilder.RefinedSettingsById, settingsMapBuilder.RefinedToRawMap, typeof(applyDefaults<>), typeof(applyOverrides<>)),
                 // ReferenceResolver should go before ApplyDefaultsProcessor and ApplyOverridesProcessor
@@ -424,7 +424,7 @@ namespace Eco
             }
         }
 
-        object CreateRefinedSettings(Type refinedSettingsType, object rawSettings)
+        public object CreateRefinedSettings(Type refinedSettingsType, object rawSettings)
         {
             object refinedSettings = Activator.CreateInstance(refinedSettingsType);
             var mandatoryVisitors = new ITwinSettingsVisitor[]

@@ -10,6 +10,8 @@ namespace Eco.Serialization
     /// <summary>
     /// Allows importing data from any source.
     /// Works only in one direction, i.e settings reading, writing is not supported.
+    /// Pls note, the the implementation class, referenced by the import<,> element must be non-generic
+    /// (base class is allowed to be a generic type)
     /// </summary>
     public interface IImporter
     {

@@ -14,17 +14,24 @@ namespace Eco.Serialization.Xml
     {
         public virtual IEnumerable<string> GetAttributesTextFor(Type settingsType)
         {
-            var result = new List<string>();
-            var attributes = settingsType.GetCustomAttributes().ToArray();
-            var inheritedAttributesData = settingsType.GetBaseSettingsTypes().SelectMany(t => t.GetCustomAttributesData());
-            var attributesData = settingsType.GetCustomAttributesData().Concat(inheritedAttributesData).ToArray();
-            for (int i = 0; i < attributes.Length; i++)
+            try
             {
-                string attributeText = CommonAttributeTranslator.Translate(attributes[i], attributesData[i], settingsType);
-                if (attributeText != null)
-                    result.Add(attributeText);
+                var result = new List<string>();
+                var attributes = settingsType.GetCustomAttributes().ToArray();
+                var inheritedAttributesData = settingsType.GetBaseSettingsTypes().SelectMany(t => t.GetCustomAttributesData());
+                var attributesData = settingsType.GetCustomAttributesData().Concat(inheritedAttributesData).ToArray();
+                for (int i = 0; i < attributes.Length; i++)
+                {
+                    string attributeText = CommonAttributeTranslator.Translate(attributes[i], attributesData[i], settingsType);
+                    if (attributeText != null)
+                        result.Add(attributeText);
+                }
+                return result;
             }
-            return result;
+            catch
+            {
+                return null;
+            }
         }
 
         public virtual IEnumerable<string> GetAttributesTextFor(FieldInfo field, Usage defaultUsage, ParsingPolicyAttribute[] parsingPolicies)

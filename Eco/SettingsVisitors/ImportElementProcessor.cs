@@ -12,7 +12,7 @@ namespace Eco.SettingsVisitors
     /// Handles Eco.import<> element. Given a location of a file to be imported,
     /// reads all data elements from it using the specified by the import<> element serializer.
     /// </summary>
-    public class ImportElementProcessor : SettingsVisitorBase
+    public class ImportElementProcessor : TwinSettingsVisitorBase
     {
         readonly SettingsManager _context;
 
@@ -22,28 +22,19 @@ namespace Eco.SettingsVisitors
             _context = context;
         }
 
-        public override void Visit(string settingsNamesapce, string settingsPath, object rawSettings)
+        public override void Visit(string settingsNamespace, string settingsPath, object refinedSettings, object rawSettings)
         {
-            if (!rawSettings.IsEcoElementOfGenericType(typeof(import<,>))) return;
-            var importElem = rawSettings;
+            if (!refinedSettings.IsEcoElementOfGenericType(typeof(import<,>))) return;
+            var importElem = refinedSettings;
 
             Type importedSettingsType = import.GetDataType(importElem);
             // Pls note, that Eco validates Importer's ctor in the import<,> ctor of the import element.
             var importer = (IImporter)Activator.CreateInstance(import.GetImporterType(importElem), importElem);
-            object importedSettings = importer.Import();
-            if (importedSettings != null && importedSettings.GetType() != importedSettingsType)
-                throw new ConfigurationException("Invalid import. Expected data of type `{0}`, but got `{1}`", importedSettingsType.FullName, importedSettings.GetType().FullName);
+            object importedData = importer.Import();
+            if (importedData != null && importedData.GetType() != importedSettingsType)
+                throw new ConfigurationException("Invalid import. Expected data of type `{0}`, but got `{1}`", importedSettingsType.FullName, importedData.GetType().FullName);
 
-            // Initialize importedSettings.
-            // Pls, note that we pass importedSettings to the SettingsManager as a field of the init class instance.
-            // This is required, as SettingsManager.InitilizeRawSettings accepts only non-array objects as an input.
-            _context.InitilizeRawSettings(
-                currentNamespace: settingsNamesapce,
-                currentSettingsPath: settingsPath,
-                rawSettings: new init { data = importedSettings },
-                initializeVisitors: false);
-
-            import.SetData(importElem, importedSettings);
+            import.SetData(refinedSettings, importedData);
         }
 
         class init

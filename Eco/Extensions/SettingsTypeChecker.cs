@@ -14,7 +14,7 @@ namespace Eco.Extensions
         {
             if (String.IsNullOrEmpty(t.Namespace)) return false;
             if (_knownNonSettingNamesapces.ContainsKey(t.Namespace)) return false;
-            if (t.IsArray || !t.IsClass || t.IsDefined<NonSettingsTypeAttribute>() || t.IsDefined<CompilerGeneratedAttribute>()) return false;
+            if (t.IsArray || !t.IsClass || t.IsDefined<NonSettingsTypeAttribute>(inherit: true) || t.IsDefined<CompilerGeneratedAttribute>()) return false;
             if (_knownSettingNamesapces.ContainsKey(t.Namespace)) return true;
 
             var settingsAssemblyAttr = t.Assembly.GetCustomAttribute<SettingsAssemblyAttribute>();

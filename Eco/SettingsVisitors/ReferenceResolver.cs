@@ -110,10 +110,11 @@ namespace Eco.SettingsVisitors
                     MatchSettings(settingsNamesapce, fieldPath, idWildcards, refinedSettingsField)
                     .Where(s => s != Settings.Null)
                     .ToArray();
+
+                Type elementType = refinedSettingsField.FieldType.GetElementType();
+                Array settingsArray = Array.CreateInstance(elementType, matches.Length);
                 if (matches.Length > 0)
                 {
-                    Type elementType = refinedSettingsField.FieldType.GetElementType();
-                    Array settingsArray = Array.CreateInstance(elementType, matches.Length);
                     for (int i = 0; i < matches.Length; i++)
                     {
                         object settings = matches[i];
@@ -124,8 +125,9 @@ namespace Eco.SettingsVisitors
                         }
                         settingsArray.SetValue(matches[i], i);
                     }
-                    refinedSettingsField.SetValue(refinedSettings, settingsArray);
+                    
                 }
+                refinedSettingsField.SetValue(refinedSettings, settingsArray);
             }
         }
 
