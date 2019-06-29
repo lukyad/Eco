@@ -29,7 +29,7 @@ namespace Eco
             _serializer = serializer;
             _serializationAttributesGenerator = serializationAttributesGenerator;
             this.DefaultUsage = Usage.Optional;
-            this.AllowUndefinedVariables = true;
+            this.AllowUndefinedVariables = false;
             this.InitializeRawSettingsLoadVisitors();
             this.InitializeRefinedSettingsLoadVisitors();
             this.InitializeRefinedSettingsSaveVisitors();
@@ -39,16 +39,17 @@ namespace Eco
         void InitializeRawSettingsLoadVisitors()
         {
             var variableMapBuilder = new ConfigurationVariableMapBuilder();
-            var variableExpander = new ConfigurationVariableExpander(variableMapBuilder.Variables, context: this);
             this.RawSettingsReadVisitors = new List<ISettingsVisitor>
             {
                 new DefaultValueSetter(),
                 variableMapBuilder,
-                variableExpander,
+                // For the first round of variable expansion we allow undefined vars as not all variables are defined in the root config.
+                new ConfigurationVariableExpander(variableMapBuilder.Variables, context: this, allowUndefinedVariables: true),
                 new EnvironmentVariableExpander(),
                 new IncludeElementReader(context: this),
                 // We run ConfigurationVariableExpander twice to expand variables imported from the included files (if any).
-                variableExpander,
+                // Now we do not allow any undefined vars by default. (context might override this behaviour)
+                new ConfigurationVariableExpander(variableMapBuilder.Variables, context: this, allowUndefinedVariables: false),
             };
         }
 
@@ -136,9 +137,8 @@ namespace Eco
 
         /// <summary>
         /// If AllowUndefinedVariables is set to false, Eco would throw an exception if it matches undefined configuration variable.
-        /// Otherwise, variable is expanded to an empty string.
         /// 
-        /// By default AllowUndefinedVariables is set to true.
+        /// By default AllowUndefinedVariables is set to false.
         /// </summary>
         public bool AllowUndefinedVariables { get; set; }
 

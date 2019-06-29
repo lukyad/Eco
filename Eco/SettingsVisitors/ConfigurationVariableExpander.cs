@@ -23,8 +23,10 @@ namespace Eco.SettingsVisitors
         static readonly Regex _variableReferenceRegex = new Regex(@"\$\{(?<varName>\w)\}");
         // Name/value variable pairs.
         readonly Dictionary<string, Func<string>> _variables;
-        // Context is used to get value for AllowUndefinedVariables.
+        // SettingsManager used to feed AllowUndefinedVariables override.
         readonly SettingsManager _context;
+        // If set to true, no exception will be thrown on an undefined variable.
+        readonly bool _allowUndefinedVariables;
 
         // isReversable: false
         // Changes made by the ConfigurationVariableExpander are not revocable.
@@ -32,11 +34,12 @@ namespace Eco.SettingsVisitors
         //
         // supportsMultiVisit: true
         // Not all variables could be initialized at the first pass. Thus we try to expand variables all the times.
-        public ConfigurationVariableExpander(Dictionary<string, Func<string>> variables, SettingsManager context) :
+        public ConfigurationVariableExpander(Dictionary<string, Func<string>> variables, SettingsManager context, bool allowUndefinedVariables) :
             base(isReversable: false)
         {
             _variables = variables ?? throw new ArgumentNullException(nameof(variables));
             _context = context ?? throw new ArgumentNullException(nameof(context));
+            _allowUndefinedVariables = allowUndefinedVariables;
         }
 
         public override void Visit(string settingsNamesapce, string fieldPath, object rawSettings, FieldInfo rawSettingsField)
@@ -49,7 +52,7 @@ namespace Eco.SettingsVisitors
                 var originalString = (string)rawSettingsField.GetValue(rawSettings);
                 if (originalString != null)
                 {
-                    var expandedString = ExpandVariables(originalString, _variables, _context.AllowUndefinedVariables);
+                    var expandedString = ExpandVariables(originalString, _variables, _allowUndefinedVariables || _context.AllowUndefinedVariables);
                     rawSettingsField.SetValue(rawSettings, expandedString);
                 }
             }
@@ -61,7 +64,7 @@ namespace Eco.SettingsVisitors
                     string originalString = arr[i];
                     if (originalString != null)
                     {
-                        var expandedString = ExpandVariables(originalString, _variables, _context.AllowUndefinedVariables);
+                        var expandedString = ExpandVariables(originalString, _variables, _allowUndefinedVariables || _context.AllowUndefinedVariables);
                         arr[i] = expandedString;
                     }
                 }
@@ -88,20 +91,15 @@ namespace Eco.SettingsVisitors
                     // Make sure we do not go into a circular dependency.
                     if (expandedVars.Contains(varName)) throw new ConfigurationException("Circular configuration variable dependency detected in '{0}'.", source);
 
-                    // Sustitute variable or throw
+                    // Substitute variable or throw
                     if (variables.TryGetValue(varName, out Func<string> getValue))
                     {
                         result = result.Replace(m.Value, getValue());
+                        // Remember expanded var to check for a Circular Dependency on the next iteration.
+                        localExpandedVars.Add(varName);
                     }
-                    else if (allowUndefinedVars)
-                    {
-                        result = result.Replace(m.Value, null);
-                    }
-                    else
+                    else if (!allowUndefinedVars)
                         throw new ConfigurationException("Undefined variable: '{0}'.", varName);
-
-                    // Remember expanded var to check for a Circular Dependency on the next iteration.
-                    localExpandedVars.Add(varName);
                 }
                 // Remember variables expanded during this run. 
                 // They should not appear in the next run as that would lead to a circular dependency.
