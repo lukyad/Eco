@@ -29,6 +29,6 @@ namespace Eco
 
         public static void Clear() => _variables.Clear();
 
-        public Dictionary<string, Func<string>> GetVariables() => _variables;
+        public IReadOnlyDictionary<string, Func<string>> GetVariables() => _variables;
     }
 }

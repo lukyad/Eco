@@ -12,7 +12,7 @@ namespace Eco
         string _lastIp;
         DateTime _lastUpdate;
 
-        public Dictionary<string, Func<string>> GetVariables()
+        public IReadOnlyDictionary<string, Func<string>> GetVariables()
         {
             Func<string> getIp = () =>
             {
@@ -26,7 +26,6 @@ namespace Eco
             };
             return new Dictionary<string, Func<string>>()
             {
-
                 { "publicIp", getIp }
             }; 
         }
