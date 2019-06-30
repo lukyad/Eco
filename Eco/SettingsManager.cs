@@ -319,15 +319,16 @@ namespace Eco
         /// <summary>
         /// Used internally by the Eco library to read raw settings from included configuratoin files (if any).
         /// </summary>
-        internal object ReadRawSettings(string currentNamespace, string currentSettingsPath, Type rawSettingsType, TextReader reader, bool initializeVisitors)
+        object ReadRawSettings(string currentNamespace, string currentSettingsPath, Type rawSettingsType, TextReader reader, bool initializeVisitors)
         {
             object rawSettings = this.Serializer.Deserialize(rawSettingsType, reader);
             InitilizeRawSettings(currentNamespace, currentSettingsPath, rawSettings, initializeVisitors);
+            RawSettingsReadVisitors.ForEach(v => v.Finish());
             return rawSettings;
         }
 
         /// <summary>
-        /// Used internally by the Eco library to initialize raw settings included/imported from sub-configuratoin files (if any).
+        /// Used internally by the Eco library to initialize raw settings included from sub-configuratoin files (if any).
         /// </summary>
         internal void InitilizeRawSettings(string currentNamespace, string currentSettingsPath, object rawSettings, bool initializeVisitors)
         {

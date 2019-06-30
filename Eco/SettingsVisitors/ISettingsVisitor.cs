@@ -40,6 +40,12 @@ namespace Eco
         void Initialize(Type rootSettingsType);
 
         /// <summary>
+        /// Gets called by the Eco library ones on each Load/Save operation.
+        /// Allows to visitor to complete any unfinished job (e.g. expand any unexpanded variables, pls see ConfigurationVariableExpander for an example).
+        /// </summary>
+        void Finish();
+
+        /// <summary>
         /// Gets called ones for all objects of a settings type in the settings tree.
         /// </summary>
         void Visit(string settingsNamespace, string settingsPath, object settings);

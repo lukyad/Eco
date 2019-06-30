@@ -19,6 +19,8 @@ namespace Eco.SettingsVisitors
 
         public virtual void Initialize(Type rootSettingsType) { }
 
+        public virtual void Finish() { }
+
         public virtual void Visit(string settingsNamespace, string settingsPath, object settings) { }
 
         public virtual void Visit(string settingsNamespace, string fieldPath, object settings, FieldInfo settingsField) { }

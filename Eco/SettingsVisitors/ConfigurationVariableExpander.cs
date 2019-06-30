@@ -22,7 +22,10 @@ namespace Eco.SettingsVisitors
         // Mathes variable reference in a string.
         static readonly Regex _variableReferenceRegex = new Regex(@"\$\{(?<varName>\w)\}");
         // Name/value variable pairs.
-        readonly Dictionary<string, Func<string>> _variables;
+        readonly IReadOnlyDictionary<string, Func<string>> _variables;
+        // List of actions that try to expand strings that were not expanded during the first pass due to references vars have not yet been defined.
+        // Executed when visitor get finilized.
+        readonly List<Action> _finalExpandActions = new List<Action>();
         // SettingsManager used to feed AllowUndefinedVariables override.
         readonly SettingsManager _context;
         // If set to true, no exception will be thrown on an undefined variable.
@@ -34,7 +37,7 @@ namespace Eco.SettingsVisitors
         //
         // supportsMultiVisit: true
         // Not all variables could be initialized at the first pass. Thus we try to expand variables all the times.
-        public ConfigurationVariableExpander(Dictionary<string, Func<string>> variables, SettingsManager context, bool allowUndefinedVariables) :
+        public ConfigurationVariableExpander(IReadOnlyDictionary<string, Func<string>> variables, SettingsManager context, bool allowUndefinedVariables) :
             base(isReversable: false)
         {
             _variables = variables ?? throw new ArgumentNullException(nameof(variables));
@@ -42,36 +45,64 @@ namespace Eco.SettingsVisitors
             _allowUndefinedVariables = allowUndefinedVariables;
         }
 
+        public override void Initialize(Type rootSettingsType)
+        {
+            base.Initialize(rootSettingsType);
+            _finalExpandActions.Clear();
+        }
+
+        public override void Finish()
+        {
+            foreach (var a in _finalExpandActions)
+                a.Invoke();
+        }
+
         public override void Visit(string settingsNamesapce, string fieldPath, object rawSettings, FieldInfo rawSettingsField)
         {
             // Skip 'sealed' fields.
             if (rawSettingsField.IsDefined<SealedAttribute>()) return;
-            
-            if (rawSettingsField.FieldType == typeof(string))
+           
+            bool TryExpandVariables(bool allowUndefined)
             {
-                var originalString = (string)rawSettingsField.GetValue(rawSettings);
-                if (originalString != null)
+                if (rawSettingsField.FieldType == typeof(string))
                 {
-                    var expandedString = ExpandVariables(originalString, _variables, _allowUndefinedVariables || _context.AllowUndefinedVariables);
-                    rawSettingsField.SetValue(rawSettings, expandedString);
-                }
-            }
-            else if (rawSettingsField.FieldType == typeof(string[]))
-            {
-                string[] arr = (string[])rawSettingsField.GetValue(rawSettings);
-                for (int i = 0; i < arr.Length; i++)
-                {
-                    string originalString = arr[i];
+                    var originalString = (string)rawSettingsField.GetValue(rawSettings);
                     if (originalString != null)
                     {
-                        var expandedString = ExpandVariables(originalString, _variables, _allowUndefinedVariables || _context.AllowUndefinedVariables);
-                        arr[i] = expandedString;
+                        (bool expanded, string reuslt) = ExpandVariables(originalString, _variables, allowUndefined);
+                        rawSettingsField.SetValue(rawSettings, reuslt);
+                        return expanded;
                     }
+                    else
+                        return true;
                 }
+                else if (rawSettingsField.FieldType == typeof(string[]))
+                {
+                    string[] arr = (string[])rawSettingsField.GetValue(rawSettings);
+                    bool allExpanded = true;
+                    for (int i = 0; i < arr.Length; i++)
+                    {
+                        string originalString = arr[i];
+                        if (originalString != null)
+                        {
+                            (bool expanded, string result) = ExpandVariables(originalString, _variables, allowUndefined);
+                            arr[i] = result;
+                            allExpanded |= expanded;
+                        }
+                    }
+                    return allExpanded;
+                }
+                return true;
             }
+
+            // If string has not been expanded, we will try to expand it later,
+            // when undefined variables will get possibly loaded (e.g. when all include<> elements got processed).
+            bool success = TryExpandVariables(allowUndefined: true);
+            if (!success)
+                _finalExpandActions.Add(() => TryExpandVariables(allowUndefined: _context.AllowUndefinedVariables));
         }
 
-        static string ExpandVariables(string source, Dictionary<string, Func<string>> variables, bool allowUndefinedVars)
+        static (bool expanded, string result) ExpandVariables(string source, IReadOnlyDictionary<string, Func<string>> variables, bool allowUndefinedVars)
         {
             string result = source;
             var expandedVars = new HashSet<string>();
@@ -98,7 +129,11 @@ namespace Eco.SettingsVisitors
                         // Remember expanded var to check for a Circular Dependency on the next iteration.
                         localExpandedVars.Add(varName);
                     }
-                    else if (!allowUndefinedVars)
+                    else if (allowUndefinedVars)
+                    {
+                        return (expanded: false, source);
+                    }
+                    else
                         throw new ConfigurationException("Undefined variable: '{0}'.", varName);
                 }
                 // Remember variables expanded during this run. 
@@ -108,7 +143,7 @@ namespace Eco.SettingsVisitors
                 if (localExpandedVars.Count == 0) break;
             }
 
-            return result;
+            return (expanded: true, result);
         }
 
         //static string FullVariableName(string currentNamespace, string varName)
