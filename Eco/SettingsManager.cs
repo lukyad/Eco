@@ -47,6 +47,7 @@ namespace Eco
                 new ConfigurationVariableExpander(variableMapBuilder.Variables, context: this, allowUndefinedVariables: true),
                 new EnvironmentVariableExpander(),
                 new IncludeElementReader(context: this),
+                new ImportElementProcessor(context: this),
                 // We run ConfigurationVariableExpander twice to expand variables imported from the included files (if any).
                 // Now we do not allow any undefined vars by default. (context might override this behaviour)
                 new ConfigurationVariableExpander(variableMapBuilder.Variables, context: this, allowUndefinedVariables: false),
@@ -59,7 +60,6 @@ namespace Eco
             this.RefinedSettingsReadVisitors = new List<ITwinSettingsVisitor>
             {
                 settingsMapBuilder,
-                new ImportElementProcessor(context: this),
                 // Use this ReferenceResolver to resolve applyDefaults.targets and applyOverrides.targets only.
                 new ReferenceResolver(settingsMapBuilder.RefinedSettingsById, settingsMapBuilder.RefinedToRawMap, typeof(applyDefaults<>), typeof(applyOverrides<>)),
                 // ReferenceResolver should go before ApplyDefaultsProcessor and ApplyOverridesProcessor
@@ -384,8 +384,7 @@ namespace Eco
         {
             if (settings == null) throw new ArgumentNullException(nameof(settings));
             if (writer == null) throw new ArgumentNullException(nameof(writer));
-            Type rawSettingsType = SerializableTypeEmitter.GetRawTypeFor(settings.GetType(), this.Serializer, this.SerializationAttributesGenerator, this.DefaultUsage);
-            object rawSettings = CreateRawSettings(rawSettingsType, settings);
+            object rawSettings = CreateRawSettings(settings);
             this.Serializer.Serialize(rawSettings, writer);
         }
 
@@ -470,8 +469,9 @@ namespace Eco
             return refinedSettings;
         }
 
-        object CreateRawSettings(Type rawSettingsType, object refinedSettings)
+        public object CreateRawSettings(object refinedSettings)
         {
+            Type rawSettingsType = SerializableTypeEmitter.GetRawTypeFor(refinedSettings.GetType(), this.Serializer, this.SerializationAttributesGenerator, this.DefaultUsage);
             object rawSettings = Activator.CreateInstance(rawSettingsType);
             if (this.RefinedSettingsWriteVisitors != null)
             {
