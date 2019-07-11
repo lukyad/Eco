@@ -42,17 +42,17 @@ namespace Eco.Converters
         public static object Parse(string dateTime, string format, FieldInfo context)
         {
             DateTime result;
-            bool parsed = DateTime.TryParseExact(dateTime, format, null, System.Globalization.DateTimeStyles.None, out result);
-            return parsed ? (object)result : null;
+            bool parsed = DateTime.TryParseExact(dateTime, format, null, System.Globalization.DateTimeStyles.AssumeUniversal, out result);
+            return parsed ? (object)result.ToUniversalTime() : null;
         }
 
         static DateTime ParseDateTime(string dateTime, string format)
         {
             DateTime result;
-            bool parsed = DateTime.TryParseExact(dateTime, format, null, System.Globalization.DateTimeStyles.None, out result);
+            bool parsed = DateTime.TryParseExact(dateTime, format, null, System.Globalization.DateTimeStyles.AssumeUniversal, out result);
             if (!parsed)
                 throw new ApplicationException($"Unable to parse DateTime string `{dateTime}`. Expected format: `{format}`.");
-            return result;
+            return result.ToUniversalTime();
         }
 
         static string DateTimeToString(DateTime dateTime, string format)
