@@ -44,13 +44,13 @@ namespace Eco
                 new DefaultValueSetter(),
                 variableMapBuilder,
                 // For the first round of variable expansion we allow undefined vars as not all variables are defined in the root config.
-                new ConfigurationVariableExpander(variableMapBuilder.Variables, context: this, allowUndefinedVariables: true),
+                new ConfigurationVariableExpander(variableMapBuilder.Variables, context: this),
                 new EnvironmentVariableExpander(),
                 new IncludeElementReader(context: this),
                 new ImportElementProcessor(context: this),
                 // We run ConfigurationVariableExpander twice to expand variables imported from the included files (if any).
                 // Now we do not allow any undefined vars by default. (context might override this behaviour)
-                new ConfigurationVariableExpander(variableMapBuilder.Variables, context: this, allowUndefinedVariables: false),
+                new ConfigurationVariableExpander(variableMapBuilder.Variables, context: this),
             };
         }
 

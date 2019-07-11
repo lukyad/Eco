@@ -28,8 +28,6 @@ namespace Eco.SettingsVisitors
         readonly List<Action> _finalExpandActions = new List<Action>();
         // SettingsManager used to feed AllowUndefinedVariables override.
         readonly SettingsManager _context;
-        // If set to true, no exception will be thrown on an undefined variable.
-        readonly bool _allowUndefinedVariables;
 
         // isReversable: false
         // Changes made by the ConfigurationVariableExpander are not revocable.
@@ -37,12 +35,11 @@ namespace Eco.SettingsVisitors
         //
         // supportsMultiVisit: true
         // Not all variables could be initialized at the first pass. Thus we try to expand variables all the times.
-        public ConfigurationVariableExpander(IReadOnlyDictionary<string, Func<string>> variables, SettingsManager context, bool allowUndefinedVariables) :
+        public ConfigurationVariableExpander(IReadOnlyDictionary<string, Func<string>> variables, SettingsManager context) :
             base(isReversable: false)
         {
             _variables = variables ?? throw new ArgumentNullException(nameof(variables));
             _context = context ?? throw new ArgumentNullException(nameof(context));
-            _allowUndefinedVariables = allowUndefinedVariables;
         }
 
         public override void Initialize(Type rootSettingsType)
