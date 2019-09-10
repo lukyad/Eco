@@ -21,8 +21,9 @@ namespace Eco.Serialization.Xml
         public object Deserialize(Type rawSettingsType, TextReader reader)
         {
             var serializer = new SystemXmlSerializer(rawSettingsType);
-            serializer.UnknownAttribute += new XmlAttributeEventHandler(serializer_UnknownAttribute);
-            serializer.UnknownElement += new XmlElementEventHandler(serializer_UnknownElement);
+            var file = ((reader as StreamReader)?.BaseStream as FileStream)?.Name ?? "document";
+            serializer.UnknownAttribute += (sender, args) => serializer_UnknownAttribute(sender, file, args);
+            serializer.UnknownElement += (sender, args) => serializer_UnknownElement(sender, file, args); ;
             return serializer.Deserialize(reader);
         }
 
@@ -64,22 +65,24 @@ namespace Eco.Serialization.Xml
             SystemXmlSerializer.GenerateSerializer(rawSettingsTypes, mappings, new CompilerParameters { OutputAssembly = destFilePath });
         }
 
-        static void serializer_UnknownAttribute(object sender, XmlAttributeEventArgs e)
+        static void serializer_UnknownAttribute(object sender, string file, XmlAttributeEventArgs e)
         {
             throw new ConfigurationException(
-                "Unknown xml attribute :'{0}' line '{1}', position '{2}'. Expected elements - '{3}'.",
+                "Unknown xml attribute: '{0}' in {1}:{2}:{3}. Expected elements - '{4}'.",
                 e.Attr.Name,
+                file,
                 e.LineNumber,
                 e.LinePosition,
                 e.ExpectedAttributes
             );
         }
 
-        static void serializer_UnknownElement(object sender, XmlElementEventArgs e)
+        static void serializer_UnknownElement(object sender, string file, XmlElementEventArgs e)
         {
             throw new ConfigurationException(
-                "Unknown xml element :'{0}' line '{1}', position '{2}'. Expected elements - '{3}'.",
+                "Unknown xml element: '{0}' in {1}:{2}:{3}. Expected elements - '{4}'.",
                 e.Element.Name,
+                file,
                 e.LineNumber,
                 e.LinePosition,
                 e.ExpectedElements
