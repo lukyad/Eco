@@ -14,7 +14,8 @@ namespace Eco.Converters
     public static class TimeSpanConverter
     {
         static readonly Dictionary<string, Func<double, TimeSpan>> _fromDoubleMethods = new Dictionary<string, Func<double, TimeSpan>> {
-            { "ms", TimeSpan.FromMilliseconds }, 
+            { "t", t => TimeSpan.FromTicks(t) },
+            { "ms", TimeSpan.FromMilliseconds },
             { "s", TimeSpan.FromSeconds }, 
             { "m", TimeSpan.FromMinutes },
             { "h", TimeSpan.FromHours },
@@ -24,7 +25,7 @@ namespace Eco.Converters
         };
 
         static readonly Dictionary<string, Func<TimeSpan, double>> _toDoubleMethods = new Dictionary<string, Func<TimeSpan, double>> {
-            { "ms", t => t.TotalMilliseconds },
+            { "ms", t => t.Ticks },
             { "s", t => t.TotalSeconds },
             { "m", t => t.TotalMinutes },
             { "h", t => t.TotalHours },
