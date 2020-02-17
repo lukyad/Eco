@@ -77,14 +77,17 @@ namespace Eco.SettingsVisitors
                 {
                     string[] arr = (string[])rawSettingsField.GetValue(rawSettings);
                     bool allExpanded = true;
-                    for (int i = 0; i < arr.Length; i++)
+                    if (arr != null)
                     {
-                        string originalString = arr[i];
-                        if (originalString != null)
+                        for (int i = 0; i < arr.Length; i++)
                         {
-                            (bool expanded, string result) = ExpandVariables(originalString, _variables, allowUndefined);
-                            arr[i] = result;
-                            allExpanded |= expanded;
+                            string originalString = arr[i];
+                            if (originalString != null)
+                            {
+                                (bool expanded, string result) = ExpandVariables(originalString, _variables, allowUndefined);
+                                arr[i] = result;
+                                allExpanded |= expanded;
+                            }
                         }
                     }
                     return allExpanded;

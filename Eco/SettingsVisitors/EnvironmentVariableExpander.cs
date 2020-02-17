@@ -37,9 +37,12 @@ namespace Eco.SettingsVisitors
             else if (rawSettingsField.FieldType == typeof(string[]))
             {
                 var arr = (string[])rawSettingsField.GetValue(rawSettings);
-                for (int i = 0; i < arr.Length; i++)
+                if (arr != null)
                 {
-                    if (arr[i] != null) arr[i] = Environment.ExpandEnvironmentVariables(arr[i]);
+                    for (int i = 0; i < arr.Length; i++)
+                    {
+                        if (arr[i] != null) arr[i] = Environment.ExpandEnvironmentVariables(arr[i]);
+                    }
                 }
             }
         }

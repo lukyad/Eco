@@ -62,13 +62,16 @@ namespace Eco.SettingsVisitors
             else if (rawSettingsField.FieldType == typeof(string[]))
             {
                 string[] arr = (string[])rawSettingsField.GetValue(rawSettings);
-                for (int i = 0; i < arr.Length; i++)
+                if (arr != null)
                 {
-                    string originalString = arr[i];
-                    if (originalString != null)
+                    for (int i = 0; i < arr.Length; i++)
                     {
-                        var expandedString = ExpandFieldReferences(originalString, fieldPath, rawSettings);
-                        arr[i] = expandedString;
+                        string originalString = arr[i];
+                        if (originalString != null)
+                        {
+                            var expandedString = ExpandFieldReferences(originalString, fieldPath, rawSettings);
+                            arr[i] = expandedString;
+                        }
                     }
                 }
             }
